@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!319 &31900000
+AvatarMask:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: ThumbstickMask
+  m_Mask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+  m_Elements:
+  - m_Path: 
+    m_Weight: 1
+  - m_Path: RHand
+    m_Weight: 1
+  - m_Path: RWrist_BN
+    m_Weight: 1
+  - m_Path: RWrist_BN/RHand_BN
+    m_Weight: 1
+  - m_Path: RWrist_BN/RHand_BN/RIndex_Top_BN
+    m_Weight: 0
+  - m_Path: RWrist_BN/RHand_BN/RIndex_Top_BN/RIndex_Mid_BN
+    m_Weight: 0
+  - m_Path: RWrist_BN/RHand_BN/RIndex_Top_BN/RIndex_Mid_BN/RIndex_End_BN
+    m_Weight: 0
+  - m_Path: RWrist_BN/RHand_BN/RLittle_Top_BN
+    m_Weight: 0
+  - m_Path: RWrist_BN/RHand_BN/RLittle_Top_BN/RLittle_Mid_BN
+    m_Weight: 0
+  - m_Path: RWrist_BN/RHand_BN/RLittle_Top_BN/RLittle_Mid_BN/RLittle_End_BN
+    m_Weight: 0
+  - m_Path: RWrist_BN/RHand_BN/RMiddle_Top_BN
+    m_Weight: 0
+  - m_Path: RWrist_BN/RHand_BN/RMiddle_Top_BN/RMiddle_Middle_BN
+    m_Weight: 0
+  - m_Path: RWrist_BN/RHand_BN/RMiddle_Top_BN/RMiddle_Middle_BN/RMiddle_Little_BN
+    m_Weight: 0
+  - m_Path: RWrist_BN/RHand_BN/RThumb_Top_BN
+    m_Weight: 1
+  - m_Path: RWrist_BN/RHand_BN/RThumb_Top_BN/RThumb_Mid_BN
+    m_Weight: 1
+  - m_Path: RWrist_BN/RHand_BN/RThumb_Top_BN/RThumb_Mid_BN/RThumb_End_BN
+    m_Weight: 1
+  - m_Path: RWrist_BN/RHand_BN/RWedding_Top_BN
+    m_Weight: 0
+  - m_Path: RWrist_BN/RHand_BN/RWedding_Top_BN/RWedding_Mid_BN
+    m_Weight: 0
+  - m_Path: RWrist_BN/RHand_BN/RWedding_Top_BN/RWedding_Mid_BN/RWedding_End_BN
+    m_Weight: 0

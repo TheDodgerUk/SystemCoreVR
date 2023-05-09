@@ -1,0 +1,914 @@
+[
+  {
+    "Name": "OurAvatarPlayerHandSkeletonLeft",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "w": 1.0
+    },
+    "Position": {
+      "x": 0.16,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "LeftHandWrist_jnt",
+    "Rotation": {
+      "x": 90.0,
+      "y": 90.0,
+      "z": 0.0
+    },
+    "RotationQuaternion": {
+      "x": 0.5,
+      "y": 0.5,
+      "z": -0.5,
+      "w": 0.5
+    },
+    "Position": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "LeftHandIndexMeta_jnt",
+    "Rotation": {
+      "x": 2.66377521,
+      "y": 351.6321,
+      "z": 354.646
+    },
+    "RotationQuaternion": {
+      "x": 0.0265631489,
+      "y": -0.07177679,
+      "z": -0.0448745228,
+      "w": 0.9960566
+    },
+    "Position": {
+      "x": -0.035417024,
+      "y": 0.00158788974,
+      "z": -0.0149091948
+    }
+  },
+  {
+    "Name": "LeftHandIndexProximal_jnt",
+    "Rotation": {
+      "x": 0.02400043,
+      "y": 11.9579954,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": 0.07350771,
+      "y": -0.0738023,
+      "z": 0.7032756,
+      "w": -0.7032448
+    },
+    "Position": {
+      "x": -0.061460007,
+      "y": -1.13686835E-15,
+      "z": 3.5527136E-17
+    }
+  },
+  {
+    "Name": "LeftHandIndexIntermediate_jnt",
+    "Rotation": {
+      "x": 0.0059973863,
+      "y": 0.804995358,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": 0.00493031368,
+      "y": -0.00500432774,
+      "z": 0.7070896,
+      "w": -0.7070891
+    },
+    "Position": {
+      "x": -0.0379273,
+      "y": 2.842171E-16,
+      "z": 1.1546319E-16
+    }
+  },
+  {
+    "Name": "LeftHandIndexDistal_jnt",
+    "Rotation": {
+      "x": 359.27298,
+      "y": 3.58999872,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": -0.02663262,
+      "y": 0.0176646449,
+      "z": -0.7066051,
+      "w": 0.7068862
+    },
+    "Position": {
+      "x": -0.024303643,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "Tip",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "w": 1.0
+    },
+    "Position": {
+      "x": -0.015,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.01,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.01,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.02,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.03,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "LeftHandMiddleMeta_jnt",
+    "Rotation": {
+      "x": 358.4595,
+      "y": 358.1325,
+      "z": 357.399261
+    },
+    "RotationQuaternion": {
+      "x": 0.01306794,
+      "y": 0.0165956542,
+      "z": 0.0229076929,
+      "w": -0.9995144
+    },
+    "Position": {
+      "x": -0.03503387,
+      "y": -0.000210604456,
+      "z": 0.000324498978
+    }
+  },
+  {
+    "Name": "LeftHandMiddleProximal_jnt",
+    "Rotation": {
+      "x": 0.02400043,
+      "y": 11.9579954,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": 0.07350771,
+      "y": -0.0738023,
+      "z": 0.7032756,
+      "w": -0.7032448
+    },
+    "Position": {
+      "x": -0.0607098937,
+      "y": 2.842171E-16,
+      "z": -6.43929336E-17
+    }
+  },
+  {
+    "Name": "LeftHandMiddleIntermediate_jnt",
+    "Rotation": {
+      "x": 359.641,
+      "y": 1.08100533,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": -0.008885639,
+      "y": 0.004455153,
+      "z": -0.7070509,
+      "w": 0.707092762
+    },
+    "Position": {
+      "x": -0.04292699,
+      "y": -2.842171E-16,
+      "z": 7.99360543E-17
+    }
+  },
+  {
+    "Name": "LeftHandMiddleDistal_jnt",
+    "Rotation": {
+      "x": 359.641,
+      "y": 1.08100533,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": -0.008885639,
+      "y": 0.004455153,
+      "z": -0.7070509,
+      "w": 0.707092762
+    },
+    "Position": {
+      "x": -0.0275495835,
+      "y": 0.0,
+      "z": -1.7763568E-17
+    }
+  },
+  {
+    "Name": "Tip",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "w": 1.0
+    },
+    "Position": {
+      "x": -0.015,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.01,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.01,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.02,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.03,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "LeftHandPinkyMeta_jnt",
+    "Rotation": {
+      "x": 347.1192,
+      "y": 16.6129837,
+      "z": 354.4922
+    },
+    "RotationQuaternion": {
+      "x": -0.117762066,
+      "y": 0.138058,
+      "z": -0.0310560483,
+      "w": 0.9829078
+    },
+    "Position": {
+      "x": -0.0340735577,
+      "y": 0.009419835,
+      "z": 0.0229985733
+    }
+  },
+  {
+    "Name": "LeftHandPinkyProximal_jnt",
+    "Rotation": {
+      "x": 0.0240008589,
+      "y": 11.9579954,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": 0.07350771,
+      "y": -0.07380231,
+      "z": 0.7032756,
+      "w": -0.7032448
+    },
+    "Position": {
+      "x": -0.04565054,
+      "y": -2.842171E-16,
+      "z": 7.105427E-17
+    }
+  },
+  {
+    "Name": "LeftHandPinkyIntermediate_jnt",
+    "Rotation": {
+      "x": 0.001995696,
+      "y": 354.574,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": -0.0334818624,
+      "y": 0.03345726,
+      "z": 0.70631367,
+      "w": -0.706314862
+    },
+    "Position": {
+      "x": -0.030720409,
+      "y": -2.842171E-16,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "LeftHandPinkyDistal_jnt",
+    "Rotation": {
+      "x": 0.001995696,
+      "y": 354.574,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0334818624,
+      "y": -0.03345726,
+      "z": -0.70631367,
+      "w": 0.706314862
+    },
+    "Position": {
+      "x": -0.0203113835,
+      "y": -2.842171E-16,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "Tip",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "w": 1.0
+    },
+    "Position": {
+      "x": -0.015,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.01,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.01,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.02,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.02,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "LeftHandRingMeta_jnt",
+    "Rotation": {
+      "x": 353.700867,
+      "y": 5.2254653,
+      "z": 356.241852
+    },
+    "RotationQuaternion": {
+      "x": -0.05634859,
+      "y": 0.0436919443,
+      "z": -0.0302033965,
+      "w": 0.996997356
+    },
+    "Position": {
+      "x": -0.0342182778,
+      "y": 0.00296011451,
+      "z": 0.0128788026
+    }
+  },
+  {
+    "Name": "LeftHandRingProximal_jnt",
+    "Rotation": {
+      "x": 0.02400043,
+      "y": 11.9579954,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": 0.07350771,
+      "y": -0.0738023,
+      "z": 0.7032756,
+      "w": -0.7032448
+    },
+    "Position": {
+      "x": -0.05478463,
+      "y": -5.684342E-16,
+      "z": 7.105427E-17
+    }
+  },
+  {
+    "Name": "LeftHandRingIntermediate_jnt",
+    "Rotation": {
+      "x": 0.16499871,
+      "y": 356.873,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": -0.0203111377,
+      "y": 0.01827559,
+      "z": 0.706815064,
+      "w": -0.7068706
+    },
+    "Position": {
+      "x": -0.0389961,
+      "y": -1.13686835E-15,
+      "z": -3.5527136E-17
+    }
+  },
+  {
+    "Name": "LeftHandRingDistal_jnt",
+    "Rotation": {
+      "x": 0.16499871,
+      "y": 356.873,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0203111377,
+      "y": -0.01827559,
+      "z": -0.706815064,
+      "w": 0.7068706
+    },
+    "Position": {
+      "x": -0.0265733972,
+      "y": 0.0,
+      "z": 3.5527136E-17
+    }
+  },
+  {
+    "Name": "Tip",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "w": 1.0
+    },
+    "Position": {
+      "x": -0.015,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.01,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.01,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.02,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.03,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "LeftHandThumbTrapezium_jnt",
+    "Rotation": {
+      "x": 60.3053322,
+      "y": 277.886,
+      "z": 321.8584
+    },
+    "RotationQuaternion": {
+      "x": 0.543544,
+      "y": -0.413009137,
+      "z": 0.09877158,
+      "w": 0.7240357
+    },
+    "Position": {
+      "x": -0.0200693011,
+      "y": 0.0115540987,
+      "z": -0.0104965195
+    }
+  },
+  {
+    "Name": "LeftHandThumbMeta_jnt",
+    "Rotation": {
+      "x": 3.1599977,
+      "y": 341.07,
+      "z": 321.73
+    },
+    "RotationQuaternion": {
+      "x": 0.0795784146,
+      "y": -0.1463851,
+      "z": -0.3189259,
+      "w": 0.93301934
+    },
+    "Position": {
+      "x": -0.024852559,
+      "y": 1.04805049E-15,
+      "z": -5.684342E-16
+    }
+  },
+  {
+    "Name": "LeftHandThumbProximal_jnt",
+    "Rotation": {
+      "x": 359.499,
+      "y": 8.525049,
+      "z": 303.06
+    },
+    "RotationQuaternion": {
+      "x": 0.03926366,
+      "y": -0.06325896,
+      "z": 0.475089818,
+      "w": -0.8767818
+    },
+    "Position": {
+      "x": -0.03251291,
+      "y": 3.19744217E-16,
+      "z": 5.684342E-16
+    }
+  },
+  {
+    "Name": "LeftHandThumbDistal_jnt",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 270.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": -0.7071068
+    },
+    "Position": {
+      "x": -0.03379309,
+      "y": -2.24265049E-16,
+      "z": 5.684342E-16
+    }
+  },
+  {
+    "Name": "Tip",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "w": 1.0
+    },
+    "Position": {
+      "x": -0.0075,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.005,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.015,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": -0.015,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "DEBUG_CAPSULE",
+    "Rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 90.0
+    },
+    "RotationQuaternion": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.7071068,
+      "w": 0.7071068
+    },
+    "Position": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    }
+  },
+  {
+    "Name": "LeftHandTracker_tgt ",
+    "Rotation": {
+      "x": 359.507019,
+      "y": 263.705658,
+      "z": 99.30566
+    },
+    "RotationQuaternion": {
+      "x": -0.569538355,
+      "y": -0.480043948,
+      "z": 0.506432354,
+      "w": 0.43440783
+    },
+    "Position": {
+      "x": -0.104074217,
+      "y": 0.0373345055,
+      "z": -0.040733628
+    }
+  }
+]
