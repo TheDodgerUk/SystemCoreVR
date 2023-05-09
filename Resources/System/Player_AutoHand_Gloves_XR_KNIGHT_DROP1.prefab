@@ -1480,7 +1480,7 @@ Transform:
   - {fileID: 1224201311120859276}
   - {fileID: 2584496095310931127}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3113424552487258772
 MonoBehaviour:
@@ -5929,7 +5929,7 @@ MonoBehaviour:
   stepLength: 0.3
   stepHeight: 0.3
   footPosOffset: {x: 0, y: 0.12, z: 0}
-  footRotOffset: {x: 180, y: -90, z: 0}
+  footRotOffset: {x: 0, y: 90, z: 90}
 --- !u!1 &8591912457287491942
 GameObject:
   m_ObjectHideFlags: 0
@@ -6043,8 +6043,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8591912458008189162}
-  m_LocalRotation: {x: 0.7071068, y: 0.00000012619863, z: 0.7071068, w: 0.00000011920929}
-  m_LocalPosition: {x: -0.11444301, y: -0.00297966, z: 0.05951252}
+  m_LocalRotation: {x: 0.680842, y: -0.19092998, z: 0.680842, w: -0.19092998}
+  m_LocalPosition: {x: -0.114443004, y: 0.055694122, z: -0.03687378}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6073,7 +6073,7 @@ MonoBehaviour:
   stepLength: 0.3
   stepHeight: 0.3
   footPosOffset: {x: 0, y: 0.12, z: 0}
-  footRotOffset: {x: -180, y: -90, z: 0}
+  footRotOffset: {x: 0, y: -90, z: -90}
 --- !u!1 &8591912458038056109
 GameObject:
   m_ObjectHideFlags: 0
