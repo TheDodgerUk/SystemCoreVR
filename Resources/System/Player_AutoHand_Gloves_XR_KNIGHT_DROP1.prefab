@@ -1683,7 +1683,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2584496095744911462}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.655, z: 0}
+  m_LocalPosition: {x: 0, y: 1.62, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5921,8 +5921,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainLayer:
     serializedVersion: 2
-    m_Bits: 1
-  body: {fileID: 2584496094511622928}
+    m_Bits: 8192
+  body: {fileID: 1224201311120859276}
   otherFoot: {fileID: 8591912458008189160}
   speed: 5
   stepDistance: 0.3
@@ -6065,8 +6065,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainLayer:
     serializedVersion: 2
-    m_Bits: 1
-  body: {fileID: 2584496094511622928}
+    m_Bits: 8192
+  body: {fileID: 1224201311120859276}
   otherFoot: {fileID: 8591912457067325420}
   speed: 5
   stepDistance: 0.3
@@ -6640,7 +6640,7 @@ PrefabInstance:
     - target: {fileID: 8834320319295017375, guid: fdc3ba53f4e81a040b0471bbbafbb10a,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0.027
       objectReference: {fileID: 0}
     - target: {fileID: 8834320319295017375, guid: fdc3ba53f4e81a040b0471bbbafbb10a,
         type: 3}
