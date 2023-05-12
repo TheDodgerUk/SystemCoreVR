@@ -71,7 +71,7 @@ public class AutoHandTrackingTransformsInputTrackingDelegate : OvrAvatarInputTra
                 inputTrackingState.headset.orientation = headRot;
             }
 
-
+#if VR_INTERACTION
             if (CameraControllerVR.Instance.HandLeftRef != null)
             {
                 inputTrackingState.leftController.position = CameraControllerVR.Instance.HandLeftRef.transform.localPosition;
@@ -80,6 +80,7 @@ public class AutoHandTrackingTransformsInputTrackingDelegate : OvrAvatarInputTra
                 inputTrackingState.rightController.position = CameraControllerVR.Instance.HandRightRef.transform.localPosition;
                 inputTrackingState.rightController.orientation = CameraControllerVR.Instance.HandRightRef.transform.localRotation;
             }
+#endif
         }
 
         return true;

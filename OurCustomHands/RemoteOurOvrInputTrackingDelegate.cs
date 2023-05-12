@@ -1,3 +1,4 @@
+#if VR_INTERACTION
 using Oculus.Avatar2;
 using Oculus.Interaction.Input;
 using UnityEngine;
@@ -71,3 +72,4 @@ public class RemoteOurOvrInputTrackingDelegate : OvrAvatarInputTrackingDelegate
 
 
 }
+#endif

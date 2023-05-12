@@ -1,3 +1,4 @@
+#if VR_INTERACTION
 using Oculus.Avatar2;
 using Oculus.Interaction.Input;
 using System;
@@ -63,3 +64,4 @@ public class OurOvrInputTrackingDelegate : OvrAvatarInputTrackingDelegate
 
 
 }
+#endif

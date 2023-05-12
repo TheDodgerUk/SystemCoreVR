@@ -1,3 +1,4 @@
+#if VR_INTERACTION
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -42,6 +43,7 @@ namespace Demeo
 
         private void OnControllerEnd(ControllerStateInteraction interaction, bool sendPhotonMessage)
         {
+#if VR_INTERACTION
             if (m_StartPositions.ContainsKey(interaction.Main.Hand) == false)
             {
                 if(interaction.Main.Hand == Handedness.Left)
@@ -53,7 +55,8 @@ namespace Demeo
                     m_StartPositions.Add(interaction.Main.Hand, CameraControllerVR.Instance.HandRightRef.transform.localPosition);
 
                 }
-            }          
+            }   
+#endif
         }
 
         private void OnControllerBegin(ControllerStateInteraction interaction, bool sendPhotonMessage)
@@ -119,3 +122,4 @@ namespace Demeo
         }
     }
 }
+#endif

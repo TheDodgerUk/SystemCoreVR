@@ -1,3 +1,4 @@
+#if VR_INTERACTION
 using System.Collections.Generic;
 using Oculus.Avatar2;
 using UnityEngine;
@@ -101,7 +102,7 @@ public class AutoHandAvatarInputManager : OvrAvatarInputManager
     }
 
 #if UNITY_EDITOR
-    #region Debug Drawing
+#region Debug Drawing
 
     private void OnSceneGUI(SceneView sceneView)
     {
@@ -143,6 +144,7 @@ public class AutoHandAvatarInputManager : OvrAvatarInputManager
             (Vector3)inputTrackingState.rightController.position + forward() * outerRadius());
     }
 
-    #endregion
+#endregion
 #endif // UNITY_EDITOR
 }
+#endif

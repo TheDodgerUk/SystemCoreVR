@@ -143,6 +143,7 @@ namespace MonitorTrainer
             ////    RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Custom;
             ////}
 
+#if VR_INTERACTION
             CameraControllerVR.Instance.TeleportAvatar(MenuManager.Instance.gameObject.scene, MenuManager.Instance.m_MenuArea[MonitorTrainerRoot.Instance.PlayerChoiceDataRef.CurrentPlayersEnum].m_Start, null);
             CameraControllerVR.Instance.TeleporterRight.Add(InputManagerVR.Instance.AnySubscription.BtnPrimary);
             InputManagerVR.Instance.AnySubscription.BtnStart.Begin += OnPauseMenu;
@@ -150,7 +151,7 @@ namespace MonitorTrainer
             CameraControllerVR.Instance.MainCamera.farClipPlane = 100f;
             CameraControllerVR.Instance.DistanceGrabber = false;
             CameraControllerVR.Instance.DistanceGrabHighLightInvalidTarget = false;
-
+#endif
 
             var inter0 = Core.Scene.GetSpawnedVrInteraction(MonitorTrainerConsts.MULIPLYER_DATA[PlayersEnum.Player1].PhoneName);
             if (inter0 != null)
@@ -347,7 +348,7 @@ namespace MonitorTrainer
 
         }
 
-        #region DisableColliders
+#region DisableColliders
 
 
 
@@ -374,6 +375,6 @@ namespace MonitorTrainer
 
 #endif
 
-        #endregion DisableColliders
+#endregion DisableColliders
     }
 }

@@ -49,8 +49,9 @@ namespace Museum
             var ui = GameObject.Find("UI_Stuff");
             m_InteractiveMenu = ui.AddComponent<InteractiveMenu>();
 
+#if VR_INTERACTION
             CameraControllerVR.Instance.TeleportAvatar(this.gameObject.scene, new Vector3(-2f, 0f, 0f), null);
-
+#endif
 
             Core.AssetBundlesRef.AudioClipAssetBundleRef.GetItemList(Core.Mono, (allAudio) =>
             {
@@ -144,12 +145,14 @@ namespace Museum
                     var pickup = item.GetVrInteractionFromRoot(MetaDataType.ContentPickUp);
                     if(pickup.Count != 0)
                     {
+#if VR_INTERACTION
                         ReleaseGrip(null, pickup[0].GetComponent<Grabbable>());
                         CameraControllerVR.Instance.HandLeftRef.OnBeforeGrabbed += GrabGrip;
                         CameraControllerVR.Instance.HandRightRef.OnBeforeGrabbed += GrabGrip;
 
                         CameraControllerVR.Instance.HandLeftRef.OnReleased += ReleaseGrip;
                         CameraControllerVR.Instance.HandRightRef.OnReleased += ReleaseGrip;
+#endif
                     }
                 }
             });

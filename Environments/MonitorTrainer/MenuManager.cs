@@ -728,7 +728,10 @@ namespace MonitorTrainer
             if (m_LastTeleport != teleportPosition)
             {
                 m_LastTeleport = teleportPosition;
+
+#if VR_INTERACTION
                 CameraControllerVR.Instance.TeleportAvatar(MenuManager.Instance.gameObject.scene, teleportPosition, null);
+#endif
             }
         }
 
@@ -812,7 +815,7 @@ namespace MonitorTrainer
         }
 
 
-        #region Helpers
+#region Helpers
 
         private void AddBasics(BaseChoice baseItem)
         {
@@ -912,9 +915,9 @@ namespace MonitorTrainer
             }
             verticalData.Init();
         }
-        #endregion Helpers
+#endregion Helpers
 
-        #region Initilise
+#region Initilise
 
         private void InitiliseMainRootScreenData()
         {
@@ -1824,7 +1827,7 @@ namespace MonitorTrainer
             }
         }
 
-        #endregion   Initilise
+#endregion   Initilise
 
 
 
@@ -1936,9 +1939,9 @@ namespace MonitorTrainer
                     break;
             }
 
-            // TOM: Add any setup for specific scenes here
-            //MonitorTrainerRoot.Instance.PlayerChoiceDataRef.CurrentPlayersEnum
+#if VR_INTERACTION
             CameraControllerVR.Instance.TeleportAvatar(PhysicalConsole.Instance.gameObject.scene, currentPlayerData.StartPosition, null);
+#endif
 
         }
 
@@ -2077,7 +2080,7 @@ namespace MonitorTrainer
             }
         }
 
-        #region ScreenChanges
+#region ScreenChanges
 
         private void BackPressed()
         {
@@ -2336,7 +2339,7 @@ namespace MonitorTrainer
         }
 
         private Transform m_LastTeleport = null;
-        #endregion ScreenChanges
+#endregion ScreenChanges
 
 
         private void InitiliseLobbyAndPlayersCallbacks()

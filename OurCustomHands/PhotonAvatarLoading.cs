@@ -71,10 +71,13 @@ namespace Photon.Pun
             m_DebugInfo.SetActive(false);
 
             m_MonoBehaviourPuns = this.GetComponentsInChildren<MonoBehaviourPun>().ToList();
+
+#if VR_INTERACTION && Photon
             if (CameraControllerVR.Instance.NetworkPlayerRef == null && m_PhotonView.IsMine)
             {
                 CameraControllerVR.Instance.NetworkPlayerRef = this;
             }
+#endif
         }
 
 

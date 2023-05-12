@@ -14,7 +14,10 @@ namespace SpaceHulk
         private void InternalInitialise()
         {
             Core.Environment.OnEnvironmentLoadingComplete -= InternalInitialise;
+
+#if VR_INTERACTION
             CameraControllerVR.Instance.TeleportAvatar(this.gameObject.scene, new Vector3(0.7f, 0, 33f), null);
+#endif
 
         }
     }

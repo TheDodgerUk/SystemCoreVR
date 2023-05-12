@@ -1,3 +1,4 @@
+#if VR_INTERACTION
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -36,6 +37,7 @@ public class NetworkPlayerAvatar : OvrAvatarInputManager
     public PhotonTransformView m_AvatarRightHand = null;
 
     private List<Transform> m_Lods = new List<Transform>();
+
     private AutoHandAvatarInputManager m_AutoHandAvatarInputManager;
 
     private List<Collider> m_Colliders = new List<Collider>();
@@ -212,7 +214,7 @@ public class NetworkPlayerAvatar : OvrAvatarInputManager
     }
 
 #if UNITY_EDITOR
-    #region Debug Drawing
+#region Debug Drawing
 
     private void OnSceneGUI(SceneView sceneView)
     {
@@ -254,6 +256,7 @@ public class NetworkPlayerAvatar : OvrAvatarInputManager
             (Vector3)inputTrackingState.rightController.position + forward() * outerRadius());
     }
 
-    #endregion
+#endregion
 #endif // UNITY_EDITOR
 }
+#endif

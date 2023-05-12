@@ -1,3 +1,5 @@
+#if VR_INTERACTION && Photon
+
 using System.Collections.Generic;
 namespace Photon.Pun
 {
@@ -112,3 +114,4 @@ namespace Photon.Pun
     }
 }
 
+#endif

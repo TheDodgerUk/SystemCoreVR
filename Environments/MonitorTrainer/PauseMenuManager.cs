@@ -113,8 +113,9 @@ namespace MonitorTrainer
                 Debug.LogError("m_Button_LeaveGame");
                 MonitorTrainerRoot.Instance.CurrentScenario = ScenarioEnum.Menu;
                 MenuManager.Instance.IsPaused = false;
-
+#if VR_INTERACTION
                 CameraControllerVR.Instance.TeleportAvatar(MenuManager.Instance.gameObject.scene, MenuManager.Instance.m_MenuArea[MonitorTrainerRoot.Instance.PlayerChoiceDataRef.CurrentPlayersEnum].m_Start, null);
+#endif
             });
         }
     }

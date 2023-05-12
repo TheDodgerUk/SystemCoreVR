@@ -1,3 +1,4 @@
+#if VR_INTERACTION && Photon
 using Autohand;
 using System.Collections;
 using System.Collections.Generic;
@@ -137,3 +138,4 @@ public class NetworkAutoHandFingers: MonoBehaviour
         }
     }
 }
+#endif
