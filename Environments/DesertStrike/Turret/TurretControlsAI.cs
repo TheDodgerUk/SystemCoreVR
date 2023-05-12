@@ -23,7 +23,7 @@ public class TurretControlsAI : MonoBehaviour
     private float m_DegreeInY = 0;
     float m_RangeFloat = float.MaxValue;
     FocusRange m_FocusRange;
-    GameManager m_GameManager;
+    GameManagerDesertStrike m_GameManager;
     //----------------------------------------------------------------------------------------------------------	
     void Start()
     {

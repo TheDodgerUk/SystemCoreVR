@@ -626,6 +626,6 @@ public class MyGlobals : MonoBehaviour {
     //------------------------------------------------------------------------------------------------------
     public static GameManager GetGameManager()
     {
-        return MyGlobals.GetBaseParentObject(Camera.main.gameObject).GetComponent<GameManager>();
+        return MyGlobals.GetBaseParentObject(Camera.main.gameObject).GetComponent<GameManagerDesertStrike>();
     }
 }
