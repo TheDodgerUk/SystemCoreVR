@@ -8,9 +8,12 @@ namespace DesertStrike
     public class DesertStrikeRoot : MonoBehaviour
     {
 
+        public static DesertStrikeRoot Instance;
+
         private VrInteraction m_Helicopter;
         public void Initialise()
         {
+            Instance = this;
             Core.Environment.OnEnvironmentLoadingComplete += InternalInitialise;
         }
 

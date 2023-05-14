@@ -623,9 +623,15 @@ public class MyGlobals : MonoBehaviour {
         return lList.ToArray();
     }
 
+
+    private static GameManagerDesertStrike m_GameManagerDesertStrike;
     //------------------------------------------------------------------------------------------------------
-    public static GameManager GetGameManager()
+    public static GameManagerDesertStrike GetGameManager()
     {
-        return MyGlobals.GetBaseParentObject(Camera.main.gameObject).GetComponent<GameManagerDesertStrike>();
+        if(m_GameManagerDesertStrike == null)
+        {
+            m_GameManagerDesertStrike = MyGlobals.GetBaseParentObject(Camera.main.gameObject).GetComponent<GameManagerDesertStrike>();
+        }
+        return m_GameManagerDesertStrike;
     }
 }
