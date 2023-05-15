@@ -24,35 +24,35 @@ public class HelicopterPlayer : HelicopterBase
 
 
 	
-		////if (InputManager.ActiveDevice.Action1.IsPressed)
-		////	m_TerrainFollowing.HeightChange(-1);
+		if (current.bButton.isPressed)
+			m_TerrainFollowing.HeightChange(1);
 
-		////if (InputManager.ActiveDevice.Action2.IsPressed)
-		////	m_TerrainFollowing.HeightChange(1);
-		
-		////if (current.bButton.isPressed)
-		////	ReloadAll();
+        if (current.aButton.isPressed)
+            m_TerrainFollowing.HeightChange(1);
 
-
-  ////      // make triggers into buttons
-		////if (InputManager.ActiveDevice.LeftTrigger.Value >= 0.9f && InputManager.ActiveDevice.LeftTrigger.LastValue < 0.9f)
-  ////      {
-  ////          m_helicopter.SwitchWeaponSystem();
-  ////      }
+        ////if (current.bButton.isPressed)
+        ////	ReloadAll();
 
 
-
-  ////      // make triggers into buttons
-		////if (InputManager.ActiveDevice.RightTrigger.Value >= 0.9f && InputManager.ActiveDevice.RightTrigger.LastValue < 0.9f)
-		////{
-  ////      	m_helicopter.FireWeaponSystem();
-		////}
-
-    
-	}
+        ////      // make triggers into buttons
+        ////if (InputManager.ActiveDevice.LeftTrigger.Value >= 0.9f && InputManager.ActiveDevice.LeftTrigger.LastValue < 0.9f)
+        ////      {
+        ////          m_helicopter.SwitchWeaponSystem();
+        ////      }
 
 
-	void FireGun()
+
+        ////      // make triggers into buttons
+        ////if (InputManager.ActiveDevice.RightTrigger.Value >= 0.9f && InputManager.ActiveDevice.RightTrigger.LastValue < 0.9f)
+        ////{
+        ////      	m_helicopter.FireWeaponSystem();
+        ////}
+
+
+    }
+
+
+    void FireGun()
 	{
 		//if (Mathf.Abs(InputManager.ActiveDevice.RightStickY) < 0.2 && Mathf.Abs(InputManager.ActiveDevice.RightStickX) < 0.2)
 		//	return;

@@ -44,6 +44,7 @@ public class Rotors : MonoBehaviour
         m_rotors = new CRotors[2];
         m_rotors[0] = new CRotors();
         m_rotors[0].m_rotor = this.gameObject.SearchComponent<Transform>(main).gameObject;
+        m_rotors[0].m_direction = EDirection.ROTATE_Y;
 
         m_rotors[1] = new CRotors();
         m_rotors[1].m_rotor = this.gameObject.SearchComponent<Transform>(back).gameObject;
@@ -69,6 +70,10 @@ public class Rotors : MonoBehaviour
     //--------------------------------------------------------------------------------------------------------------------
     void Update () 
     {
+        if (m_rotors == null)
+        {
+            return;
+        }
 
         //-----------------------------------------------------------------------
         //
