@@ -68,6 +68,7 @@ public class HelicopterBase : MonoBehaviour
 
     private Rotors m_Rotors;
     public TerrainFollowing m_TerrainFollowing;
+    public Hover m_Hover;
 
 
     void Awake () 
@@ -79,8 +80,10 @@ public class HelicopterBase : MonoBehaviour
         m_Fuel = this.gameObject.ForceComponent<Fuel>();
         m_TerrainFollowing = this.AddComponent<TerrainFollowing>();
 
-        m_Rotors = m_pivotPoint.AddComponent<Rotors>();     
-        m_Rotors.Initilise("SM_Veh_Helicopter_Attack_01_Blades_Main", "SM_Veh_Helicopter_Attack_01_Blades_Back");     
+        m_Rotors = this.AddComponent<Rotors>();     
+        m_Rotors.Initilise("SM_Veh_Helicopter_Attack_01_Blades_Main", "SM_Veh_Helicopter_Attack_01_Blades_Back");
+
+        m_Hover = this.AddComponent<Hover>();
     }
 
     //
