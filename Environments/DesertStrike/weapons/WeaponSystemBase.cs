@@ -51,18 +51,18 @@ abstract public class WeaponSystemBase : MonoBehaviour
 	{
 		public GameObject   	m_projectile;
 		public int  m_ammoMax = 100;
-		public bool m_ammoInfinite = false;
+		public bool m_ammoInfinite = true;
 		[HideInInspector]
 		public int  m_ammoCurrent = 0;
 		
 	};
-	
-	
-	
-	
-	public Ammo 			 m_ammo;
+
+
+
+
+	public Ammo m_ammo = new Ammo();
 	public FireType          m_fireType;
-	public Delay             m_delay;
+	public Delay m_delay = new Delay();
 	
 	
 	protected FireAtType       m_fireAtType = FireAtType.Forward;
@@ -74,8 +74,8 @@ abstract public class WeaponSystemBase : MonoBehaviour
 		public AudioClip m_weaponEmptySound;
 		
 	};
-	
-	public Sounds m_sounds;
+
+	public Sounds m_sounds = new Sounds();
 
 	protected Vector3   	m_fireTypeDirection;
 	protected Vector3   	m_fireTypePosition;
@@ -88,10 +88,19 @@ abstract public class WeaponSystemBase : MonoBehaviour
 	abstract public      void ReloadAmmo();
 	abstract protected   bool FireWeapon();
 	
-	
+
+	public void Initilise(string point)
+    {
+		m_weaponPoints = new WeaponPoints[1];
+
+		var trans = this.gameObject.SearchComponent<Transform>("SM_Veh_Helicopter_Attack_01_Gun_Horizontal");
+		m_weaponPoints[0] = new WeaponPoints();
+		m_weaponPoints[0].m_weaponPoint = trans.gameObject;
+    }
+
 	void Awake()
 	{
-		if (m_ammo.m_projectile == null)
+		if (m_ammo == null || m_ammo.m_projectile == null)
 		{
 			Debug.LogError(" m_projectile has not been set on:" + gameObject);
 		}

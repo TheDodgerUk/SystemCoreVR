@@ -28,7 +28,7 @@ public class HelicopterPlayer : HelicopterBase
 			m_TerrainFollowing.HeightChange(1);
 
         if (current.aButton.isPressed)
-            m_TerrainFollowing.HeightChange(1);
+            m_TerrainFollowing.HeightChange(-1);
 
         ////if (current.bButton.isPressed)
         ////	ReloadAll();

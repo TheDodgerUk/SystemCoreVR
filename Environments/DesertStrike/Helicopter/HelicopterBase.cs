@@ -6,7 +6,7 @@ public class HelicopterBase : MonoBehaviour
     Fuel m_Fuel;
 
     public Transform m_pivotPoint;
-    public WeaponSystemBase m_gun;
+    public WeaponSystemInstantGun m_gun;
     public float m_gunRange = 100;
 	public WeaponSystemBase m_rocket;
 	public WeaponSystemBase m_hellfire;
@@ -80,8 +80,12 @@ public class HelicopterBase : MonoBehaviour
         m_Fuel = this.gameObject.ForceComponent<Fuel>();
         m_TerrainFollowing = this.AddComponent<TerrainFollowing>();
 
-        m_Rotors = this.AddComponent<Rotors>();     
+        m_Rotors = this.AddComponent<Rotors>();
         m_Rotors.Initilise("SM_Veh_Helicopter_Attack_01_Blades_Main", "SM_Veh_Helicopter_Attack_01_Blades_Back");
+
+        m_gun = this.AddComponent<WeaponSystemInstantGun>();
+        m_gun.Initilise("SM_Veh_Helicopter_Attack_01_Gun_Horizontal");
+
 
         m_Hover = this.AddComponent<Hover>();
     }

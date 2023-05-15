@@ -9,7 +9,7 @@ public class WeaponSystemInstantGun : WeaponSystemBase
 		public bool  m_useRestriction = false;
 		public float m_angle          = 110.0f;
 	}
-	public RestrictAngle m_restrictAngle;
+	public RestrictAngle m_restrictAngle = new RestrictAngle();
 
 
 
@@ -26,7 +26,11 @@ public class WeaponSystemInstantGun : WeaponSystemBase
 			Debug.LogError("need projectile " + gameObject);
 			Debug.Break();
 		}
-		m_projectileInstant = m_ammo.m_projectile.GetComponent<Projectile>();
+
+		if (m_ammo != null && m_ammo.m_projectile != null)
+		{
+			m_projectileInstant = m_ammo.m_projectile.GetComponent<Projectile>();
+		}
 	}
 
 
@@ -103,13 +107,15 @@ public class WeaponSystemInstantGun : WeaponSystemBase
 			impactObject = hitDirect.collider.gameObject;
 		}
 
-		
 
 
-		
 
 
-		m_projectileInstant.ImpactBehaviour(impactObject, hitPoint, hitNormal, Quaternion.Euler(m_fireTypePosition - hitPoint));
+
+		if (m_projectileInstant != null)
+		{
+			m_projectileInstant.ImpactBehaviour(impactObject, hitPoint, hitNormal, Quaternion.Euler(m_fireTypePosition - hitPoint));
+		}
 		return true;
 	}
 }

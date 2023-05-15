@@ -8,6 +8,8 @@ public class TerrainFollowing : MonoBehaviour
     float m_AngleOfMaxAngleForCheck = 45;
     float m_HeightChangeSpeedMax    = 2;
     GameObject m_tempGameObject;
+
+    Hover m_Hover;
     //---------------------------------------------------------------------------------------------------------
     void Start()
     {
@@ -16,6 +18,8 @@ public class TerrainFollowing : MonoBehaviour
         m_tempGameObject.transform.localPosition = Vector3.zero;
         m_tempGameObject.transform.localRotation = Quaternion.identity;
         m_tempGameObject.transform.localPosition += (this.transform.forward * 10); // this  just makes it more promentnet
+
+        m_Hover = GetComponent<Hover>();
     }
 
     //---------------------------------------------------------------------------------------------------------
@@ -29,7 +33,7 @@ public class TerrainFollowing : MonoBehaviour
 
         //  finds the correct position  with the hover NOT included
         Vector3 raycastPosition = this.transform.position;
-        raycastPosition.y -= GetComponent<Hover>().GetOffset();
+        raycastPosition.y -= m_Hover.GetOffset();
 
         // raycast it 
         RaycastHit hit;
