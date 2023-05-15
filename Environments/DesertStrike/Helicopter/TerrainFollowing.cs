@@ -23,7 +23,7 @@ public class TerrainFollowing : MonoBehaviour
     {
         m_tempGameObject.transform.LookAt(this.transform.forward * 10);
 
-        float rotateAmount = GetComponent<HelicopterControls>().GetSpeedPercentage() * m_AngleOfMaxAngleForCheck; // figures aout the correct angle
+        float rotateAmount = GetComponent<HelicopterBase>().GetSpeedPercentage() * m_AngleOfMaxAngleForCheck; // figures aout the correct angle
         m_tempGameObject.transform.Rotate(90 - rotateAmount, 0, 0);
 
 

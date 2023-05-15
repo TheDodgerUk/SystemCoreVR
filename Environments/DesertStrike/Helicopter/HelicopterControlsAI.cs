@@ -3,14 +3,15 @@ using UnityEngine;
 using System.Collections;
 
 
-public class HelicopterControlsAI : ControlsAI {
+public class HelicopterControlsAI : HelicopterBase
+{
 
     const float   m_LANDING_SPEED = 0.5f;
 
     GameObject    m_WaypointObject;
 	public  float m_slowDownAtRange = 100;   
 
-	private HelicopterControls m_helicopter;
+	private HelicopterBase m_helicopter;
 	private TerrainFollowing   m_TerrainFollowing;
 	private float              m_currentAngleToTarget;
     private WayPoints          m_WayPoints;
@@ -22,12 +23,12 @@ public class HelicopterControlsAI : ControlsAI {
 
 	void Awake () 
 	{
-		m_helicopter       = GetComponent<HelicopterControls>();
-		m_TerrainFollowing = GetComponent<TerrainFollowing>();
-        m_WayPoints        = GetComponentInChildren<WayPoints>();
-        m_SafePlace        = GetComponent<SafePlace>();
-        m_Hover            = GetComponent<Hover>();
-        m_Landing          = GetComponentInChildren<Landing>();
+		m_helicopter       = this.gameObject.ForceComponent<HelicopterBase>();
+		m_TerrainFollowing = this.gameObject.ForceComponent<TerrainFollowing>();
+        m_WayPoints        = this.gameObject.ForceComponent<WayPoints>();
+        m_SafePlace        = this.gameObject.ForceComponent<SafePlace>();
+        m_Hover            = this.gameObject.ForceComponent<Hover>();
+        m_Landing          = this.gameObject.ForceComponent<Landing>();
 
     }
 

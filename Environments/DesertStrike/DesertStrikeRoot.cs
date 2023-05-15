@@ -13,6 +13,7 @@ namespace DesertStrike
         private VrInteraction m_Helicopter;
         public void Initialise()
         {
+            Debug.LogError("DesertStrikeRoot Initialise");
             Instance = this;
             Core.Environment.OnEnvironmentLoadingComplete += InternalInitialise;
         }
@@ -21,6 +22,8 @@ namespace DesertStrike
         {
             Core.Environment.OnEnvironmentLoadingComplete -= InternalInitialise;
             m_Helicopter = Core.Scene.GetSpawnedVrInteractionGUID("857fb936-33a1-423e-bb46-5c70fb7b8be9")[0];
+            m_Helicopter.AddComponent<HelicopterPlayer>();
+            Debug.LogError("m_Helicopter", m_Helicopter.gameObject);
         }
     }
 }

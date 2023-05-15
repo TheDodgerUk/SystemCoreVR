@@ -1,7 +1,8 @@
 using UnityEngine;
 using System.Collections;
 
-public class Rotors : MonoBehaviour {
+public class Rotors : MonoBehaviour 
+{
 
     float m_RotorSpeedSlowDown = 200;
 
@@ -35,9 +36,17 @@ public class Rotors : MonoBehaviour {
     public CRotors[] m_rotors;
     private RotorState m_RotorState = RotorState.Constant;
     Vector3 m_rotationDirection;
-	// Use this for initialization
-	void Start() 
+    // Use this for initialization
+
+
+    public void Initilise(string main, string back)
     {
+        m_rotors = new CRotors[2];
+        m_rotors[0] = new CRotors();
+        m_rotors[0].m_rotor = this.gameObject.SearchComponent<Transform>(main).gameObject;
+
+        m_rotors[1] = new CRotors();
+        m_rotors[1].m_rotor = this.gameObject.SearchComponent<Transform>(back).gameObject;
 
         for (int i = 0 ; i < m_rotors.Length ; i++)
         {

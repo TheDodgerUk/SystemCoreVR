@@ -24,7 +24,8 @@ public class Fuel : MonoBehaviour
     void Awake()
     {
         m_CurrentAmount     = m_MaxAmount;
-        m_FloatingBarScipt  = m_FloatingBarObject.GetComponent<FloatingBar>();
+        
+       // m_FloatingBarScipt  = m_FloatingBarObject.GetComponent<FloatingBar>();
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------
@@ -63,11 +64,11 @@ public class Fuel : MonoBehaviour
     //------------------------------------------------------------------------------------------------------------------------------------
     void Update()
     {
-        RemoveAmount(Time.deltaTime * m_StandardFuelUsedAmount);
-        RemoveAmount(Time.deltaTime * Mathf.Abs(m_SpeedPercentage1));
-        if (m_CurrentAmount <= 0)
+        //RemoveAmount(Time.deltaTime * m_StandardFuelUsedAmount);
+        //RemoveAmount(Time.deltaTime * Mathf.Abs(m_SpeedPercentage1));
+       // if (m_CurrentAmount <= 0)
         {
-            this.GetComponent<DeathScriptRandomiser>().StartRandomDeathScript();
+       //     this.GetComponent<DeathScriptRandomiser>().StartRandomDeathScript();
         }
     }
 }

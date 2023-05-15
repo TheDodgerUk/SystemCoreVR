@@ -33,7 +33,7 @@ public class Landing : MonoBehaviour
     {
 
         List<System.Type> lList = new List<System.Type>();
-        lList.Add(typeof(HelicopterControls));
+        lList.Add(typeof(HelicopterBase));
         lList.Add(typeof(HelicopterControlsAI));
         lList.Add(typeof(Hover));
         lList.Add(typeof(TerrainFollowing));

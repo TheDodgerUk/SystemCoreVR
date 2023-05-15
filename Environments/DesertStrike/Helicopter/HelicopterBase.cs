@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class HelicopterControls : MonoBehaviour
+public class HelicopterBase : MonoBehaviour
 {
     Fuel m_Fuel;
 
@@ -20,8 +20,8 @@ public class HelicopterControls : MonoBehaviour
         public float m_drag = 0.99f;
         [HideInInspector]
         public float m_pitchCurrent = 0;
-    } 
-    public CPitch m_pitch;
+    }
+    public CPitch m_pitch = new CPitch();
 
     [System.Serializable]
     public class CTilt
@@ -36,7 +36,7 @@ public class HelicopterControls : MonoBehaviour
         public float m_rotationAmount = 0;
 
     }
-    public CTilt m_tilt;
+    public CTilt m_tilt = new CTilt();
 
 
 
@@ -51,8 +51,10 @@ public class HelicopterControls : MonoBehaviour
         //[HideInInspector]
         public float m_speedForwardCurrent = 0;
     }
-    public CSpeed m_speed;
+    public CSpeed m_speed = new CSpeed();
     private float m_hoverOffSet;
+
+    private TerrainFollowing m_TerrainFollowing;
 
     public enum WeaponSystemChoice
     {
@@ -65,15 +67,23 @@ public class HelicopterControls : MonoBehaviour
 
     public WeaponSystemChoice m_weaponSystemChoice = WeaponSystemChoice.Hellfire;
 
+    private Rotors m_RotorsTop;
+    private Rotors m_RotorsBack;
 
 
-	void Awake () 
+    void Awake () 
     {
+        m_pivotPoint = this.gameObject.SearchComponent<Transform>("RootModel");
+
         if (!m_pivotPoint)
             Debug.LogError("please attach pivot point");
         m_pitch.m_pitchCurrent = 0;
 
-        m_Fuel = GetComponentInChildren<Fuel>();
+        m_Fuel = this.gameObject.ForceComponent<Fuel>();
+
+        m_RotorsTop = this.gameObject.SearchComponent<Transform>("SM_Veh_Helicopter_Attack_01_Blades_Main").AddComponent<Rotors>();
+
+        m_RotorsBack = this.gameObject.SearchComponent<Transform>("SM_Veh_Helicopter_Attack_01_Blades_Back").AddComponent<Rotors>();
     }
 
     //

@@ -11,11 +11,11 @@ public class Hover : MonoBehaviour {
     private float m_tiltMulitplyer;
     private float m_offSet;
 
-    private HelicopterControls m_helicopterControls;
+    private HelicopterBase m_helicopterControls;
 	// Use this for initialization
 	void Start () 
     {
-        m_helicopterControls = this.GetComponent<HelicopterControls>();
+        m_helicopterControls = this.GetComponent<HelicopterBase>();
         m_maxAmount          = m_helicopterControls.m_speed.m_speedForwardMax + m_helicopterControls.m_tilt.m_tiltMax;
         m_tiltMulitplyer     = m_helicopterControls.m_speed.m_speedForwardMax / m_helicopterControls.m_tilt.m_tiltMax;
         
