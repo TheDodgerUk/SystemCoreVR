@@ -54,8 +54,15 @@ public class HelicopterPlayer : HelicopterBase
 
     void FireGun()
 	{
-		//if (Mathf.Abs(InputManager.ActiveDevice.RightStickY) < 0.2 && Mathf.Abs(InputManager.ActiveDevice.RightStickX) < 0.2)
-		//	return;
+		var current = Gamepad.current;
+		if(current == null)
+        {
+			return;
+        }
+
+		Vector2 stick = current.rightStick.ReadValue();
+		if (Mathf.Abs(stick.x) < 0.2 && Mathf.Abs(stick.y) < 0.2)
+			return;
 
 		// fire gun relative to the camera
 		Vector3 cameraDirectionForward = Camera.main.transform.forward;
@@ -66,9 +73,9 @@ public class HelicopterPlayer : HelicopterBase
 		cameraDirectionRight.y = 0;
 
 		
-		//Vector3 firingDirection = (cameraDirectionRight * InputManager.ActiveDevice.RightStickX) + (cameraDirectionForward * InputManager.ActiveDevice.RightStickY);
+		Vector3 firingDirection = (cameraDirectionRight * stick.x) + (cameraDirectionForward * stick.y);
 
 
-		//m_helicopter.FireGun(firingDirection.x , firingDirection.z );
+		FireGun(firingDirection.x , firingDirection.z );
 	}
 }
