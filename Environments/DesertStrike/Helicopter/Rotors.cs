@@ -23,8 +23,8 @@ public class Rotors : MonoBehaviour
     public class CRotors
     {
         public GameObject  m_rotor;
-        public float       m_rotorSpeed = 3000;
-        public float       m_rotorSpeedMax = 4000;
+        public float       m_rotorSpeed = 5000;
+        public float       m_rotorSpeedMax = 6000;
         public float       m_maxPitch = 2;
         public float       m_volume = 2;
         public EDirection  m_direction  = EDirection.ROTATE_X;
