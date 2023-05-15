@@ -85,7 +85,16 @@ public class WeaponSystemInstantGun : WeaponSystemBase
 
 		// get terrain impact point 
 		Vector3 terrainImpactPoint = m_fireTypePosition + ( firingDirection * gunRange);
-		terrainImpactPoint.y       = Terrain.activeTerrain.SampleHeight(terrainImpactPoint);
+
+		if(Terrain.activeTerrain != null)
+        {
+			terrainImpactPoint.y = Terrain.activeTerrain.SampleHeight(terrainImpactPoint);
+		}
+		else
+        {
+			Debug.LogError("Terrain.activeTerrain == null");
+		}
+
 
 
 		// ray cast to terrain 

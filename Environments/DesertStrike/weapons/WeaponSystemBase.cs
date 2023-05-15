@@ -195,14 +195,14 @@ abstract public class WeaponSystemBase : MonoBehaviour
 	}
 	
 	//------------------------------------------------------
-	private void m_checkFireAndFire()
+	private void CheckFireAndFire()
 	{
-		if (GetHasEnoughTimePassed())
+		if (GetHasEnoughTimePassed() == true)
 		{
-			if (GetHasEnoughAmmo())
+			if (GetHasEnoughAmmo() == true)
 			{
 				// fire script
-				if(!FireWeapon())
+				if(FireWeapon() == false)
 					return;
 				
 				// play any animations associated
@@ -252,8 +252,10 @@ abstract public class WeaponSystemBase : MonoBehaviour
 			else // has no ammo
 			{
 				//assign audioClip
-				if(m_sounds.m_weaponEmptySound)
+				if (m_sounds.m_weaponEmptySound != null)
+				{
 					AudioSource.PlayClipAtPoint(m_sounds.m_weaponEmptySound, m_weaponPoints[m_weaponPointCurrent].m_weaponPoint.transform.position);
+				}
 			}
 			
 			
@@ -267,14 +269,14 @@ abstract public class WeaponSystemBase : MonoBehaviour
 	public virtual void Fire()
 	{
 		m_fireAtType = FireAtType.Forward;
-		m_checkFireAndFire();		
+		CheckFireAndFire();		
 	}
 	
 	public virtual void FireAtPosition(Vector3 position)
 	{
 		m_fireTypePosition = position;
 		m_fireAtType      = FireAtType.Position;
-		m_checkFireAndFire();
+		CheckFireAndFire();
 	}
 
 
@@ -283,7 +285,7 @@ abstract public class WeaponSystemBase : MonoBehaviour
 	{
 		m_fireTypeDirection = direction;
 		m_fireAtType      = FireAtType.Direction;
-		m_checkFireAndFire();
+		CheckFireAndFire();
 	}
 
 	public virtual void FireAtDirectionAndPosition(Vector3 direction, Vector3 position)
@@ -291,14 +293,14 @@ abstract public class WeaponSystemBase : MonoBehaviour
 		m_fireTypeDirection = direction;
 		m_fireTypePosition  = position;
 		m_fireAtType        = FireAtType.DirectionAndPosition;
-		m_checkFireAndFire();
+		CheckFireAndFire();
 	}
 
 	public virtual void FireAtGameObject(GameObject passedGameObject)
 	{
 		m_fireTypeObject = passedGameObject;
 		m_fireAtType     = FireAtType.Object;
-		m_checkFireAndFire();
+		CheckFireAndFire();
 	}
 	
 	public virtual void FireAtGameObject(GameObject passedGameObject,Vector3 position, Quaternion quaternion)
@@ -307,7 +309,7 @@ abstract public class WeaponSystemBase : MonoBehaviour
 		m_fireTypePosition   = position;
 		m_fireTypeQuaternion = quaternion;
 		m_fireAtType         = FireAtType.Object;
-		m_checkFireAndFire();
+		CheckFireAndFire();
 	}
 	
 	public virtual void FireAtCollider(Collider passedCollider, Vector3 position, Quaternion quaternion)
@@ -316,7 +318,7 @@ abstract public class WeaponSystemBase : MonoBehaviour
 		m_fireTypePosition   = position;
 		m_fireTypeQuaternion = quaternion;
 		m_fireAtType         = FireAtType.Collider;
-		m_checkFireAndFire();
+		CheckFireAndFire();
 	}
 	
 	

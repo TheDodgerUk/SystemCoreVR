@@ -210,7 +210,10 @@ public class HelicopterBase : MonoBehaviour
     //
     public void FireGun(float amountX, float amountY)
     {
-		m_gun.FireAtDirectionAndPosition(new Vector3(amountX, amountY, m_gunRange), m_gun.m_weaponPoints[0].m_weaponPoint.transform.position); // using spare z for gunrange
+        m_gun.m_weaponPoints[0].m_weaponPoint.transform.LookAt(new Vector3(amountX, 0, amountY));
+        m_gun.m_weaponPoints[0].m_weaponPoint.transform.ForwardFlat();
+
+        m_gun.FireAtDirectionAndPosition(new Vector3(amountX, amountY, m_gunRange), m_gun.m_weaponPoints[0].m_weaponPoint.transform.position); // using spare z for gunrange
     }
 
     //-------------------------------------------------------------------------------------------------------------------------------
