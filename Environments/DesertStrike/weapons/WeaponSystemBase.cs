@@ -87,7 +87,9 @@ abstract public class WeaponSystemBase : MonoBehaviour
 	
 	abstract public      void ReloadAmmo();
 	abstract protected   bool FireWeapon();
-	
+
+	private Animation m_Animation;
+
 
 	public void Initilise(string point)
     {
@@ -96,7 +98,9 @@ abstract public class WeaponSystemBase : MonoBehaviour
 		var trans = this.gameObject.SearchComponent<Transform>("SM_Veh_Helicopter_Attack_01_Gun_Horizontal");
 		m_weaponPoints[0] = new WeaponPoints();
 		m_weaponPoints[0].m_weaponPoint = trans.gameObject;
-    }
+		m_Animation = this.GetComponent<Animation>();
+
+	}
 
 	void Awake()
 	{
@@ -114,10 +118,10 @@ abstract public class WeaponSystemBase : MonoBehaviour
 		{
 		case FireType.OneAfterAnother:
 		{
-			if ( m_weaponPoints[m_weaponPointCurrent].m_animationName != string.Empty)
+			if (string.IsNullOrEmpty(m_weaponPoints[m_weaponPointCurrent].m_animationName) == false)
 			{
 				Debug.LogError("animation: " + m_weaponPoints[m_weaponPointCurrent].m_animationName);
-				GetComponent<Animation>().Play(m_weaponPoints[m_weaponPointCurrent].m_animationName);
+				m_Animation.Play(m_weaponPoints[m_weaponPointCurrent].m_animationName);
 			}
 		}
 			break;
@@ -128,7 +132,7 @@ abstract public class WeaponSystemBase : MonoBehaviour
 				if ( m_weaponPoints[i].m_animationName != string.Empty)
 				{
 					Debug.LogError("animation: " + m_weaponPoints[i].m_animationName);
-					GetComponent<Animation>().Play(m_weaponPoints[i].m_animationName);
+					m_Animation.Play(m_weaponPoints[i].m_animationName);
 				}
 			}
 		}

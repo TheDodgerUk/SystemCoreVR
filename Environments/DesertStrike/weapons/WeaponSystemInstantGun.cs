@@ -113,7 +113,10 @@ public class WeaponSystemInstantGun : WeaponSystemBase
 		{
 			hitPoint  = hitDirect.point;
 			hitNormal = hitDirect.normal;
-			impactObject = hitDirect.collider.gameObject;
+			if (hitDirect.collider != null)
+			{
+				impactObject = hitDirect.collider.gameObject;
+			}
 		}
 
 
