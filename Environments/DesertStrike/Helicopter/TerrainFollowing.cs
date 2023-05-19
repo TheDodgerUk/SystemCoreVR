@@ -8,6 +8,7 @@ public class TerrainFollowing : MonoBehaviour
     float m_AngleOfMaxAngleForCheck = 45;
     float m_HeightChangeSpeedMax    = 2;
     GameObject m_tempGameObject;
+    HelicopterBase m_HelicopterBase;
 
     Hover m_Hover;
     //---------------------------------------------------------------------------------------------------------
@@ -20,6 +21,7 @@ public class TerrainFollowing : MonoBehaviour
         m_tempGameObject.transform.localPosition += (this.transform.forward * 10); // this  just makes it more promentnet
 
         m_Hover = GetComponent<Hover>();
+        m_HelicopterBase = GetComponent<HelicopterBase>(); 
     }
 
     //---------------------------------------------------------------------------------------------------------
@@ -27,7 +29,7 @@ public class TerrainFollowing : MonoBehaviour
     {
         m_tempGameObject.transform.LookAt(this.transform.forward * 10);
 
-        float rotateAmount = GetComponent<HelicopterBase>().GetSpeedPercentage() * m_AngleOfMaxAngleForCheck; // figures aout the correct angle
+        float rotateAmount = m_HelicopterBase.GetSpeedPercentage() * m_AngleOfMaxAngleForCheck; // figures aout the correct angle
         m_tempGameObject.transform.Rotate(90 - rotateAmount, 0, 0);
 
 
