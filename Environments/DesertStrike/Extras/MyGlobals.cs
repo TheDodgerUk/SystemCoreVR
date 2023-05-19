@@ -467,7 +467,7 @@ public class MyGlobals : MonoBehaviour {
         {
             EditorUtility.DisplayDialog("Invalid:" + lName, "Invalid:" + lName, "OK");
             Debug.LogError("Invalid:" + lName);
-            Debug.Break();
+
         }
 #endif
 

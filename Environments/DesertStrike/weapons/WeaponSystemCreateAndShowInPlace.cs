@@ -127,7 +127,6 @@ public class WeaponSystemCreateAndShowInPlace : WeaponSystemBase
 			
 		default: 
 			Debug.LogError("not here"); 
-			Debug.Break(); 
 			break;
 		}
 

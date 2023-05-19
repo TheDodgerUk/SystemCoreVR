@@ -24,7 +24,6 @@ public class WeaponSystemInstantGun : WeaponSystemBase
 		if( m_ammo.m_projectile == null)
 		{
 			Debug.LogError("need projectile " + gameObject);
-			Debug.Break();
 		}
 
 		if (m_ammo != null && m_ammo.m_projectile != null)

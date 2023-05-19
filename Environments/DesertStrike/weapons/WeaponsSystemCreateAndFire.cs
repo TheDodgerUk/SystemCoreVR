@@ -41,7 +41,6 @@ public class WeaponsSystemCreateAndFire : WeaponSystemBase {
 			
 		default: 
 			Debug.LogError("not here"); 
-			Debug.Break(); 
 			break;
 		}
 		return true;

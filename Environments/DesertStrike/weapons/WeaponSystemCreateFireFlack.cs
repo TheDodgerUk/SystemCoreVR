@@ -55,7 +55,6 @@ public class WeaponSystemCreateFireFlack : WeaponSystemBase
 			
 		default: 
 			Debug.LogError("not here"); 
-			Debug.Break(); 
 			break;
 		}
 		return true;
