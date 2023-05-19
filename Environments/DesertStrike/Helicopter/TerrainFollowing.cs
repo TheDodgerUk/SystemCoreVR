@@ -50,13 +50,14 @@ public class TerrainFollowing : MonoBehaviour
             return;
         }
 
+        var translateAmount = m_HeightChangeSpeedMax * Time.deltaTime;
         if (groundDistanceRelativeHeight > m_TerrainFollowingHeight)
         {
-            this.transform.Translate(0, -m_HeightChangeSpeedMax * Time.deltaTime, 0, Space.World);
+            this.transform.Translate(0, -translateAmount, 0, Space.World);
         }
         else
         {
-            this.transform.Translate(0, m_HeightChangeSpeedMax * Time.deltaTime, 0, Space.World);
+            this.transform.Translate(0, translateAmount, 0, Space.World);
         }
     }
 
