@@ -115,17 +115,24 @@ namespace MonitorTrainer
 			string combined = CreateSongName(songName, difficultyEnum);
 			combined = combined.Replace(" ", "_");
 
-			switch (leaderboardEnum)
-            {
-                case LeaderboardEnum.Global:
-					Oculus.Platform.Leaderboards.GetEntries(combined, TOP_N_COUNT, Oculus.Platform.LeaderboardFilterType.None, Oculus.Platform.LeaderboardStartAt.Top).OnComplete((data) => HighestScoreGetEntriesCallback(data, combined));
-					break;
-                case LeaderboardEnum.Friend:
-					Oculus.Platform.Leaderboards.GetEntries(combined, TOP_N_COUNT, Oculus.Platform.LeaderboardFilterType.Friends, Oculus.Platform.LeaderboardStartAt.Top).OnComplete((data) => HighestScoreFriendsGetEntriesCallback(data, combined));
-					break;
-                default:
-                    break;
-            }
+			try
+			{
+				switch (leaderboardEnum)
+				{
+					case LeaderboardEnum.Global:
+						Oculus.Platform.Leaderboards.GetEntries(combined, TOP_N_COUNT, Oculus.Platform.LeaderboardFilterType.None, Oculus.Platform.LeaderboardStartAt.Top).OnComplete((data) => HighestScoreGetEntriesCallback(data, combined));
+						break;
+					case LeaderboardEnum.Friend:
+						Oculus.Platform.Leaderboards.GetEntries(combined, TOP_N_COUNT, Oculus.Platform.LeaderboardFilterType.Friends, Oculus.Platform.LeaderboardStartAt.Top).OnComplete((data) => HighestScoreFriendsGetEntriesCallback(data, combined));
+						break;
+					default:
+						break;
+				}
+			}
+			catch (Exception e) 
+			{
+				Debug.LogError($"exception {e.Message}");
+			}
 		}
 
 

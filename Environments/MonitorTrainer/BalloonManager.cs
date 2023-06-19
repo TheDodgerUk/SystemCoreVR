@@ -25,6 +25,8 @@ namespace MonitorTrainer
 
         public void Initialise()
         {
+            Debug.LogError("no longer used");
+            return;
             Instance = this;
             m_BalloonPrefab = transform.Find("Balloon").gameObject;
             m_BalloonPrefab.ForceComponent<Balloon>();
@@ -132,21 +134,28 @@ namespace MonitorTrainer
 
         private void SetupBackgroundParticleEffects()
         {
-            var flashRoot = GameObject.Find("FlashEffect").transform;
-            var balloonRoot = GameObject.Find("BackgroundBalloonParticleEffect").transform;
-
-            for (int i = 0; i < flashRoot.childCount; ++i)
+            try
             {
-                ParticleSystem particleeffect = flashRoot.GetChild(i).GetComponent<ParticleSystem>();
-                particleeffect.Stop();
-                m_BackgroundParticleSystems.Add(particleeffect);
-            }
+                var flashRoot = GameObject.Find("FlashEffect").transform;
+                var balloonRoot = GameObject.Find("BackgroundBalloonParticleEffect").transform;
 
-            for (int i = 0; i < balloonRoot.childCount; ++i)
+                for (int i = 0; i < flashRoot.childCount; ++i)
+                {
+                    ParticleSystem particleeffect = flashRoot.GetChild(i).GetComponent<ParticleSystem>();
+                    particleeffect.Stop();
+                    m_BackgroundParticleSystems.Add(particleeffect);
+                }
+
+                for (int i = 0; i < balloonRoot.childCount; ++i)
+                {
+                    ParticleSystem particleEffect = balloonRoot.GetChild(i).GetComponent<ParticleSystem>();
+                    particleEffect.Stop();
+                    m_BackgroundParticleSystems.Add(particleEffect);
+                }
+            } 
+            catch(Exception ex) 
             {
-                ParticleSystem particleEffect = balloonRoot.GetChild(i).GetComponent<ParticleSystem>();
-                particleEffect.Stop();
-                m_BackgroundParticleSystems.Add(particleEffect);
+                Debug.LogError("SetupBackgroundParticleEffects failed");
             }
         }
 

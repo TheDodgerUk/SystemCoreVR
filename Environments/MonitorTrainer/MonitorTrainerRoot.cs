@@ -39,7 +39,7 @@ namespace MonitorTrainer
                     CrowdAndGenericRockSoundManager.Instance.ChangeToScenario(CurrentScenario);
                     m_ConsoleScreenManager.ChangeToScenario(CurrentScenario);
                     PhoneManager.Instance.ChangeToScenario(CurrentScenario);
-                    BalloonManager.Instance.ChangeToScenario(CurrentScenario);
+                    // no longer neededd   BalloonManager.Instance.ChangeToScenario(CurrentScenario);
                     PhysicalConsole.Instance.ChangeToScenario(CurrentScenario);
                     ////StageLightManager.Instance.ChangeToScenario(CurrentScenario);
                     BandManager.Instance.ChangeToScenario(CurrentScenario);

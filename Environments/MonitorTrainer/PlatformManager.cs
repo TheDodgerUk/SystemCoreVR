@@ -42,7 +42,7 @@ namespace MonitorTrainer
             m_achievements = new AchievementsManager();
 
 #if UNITY_EDITOR
-            Core.Initialize(m_myID.ToString());
+            Core.Initialize();
             Debug.LogError($"Using hardcoded for EDITOR, user: {m_myOculusID} and app : {m_myID}");
 #else
             Core.Initialize(); // needed other wise it not work in head set , even if m_myID is null;

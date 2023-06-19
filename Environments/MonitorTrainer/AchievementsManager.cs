@@ -85,7 +85,14 @@ namespace MonitorTrainer
                 Debug.LogError($"Core.IsInitialized()  {Oculus.Platform.Core.IsInitialized()}");
             }
             Debug.LogError($"CheckForAchievmentUpdates PlatformManager.MyID {PlatformManager.MyID}   MyOculusID :{PlatformManager.MyOculusID}");
-            Oculus.Platform.Achievements.GetAllProgress().OnComplete(InteranlCheckForAchievmentUpdates);
+            try
+            {
+                Oculus.Platform.Achievements.GetAllProgress().OnComplete(InteranlCheckForAchievmentUpdates);
+            }
+            catch (Exception e) 
+            {
+                Debug.LogError($"Error CheckForAchievmentUpdates {e.Message}");
+            }
         }
 
 

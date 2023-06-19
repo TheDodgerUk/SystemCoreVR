@@ -29,7 +29,15 @@ namespace Oculus.Platform
         throw new UnityException("AppID must not be null or empty");
       }
 
-      CAPI.ovr_UnityInitWrapperWindows(appId, getCallbackPointer());
+            try
+            {
+                CAPI.ovr_UnityInitWrapperWindows(appId, getCallbackPointer());
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Initialize {e.Message}");
+                return false;
+            }
       return true;
     }
 
