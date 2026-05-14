@@ -105,7 +105,7 @@ public class Projectile : MonoBehaviour
     {
         if (m_Velocity != 0)
         {
-            this.GetComponent<Rigidbody>().velocity = this.gameObject.transform.forward * m_Velocity; // move with constant amount
+            this.GetComponent<Rigidbody>().linearVelocity = this.gameObject.transform.forward * m_Velocity; // move with constant amount
         }
 
 

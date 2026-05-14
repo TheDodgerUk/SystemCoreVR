@@ -394,7 +394,7 @@ namespace MonitorTrainer
             public List<CharacterDataClass> BandMembers = new List<CharacterDataClass>();
         };
 
-        [SerializeField]
+        [System.Serializable]
         public class PlayerChoiceData
         {
             public string CurrentSongChoiceName  = "Better Of Alone";
@@ -410,7 +410,7 @@ namespace MonitorTrainer
         }
 
 
-        [SerializeField]
+        [System.Serializable]
         public class LocalPlayerData
         {
             public const string PLAYER_PREFS_DATA = "MonitorTrainer_PLAYER_PREFS_DATA";
@@ -703,7 +703,7 @@ namespace MonitorTrainer
 
         }
 
-        [SerializeField]
+        [System.Serializable]
         public class CharacterDataClass
         {
             public  string CharacterName = "Joe Bloggs";

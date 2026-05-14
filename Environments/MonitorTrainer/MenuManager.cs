@@ -1191,7 +1191,7 @@ namespace MonitorTrainer
                 }
             });
 
-
+            #if Photon
             m_MultiplayerLobbyHostData.m_SwapTeamsButton = m_MultiplayerLobbyHostData.m_Root.SearchComponent<Button>("SwapTeamsButton");
             m_MultiplayerLobbyHostData.m_SwapTeamsButton.GetComponent<Image>().raycastTarget = true;
             m_MultiplayerLobbyHostData.m_SwapTeamsButton.onClick.AddListener(() =>
@@ -1199,13 +1199,14 @@ namespace MonitorTrainer
                 SwapTeams(Core.PhotonMultiplayerRef.MySelf.ActorNumber);
                 OrderTheDisplays(m_MultiplayerLobbyHostData);
             });
+#endif
 
 
             m_MultiplayerLobbyHostData.m_LobbyCodeString = m_MultiplayerLobbyHostData.m_Root.SearchComponent<TextMeshProUGUI>("LobbyCodeString");
             m_MultiplayerLobbyHostData.m_LobbyCodeString.text = MonitorTrainerRoot.Instance.PlayerChoiceDataRef.LobbyCode;
 
 
-
+            #if Photon
             m_MultiplayerLobbyHostData.m_LaunchMultiplayer = m_MultiplayerLobbyHostData.m_Root.SearchComponent<Button>("LaunchMultiplayer");
             m_MultiplayerLobbyHostData.m_LaunchMultiplayer.GetComponent<Image>().raycastTarget = true;
             m_MultiplayerLobbyHostData.m_LaunchMultiplayer.onClick.AddListener(() =>
@@ -1216,6 +1217,7 @@ namespace MonitorTrainer
                 NetworkMessagesManager.Instance.SendPlayerPrefsData(ref MonitorTrainerRoot.Instance.LocalPlayerDataRef.SaveDataRef.SendDataRef);
 
             });
+#endif
 
             m_MultiplayerLobbyHostData.m_CloseButton = m_MultiplayerLobbyHostData.m_Root.SearchComponent<Button>("CloseButton");
             m_MultiplayerLobbyHostData.m_CloseButton.GetComponent<Image>().raycastTarget = true;
@@ -1235,11 +1237,13 @@ namespace MonitorTrainer
 
             void SendHostData()
             {
+                #if Photon
                 this.WaitUntil(1, () => Core.PhotonMultiplayerRef.PhotonViewOwnerRef != null, () =>
                 {
                     PlayerChoiceData baseItem = MonitorTrainerRoot.Instance.PlayerChoiceDataRef;
                     NetworkMessagesManager.Instance.SendFullRoomDetails(baseItem);
                 });
+#endif
             }
 
             NetworkMessagesManager.Instance.ReceivePlayerReady((playerReady) =>
@@ -1335,8 +1339,10 @@ namespace MonitorTrainer
             {
                 Debug.LogError("Swap Button pressed");
                 GuestSwap guestSwap = new GuestSwap();
+                #if Photon
                 guestSwap.ActorNumber = Core.PhotonMultiplayerRef.MySelf.ActorNumber;
                 NetworkMessagesManager.Instance.SendGuestSwap(guestSwap);
+#endif
             });
 
 
@@ -1365,7 +1371,9 @@ namespace MonitorTrainer
             m_LeaveLobbyData.m_LeaveLobby.GetComponent<Image>().raycastTarget = true;
             m_LeaveLobbyData.m_LeaveLobby.onClick.AddListener(() =>
             {
+#if Photon
                 Core.PhotonMultiplayerRef.LeaveRoom();
+#endif
                 m_StackScreenMenu.Clear();
                 if (m_Destination != null)
                 {
@@ -1967,7 +1975,6 @@ namespace MonitorTrainer
         {
             InitiliseLobbyAndPlayersCallbacks();
 
-
             NetworkMessagesManager.Instance.ReceiveMuliplayerload((roomNumber) =>
             {
                 if (MonitorTrainerRoot.Instance.PlayerChoiceDataRef.LobbyCode == roomNumber)
@@ -2025,6 +2032,7 @@ namespace MonitorTrainer
             {
                 SetMultiplayerLobbyGuestData(data);
             });
+
         }
 
         private void SetMultiplayerLobbyGuestData(PlayerChoiceData received)
@@ -2350,7 +2358,7 @@ namespace MonitorTrainer
         }
 
 
-        private void FailCallbacks(PhotonMultiplayer.NetworkFail fail)
+        private void FailCallbacks(DisconnectCause fail)
         {
             m_StackScreenMenu.Clear();
             Debug.LogError($"FailCallbacks: {fail}");
@@ -2602,6 +2610,7 @@ namespace MonitorTrainer
 
         private void SetCorrectPlayerIndex()
         {
+#if Photon
             if (Core.PhotonMultiplayerRef.CurrentRoom != null)
             {
                 if (CurrentScreen == ScreenMenu.MultiplayerLobbyHost)
@@ -2646,6 +2655,7 @@ namespace MonitorTrainer
                 default:
                     break;
             }
+#endif
         }
 
         public void ChangeToScenario(ScenarioEnum Scenario)

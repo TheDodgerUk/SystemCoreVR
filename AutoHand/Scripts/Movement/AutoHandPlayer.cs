@@ -247,8 +247,8 @@ namespace Autohand {
                 col.radius = bodyCapsule.radius;
 
                 var headBody = headFollower.gameObject.AddComponent<Rigidbody>();
-                headBody.drag = 5;
-                headBody.angularDrag = 5;
+                headBody.linearDamping = 5;
+                headBody.angularDamping = 5;
                 headBody.freezeRotation = false;
                 headBody.mass = body.mass / 3f;
 
@@ -333,7 +333,7 @@ namespace Autohand {
                     grab?.IgnoreColliders(headPhysicsFollower.headCollider, false);
 
                 if(grab && grab.parentOnGrab && grab.body != null)
-                    grab.body.velocity += body.velocity / 2f;
+                    grab.body.linearVelocity += body.linearVelocity / 2f;
             }
         }
 
@@ -381,28 +381,28 @@ namespace Autohand {
 
         protected virtual void UpdateRigidbody(Vector3 moveDir) {
             var move = AlterDirection(moveDir);
-            var yVel = body.velocity.y;
+            var yVel = body.linearVelocity.y;
 
             //1. Moves velocity towards desired push direction
             if(pushAxis != Vector3.zero) {
-                body.velocity = Vector3.MoveTowards(body.velocity, pushAxis, pushingAcceleration * Time.fixedDeltaTime);
-                body.velocity *= 1 - pushingDrag * Time.fixedDeltaTime;
+                body.linearVelocity = Vector3.MoveTowards(body.linearVelocity, pushAxis, pushingAcceleration * Time.fixedDeltaTime);
+                body.linearVelocity *= 1 - pushingDrag * Time.fixedDeltaTime;
             }
 
             //2. Moves velocity towards desired climb direction
             if(climbAxis != Vector3.zero) {
-                body.velocity = Vector3.MoveTowards(body.velocity, climbAxis, climbingAcceleration * Time.fixedDeltaTime);
-                body.velocity *= 1 - climbingDrag * Time.fixedDeltaTime;
+                body.linearVelocity = Vector3.MoveTowards(body.linearVelocity, climbAxis, climbingAcceleration * Time.fixedDeltaTime);
+                body.linearVelocity *= 1 - climbingDrag * Time.fixedDeltaTime;
             }
 
             //3. Moves velocity towards desired movement direction
             if(move != Vector3.zero && CanInputMove()) {
-                body.velocity = Vector3.MoveTowards(body.velocity, move * maxMoveSpeed, moveAcceleration * Time.fixedDeltaTime);
+                body.linearVelocity = Vector3.MoveTowards(body.linearVelocity, move * maxMoveSpeed, moveAcceleration * Time.fixedDeltaTime);
             }
 
             //4. This creates extra drag when grounded to simulate foot strength, or if flying greats drag in every direction when not moving
             if (move.magnitude <= movementDeadzone && isGrounded)
-                body.velocity *= (1 - groundedDrag * (Time.realtimeSinceStartup - lastUpdateTime));
+                body.linearVelocity *= (1 - groundedDrag * (Time.realtimeSinceStartup - lastUpdateTime));
 
 
             //5. Checks if gravity should be turned off
@@ -411,7 +411,7 @@ namespace Autohand {
 
             //6. This will keep velocity if consistent when moving while falling
             if(body.useGravity)
-                body.velocity = new Vector3(body.velocity.x, yVel, body.velocity.z);
+                body.linearVelocity = new Vector3(body.linearVelocity.x, yVel, body.linearVelocity.z);
 
             SyncBodyHead();
 
@@ -468,21 +468,21 @@ namespace Autohand {
             var startRightHandPos = handRight.transform.position;
             var startLeftHandPos = handLeft.transform.position;            
             
-            if(body.drag > 0)
-                body.velocity *= (1 - body.drag * deltaTime);
+            if(body.linearDamping > 0)
+                body.linearVelocity *= (1 - body.linearDamping * deltaTime);
 
             var move = AlterDirection(moveDirection);
             if (move.magnitude <= movementDeadzone && isGrounded)
-                body.velocity *= (1 - groundedDrag * deltaTime);
+                body.linearVelocity *= (1 - groundedDrag * deltaTime);
 
-            var yVel = body.velocity.y;
+            var yVel = body.linearVelocity.y;
             //Smooth moves body based on velocity
-            body.position = Vector3.MoveTowards(body.position, body.position + body.velocity, body.velocity.magnitude * deltaTime);
+            body.position = Vector3.MoveTowards(body.position, body.position + body.linearVelocity, body.linearVelocity.magnitude * deltaTime);
 
 
             //6. This will keep velocity if consistent when moving while falling
             if (body.useGravity)
-                body.velocity = new Vector3(body.velocity.x, yVel, body.velocity.z);
+                body.linearVelocity = new Vector3(body.linearVelocity.x, yVel, body.linearVelocity.z);
 
             transform.position = body.position;
 
@@ -501,7 +501,7 @@ namespace Autohand {
 
                 //This code will move the tracking objects to match the body collider position when moving
                 var targetPos = transform.position - headCamera.transform.position; targetPos.y = 0;
-                targetPosOffset = Vector3.MoveTowards(targetPosOffset, targetPos, body.velocity.magnitude * Time.deltaTime * 2);
+                targetPosOffset = Vector3.MoveTowards(targetPosOffset, targetPos, body.linearVelocity.magnitude * Time.deltaTime * 2);
                 trackingContainer.position += targetPosOffset;
 
                 if(headPhysicsFollower != null && isGrounded) {
@@ -607,7 +607,7 @@ namespace Autohand {
                 CheckGroundRadius(groundRayCount / 4, 0.25f);
 
                 if(isGrounded) {
-                    body.velocity = new Vector3(body.velocity.x, 0, body.velocity.z);
+                    body.linearVelocity = new Vector3(body.linearVelocity.x, 0, body.linearVelocity.z);
                     body.position += Vector3.up * (highestPoint - groundedOffset / 2f);
                     transform.position = body.position;
                 }
@@ -886,7 +886,7 @@ namespace Autohand {
                 }
 
                 if(climbing.Count == 0)
-                    body.velocity /= 4f;
+                    body.linearVelocity /= 4f;
 
                 climbing.Add(hand, climbbable);
             }

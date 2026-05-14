@@ -268,12 +268,12 @@ namespace Autohand {
                     var startPos = body.transform.position;
                     var startRot = body.transform.rotation;
 
-                    body.transform.position = Vector3.MoveTowards(body.transform.position, heldBy[i].grabPosition.position, body.velocity.magnitude * deltaTime);
-                    body.velocity *= (1 - body.drag * deltaTime); 
+                    body.transform.position = Vector3.MoveTowards(body.transform.position, heldBy[i].grabPosition.position, body.linearVelocity.magnitude * deltaTime);
+                    body.linearVelocity *= (1 - body.linearDamping * deltaTime); 
                     body.position = body.transform.position;
 
                     body.transform.rotation = Quaternion.Euler(Vector3.MoveTowards(body.transform.rotation.eulerAngles, heldBy[i].grabPosition.rotation.eulerAngles, body.angularVelocity.magnitude * deltaTime));
-                    body.angularVelocity *= (1 - body.angularDrag * deltaTime);
+                    body.angularVelocity *= (1 - body.angularDamping * deltaTime);
                     body.rotation = body.transform.rotation;
 
 
@@ -513,7 +513,7 @@ namespace Autohand {
                 BreakHandConnection(hand);
 
                 if(body != null && heldBy.Count == 0) {
-                    body.velocity = hand.ThrowVelocity() * throwMultiplyer;
+                    body.linearVelocity = hand.ThrowVelocity() * throwMultiplyer;
                     var throwAngularVel = hand.ThrowAngularVelocity();
                     if(!float.IsNaN(throwAngularVel.x) && !float.IsNaN(throwAngularVel.y) && !float.IsNaN(throwAngularVel.z))
                         body.angularVelocity = throwAngularVel;
@@ -601,7 +601,7 @@ namespace Autohand {
             if(heldBy.Contains(hand)) {
                 if (body != null){
                     body.WakeUp();
-                    body.velocity *= 0;
+                    body.linearVelocity *= 0;
                     body.angularVelocity *= 0;
                 }
 

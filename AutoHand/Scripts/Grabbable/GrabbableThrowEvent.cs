@@ -29,7 +29,7 @@ namespace Autohand{
             grab.OnReleaseEvent -= OnReleased;
         }
 
-        void OnReleased(Hand hand, Grabbable grab) {if(rb.velocity.magnitude >= breakVelocity) 
+        void OnReleased(Hand hand, Grabbable grab) {if(rb.linearVelocity.magnitude >= breakVelocity) 
             thrown = true;
             if(resetThrowing != null)
                 StopCoroutine(resetThrowing);
@@ -51,7 +51,7 @@ namespace Autohand{
             if(((1 << collision.collider.gameObject.layer) & collisionLayers) == 0)
                 return;
         
-            if(rb.velocity.magnitude >= breakVelocity) {
+            if(rb.linearVelocity.magnitude >= breakVelocity) {
                 Invoke("Break", Time.fixedDeltaTime);
             }
         }

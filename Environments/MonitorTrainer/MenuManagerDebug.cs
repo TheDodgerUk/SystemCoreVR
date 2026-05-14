@@ -88,6 +88,7 @@ namespace MonitorTrainer
 
         private void Awake()
         {
+            #if Photon
             Core.PhotonGenericRef.CollectDebugIntDataMessage<bool>((int)DebugInt.OppositeSide, (enable) =>
             {
                 OppositeSide.Instance.transform.SetActive(enable);
@@ -292,6 +293,7 @@ namespace MonitorTrainer
                     Core.PhotonGenericRef.CollectDebugIntDataMessage<bool>((int)foo, (enable) => FindItem(foo, enable));
                 }
             }
+#endif
          }
 
         private void FindItem(DebugInt debugInt, bool enable)

@@ -25,8 +25,8 @@ namespace Autohand {
         {
             origin = from.gameObject;
             mass = from.mass;
-            drag = from.drag;
-            angularDrag = from.angularDrag;
+            drag = from.linearDamping;
+            angularDrag = from.angularDamping;
             useGravity = from.useGravity;
             isKinematic = from.isKinematic;
             interpolation = from.interpolation;
@@ -42,8 +42,8 @@ namespace Autohand {
                     return currBody;
                 var from = origin.AddComponent<Rigidbody>();
                 from.mass = mass;
-                from.drag = drag;
-                from.angularDrag = angularDrag;
+                from.linearDamping = drag;
+                from.angularDamping = angularDrag;
                 from.useGravity = useGravity;
                 from.isKinematic = isKinematic;
                 from.interpolation = interpolation;

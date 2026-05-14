@@ -181,7 +181,7 @@ public class CarControls : MonoBehaviour
         m_limits.m_inputSteer *= m_limits.m_inputSteerDrag;
         m_limits.m_inputTorque *= m_limits.m_inputTorqueDrag;
 
-        m_relativeVelocity = transform.InverseTransformDirection(GetComponent<Rigidbody>().velocity);
+        m_relativeVelocity = transform.InverseTransformDirection(GetComponent<Rigidbody>().linearVelocity);
 
 
         WheelsSuspention();

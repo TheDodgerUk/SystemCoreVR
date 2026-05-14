@@ -62,68 +62,68 @@ namespace MonitorTrainer
             }
         }
 
-        void MatchFoundCallback(Message<Room> msg)
-        {
-            m_matchRoom = msg.Data.ID;
-            Matchmaking.JoinRoom(msg.Data.ID, true).OnComplete(MatchmakingJoinRoomCallback);
-        }
+        //void MatchFoundCallback(Message<Room> msg)
+        //{
+        //    m_matchRoom = msg.Data.ID;
+        //    Matchmaking.JoinRoom(msg.Data.ID, true).OnComplete(MatchmakingJoinRoomCallback);
+        //}
 
-        void MatchmakingJoinRoomCallback(Message<Room> msg)
-        {
-            if (msg.IsError)
-            {
-                Debug.Log(msg.GetError().Message);
-                EnqueueResultCallback(false);
-                return;
-            }
-            Debug.Log("Match found and room joined " + m_matchRoom);
+        //void MatchmakingJoinRoomCallback(Message<Room> msg)
+        //{
+        //    if (msg.IsError)
+        //    {
+        //        Debug.Log(msg.GetError().Message);
+        //        EnqueueResultCallback(false);
+        //        return;
+        //    }
+        //    Debug.Log("Match found and room joined " + m_matchRoom);
 
-            EnqueueResultCallback(true);
+        //    EnqueueResultCallback(true);
 
-            // this sample doesn't try to coordinate that all the players see consistent
-            // positioning to assigned courts, but that would be a great next feature to add
-            int slot = 0;
+        //    // this sample doesn't try to coordinate that all the players see consistent
+        //    // positioning to assigned courts, but that would be a great next feature to add
+        //    int slot = 0;
 
-            if (msg.Data.UsersOptional != null)
-            {
-                foreach (var user in msg.Data.UsersOptional)
-                {
-                    var player = MatchPlayerAddedCallback(slot++, user);
-                    if (PlatformManager.MyID != user.ID)
-                    {
-                        m_remotePlayers[user.ID] = user;
-                        /// PlatformManager.P2P.AddRemotePlayer(player as RemotePlayer);
-                    }
-                }
-            }
-        }
+        //    if (msg.Data.UsersOptional != null)
+        //    {
+        //        foreach (var user in msg.Data.UsersOptional)
+        //        {
+        //            var player = MatchPlayerAddedCallback(slot++, user);
+        //            if (PlatformManager.MyID != user.ID)
+        //            {
+        //                m_remotePlayers[user.ID] = user;
+        //                /// PlatformManager.P2P.AddRemotePlayer(player as RemotePlayer);
+        //            }
+        //        }
+        //    }
+        //}
 
-        void MatchmakingRoomUpdateCallback(Message<Room> msg)
-        {
-            if (msg.IsError)
-            {
-                PlatformManager.TerminateWithError(msg);
-                return;
-            }
+        //void MatchmakingRoomUpdateCallback(Message<Room> msg)
+        //{
+        //    if (msg.IsError)
+        //    {
+        //        PlatformManager.TerminateWithError(msg);
+        //        return;
+        //    }
 
-            // check to make sure the room is valid as there are a few odd timing issues (for
-            // example when leaving a room) that can trigger an uninteresting update
-            if (msg.Data.ID == m_matchRoom)
-            {
-                if (msg.Data.UsersOptional != null)
-                {
-                    foreach (User user in msg.Data.UsersOptional)
-                    {
-                        if (PlatformManager.MyID != user.ID && !m_remotePlayers.ContainsKey(user.ID))
-                        {
-                            m_remotePlayers[user.ID] = user;
-                            var player = MatchPlayerAddedCallback(m_remotePlayers.Count, user);
-                            //// PlatformManager.P2P.AddRemotePlayer(player as RemotePlayer);
-                        }
-                    }
-                }
-            }
-        }
+        //    // check to make sure the room is valid as there are a few odd timing issues (for
+        //    // example when leaving a room) that can trigger an uninteresting update
+        //    if (msg.Data.ID == m_matchRoom)
+        //    {
+        //        if (msg.Data.UsersOptional != null)
+        //        {
+        //            foreach (User user in msg.Data.UsersOptional)
+        //            {
+        //                if (PlatformManager.MyID != user.ID && !m_remotePlayers.ContainsKey(user.ID))
+        //                {
+        //                    m_remotePlayers[user.ID] = user;
+        //                    var player = MatchPlayerAddedCallback(m_remotePlayers.Count, user);
+        //                    //// PlatformManager.P2P.AddRemotePlayer(player as RemotePlayer);
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
         public void EndMatch()
         {

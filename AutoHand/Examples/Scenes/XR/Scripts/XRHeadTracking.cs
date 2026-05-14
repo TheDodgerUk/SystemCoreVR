@@ -10,7 +10,7 @@ public class XRHeadTracking : MonoBehaviour{
 
     void Start(){
         List<XRInputSubsystem> subsystems = new List<XRInputSubsystem>();
-        SubsystemManager.GetInstances(subsystems);
+        SubsystemManager.GetSubsystems(subsystems);
         for(int i = 0;  i < subsystems.Count; i++){
             subsystems[i].TrySetTrackingOriginMode(mode);
         }

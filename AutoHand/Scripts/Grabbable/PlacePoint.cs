@@ -251,7 +251,7 @@ namespace Autohand {
             {
                 placeObj.body.position = placeObj.transform.position;
                 placeObj.body.rotation = placeObj.transform.rotation;
-                placeObj.body.velocity = Vector3.zero;
+                placeObj.body.linearVelocity = Vector3.zero;
                 placeObj.body.angularVelocity = Vector3.zero;
                 placedObjDetectionMode = placeObj.body.collisionDetectionMode;
 

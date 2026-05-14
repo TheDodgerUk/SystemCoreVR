@@ -91,7 +91,7 @@ namespace Autohand{
             
             //Sets velocity linearly based on distance from hand
             var vel = (movePos - transform.position).normalized * followStrength * distance;
-            body.velocity = vel;
+            body.linearVelocity = vel;
             lastUpdateTime = Time.realtimeSinceStartup;
         }
 
@@ -101,8 +101,8 @@ namespace Autohand{
                 var deltaTime = (Time.realtimeSinceStartup - lastUpdateTime);
 
                 MoveTo();
-                transform.position = Vector3.MoveTowards(transform.position, moveTo.position, body.velocity.magnitude * deltaTime);
-                body.velocity = Vector3.MoveTowards(body.velocity, Vector3.zero, body.velocity.magnitude * deltaTime);
+                transform.position = Vector3.MoveTowards(transform.position, moveTo.position, body.linearVelocity.magnitude * deltaTime);
+                body.linearVelocity = Vector3.MoveTowards(body.linearVelocity, Vector3.zero, body.linearVelocity.magnitude * deltaTime);
                 body.position = transform.position;
             }
 

@@ -17,14 +17,14 @@ namespace Autohand{
         }
 
         void OnEnable(){
-            if(GraphicsSettings.renderPipelineAsset != null){
+            if(GraphicsSettings.defaultRenderPipeline != null){
                 RenderPipelineManager.beginCameraRendering += OnPreRender;
                 RenderPipelineManager.endCameraRendering += OnPostRender;
             }
         }
 
         void OnDisable(){
-            if(GraphicsSettings.renderPipelineAsset != null){
+            if(GraphicsSettings.defaultRenderPipeline != null){
                 RenderPipelineManager.beginCameraRendering -= OnPreRender;
                 RenderPipelineManager.endCameraRendering -= OnPostRender;
             }

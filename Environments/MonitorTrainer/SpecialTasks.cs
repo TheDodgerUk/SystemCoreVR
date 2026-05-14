@@ -143,7 +143,7 @@ namespace MonitorTrainer
         public MusicianRequestData ScenarioTutorial2_RuntimeErrorPowerTurnedOff1(System.Action callback = null)
         {
             var item = new MusicianRequestData();
-            item.m_Description = "The console is off!! Why is it off?!? Turn it back on ASAP, the band can’t hear anything!";
+            item.m_Description = "The console is off!! Why is it off?!? Turn it back on ASAP, the band canï¿½t hear anything!";
             item.m_DescriptionForReport = "ScenarioTutorial2_RuntimeErrorPowerTurnedOff1";
             item.m_MainMusicianType = MusicianTypeEnum.StageManager;
             item.m_LifespanSeconds = 0;
@@ -155,7 +155,7 @@ namespace MonitorTrainer
         public MusicianRequestData ScenarioTutorial2_RuntimeErrorPowerTurnedOff2()
         {
             var item = ScenarioTutorial2_RuntimeErrorPowerTurnedOff1(null);
-            item.m_Description = "I think you’ve turned the console off… You should probably turn that on before anyone notices!";
+            item.m_Description = "I think youï¿½ve turned the console offï¿½ You should probably turn that on before anyone notices!";
             item.m_DescriptionForReport = "ScenarioTutorial2_RuntimeErrorPowerTurnedOff2";
             item.m_MainMusicianType = MusicianTypeEnum.StageHand;
             item.m_RuntimeTypeEnum = RuntimeTypeEnum.Power;
@@ -194,7 +194,7 @@ namespace MonitorTrainer
         public MusicianRequestData ScenarioTutorial2_RuntimeErrorMuteAllOff2()
         {
             var item = ScenarioTutorial2_RuntimeErrorMuteAllOff1();
-            item.m_Description = "Why is MUTE ALL on? We’re in the middle of a show!! Turn it OFF.";
+            item.m_Description = "Why is MUTE ALL on? Weï¿½re in the middle of a show!! Turn it OFF.";
             item.m_DescriptionForReport = "ScenarioTutorial2_RuntimeErrorMuteAllOff2";
             item.m_MainMusicianType = MusicianTypeEnum.StageHand;
             item.m_RuntimeTypeEnum = RuntimeTypeEnum.MuteAll;
@@ -205,7 +205,7 @@ namespace MonitorTrainer
         public MusicianRequestData ScenarioTutorial2_RuntimeErrorMuteAllOff3(System.Action callback = null)
         {
             var item = ScenarioTutorial2_RuntimeErrorMuteAllOff1();
-            item.m_Description = "All the channels are apparently muted, they shouldn’t be! Make sure MUTE ALL is OFF!";
+            item.m_Description = "All the channels are apparently muted, they shouldnï¿½t be! Make sure MUTE ALL is OFF!";
             item.m_DescriptionForReport = "ScenarioTutorial2_RuntimeErrorMuteAllOff3";
             item.m_MainMusicianType = MusicianTypeEnum.FrontOfHouse;
             item.m_RuntimeTypeEnum = RuntimeTypeEnum.MuteAll;
@@ -449,7 +449,7 @@ namespace MonitorTrainer
 
                     // first bounce lesson it 
                     SphereCollider collider = body.GetComponentInChildren<SphereCollider>();
-                    PhysicMaterial bouncy = collider.material;
+                    PhysicsMaterial bouncy = collider.material;
                     collider.material = PhysicMaterials.JengaPhysicMaterial;
                     VelocityImpact velImpact = ball.AddComponent<VelocityImpact>();
                     velImpact.CallbackMagnitude((amount) =>
@@ -674,7 +674,7 @@ namespace MonitorTrainer
                     item.m_Description = "And now the powers gone... this show is a disaster... Just... Just get the power back on if you can!";
                     break;
                 case 1:
-                    item.m_Description = "Where have the lights gone! I give up...  Flip the power back on, Should be over your shoulder";
+                    item.m_Description = "Where have the lights gone! I give up...ï¿½ Flip the power back on, Should be over your shoulder";
                     break;
                 case 2:
                     item.m_Description = "Quick get the lights back on! The power should be located just behind you!";

@@ -129,7 +129,7 @@ namespace Autohand {
                 if(value != null && _grabRoutine != null) {
                     StopCoroutine(_grabRoutine);
                     if(holdingObj != null) {
-                        holdingObj.body.velocity = Vector3.zero;
+                        holdingObj.body.linearVelocity = Vector3.zero;
                         holdingObj.body.angularVelocity = Vector3.zero;
                         holdingObj.beingGrabbed = false;
                     }
@@ -151,8 +151,8 @@ namespace Autohand {
             base.Awake();
 
             if(enableMovement) {
-                body.drag = 10;
-                body.angularDrag = 38;
+                body.linearDamping = 10;
+                body.angularDamping = 38;
                 body.useGravity = false;
             }
 
@@ -252,8 +252,8 @@ namespace Autohand {
 
         float GetGrabTime() {
             var distanceDivider = Mathf.Clamp01(startGrabDist / reachDistance);
-            var grabVelocityOffset = holdingObj.body != null ? holdingObj.body.velocity.magnitude * Time.fixedDeltaTime * distanceDivider * 2 : 0f;
-            var handVelocityOffset = body.velocity.magnitude * Time.fixedDeltaTime * distanceDivider * 2;
+            var grabVelocityOffset = holdingObj.body != null ? holdingObj.body.linearVelocity.magnitude * Time.fixedDeltaTime * distanceDivider * 2 : 0f;
+            var handVelocityOffset = body.linearVelocity.magnitude * Time.fixedDeltaTime * distanceDivider * 2;
             return Mathf.Clamp(minGrabTime + ((maxGrabTime - minGrabTime) * distanceDivider) - grabVelocityOffset - handVelocityOffset, 0, maxGrabTime);
         }
 
@@ -332,7 +332,7 @@ namespace Autohand {
 
                             if(HandClosestHit(out RaycastHit closestHit, out Grabbable grabbable, reachDistance * 2, 1 << grabbingLayer) != Vector3.zero && grabbable != null) {
                                 SetLayerRecursive(grab.transform, grabLayer);
-                                grabbable.body.velocity = Vector3.zero;
+                                grabbable.body.linearVelocity = Vector3.zero;
                                 grabbable.body.angularVelocity = Vector3.zero;
                                 grabRoutine = StartCoroutine(GrabObject(closestHit, grabbable, GrabType.InstantGrab));
                             }
@@ -417,7 +417,7 @@ namespace Autohand {
 
                 if(grabbing) {
                     if (holdingObj.body != null){
-                        holdingObj.body.velocity = Vector3.zero;
+                        holdingObj.body.linearVelocity = Vector3.zero;
                         holdingObj.body.angularVelocity = Vector3.zero;
                     }
                 }
@@ -507,7 +507,7 @@ namespace Autohand {
                 heldJoint = null;
             }
             if(holdingObj != null) {
-                holdingObj.body.velocity /= 100f;
+                holdingObj.body.linearVelocity /= 100f;
                 holdingObj.body.angularVelocity /= 100f;
                 OnGrabJointBreak?.Invoke(this, holdingObj);
                 holdingObj?.OnHandJointBreak(this);
@@ -937,7 +937,7 @@ namespace Autohand {
             lookingAtObj = null;
             var instantGrab = holdingObj.instantGrab || grabType == GrabType.InstantGrab;
             var startHoldingObj = holdingObj;
-            body.velocity = Vector3.zero;
+            body.linearVelocity = Vector3.zero;
             body.angularVelocity = Vector3.zero;
             startHandGrabPosition = holdingObj.body.transform.InverseTransformPoint(transform.position);
 
@@ -1025,7 +1025,7 @@ namespace Autohand {
                         holdingObj.ForceHandRelease(holdingObj.GetHeldBy()[0]);
                         if (holdingObj.body != null)
                         {
-                            holdingObj.body.velocity = Vector3.zero;
+                            holdingObj.body.linearVelocity = Vector3.zero;
                             holdingObj.body.angularVelocity = Vector3.zero;
                         }
                     }
@@ -1061,7 +1061,7 @@ namespace Autohand {
                             {
                                 holdingObj.body.position = holdingObj.body.transform.position;
                                 holdingObj.body.rotation = holdingObj.body.transform.rotation;
-                                holdingObj.body.velocity = Vector3.zero;
+                                holdingObj.body.linearVelocity = Vector3.zero;
                                 holdingObj.body.angularVelocity = Vector3.zero;
                             }
                             i += followVel.magnitude * Time.deltaTime * 2f;
@@ -1098,7 +1098,7 @@ namespace Autohand {
                     holdingObj.ForceHandRelease(holdingObj.GetHeldBy()[0]);
                     if (holdingObj.body != null)
                     {
-                        holdingObj.body.velocity = Vector3.zero;
+                        holdingObj.body.linearVelocity = Vector3.zero;
                         holdingObj.body.angularVelocity = Vector3.zero;
                     }
                 }
@@ -1148,7 +1148,7 @@ namespace Autohand {
                 {
                     if (startHoldingObj.body != null)
                     {
-                        startHoldingObj.body.velocity = Vector3.zero;
+                        startHoldingObj.body.linearVelocity = Vector3.zero;
                         startHoldingObj.body.angularVelocity = Vector3.zero;
                     }
                     startHoldingObj.beingGrabbed = false;

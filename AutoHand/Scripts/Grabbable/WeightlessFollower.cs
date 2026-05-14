@@ -37,8 +37,8 @@ namespace Autohand {
 
             if(startAngleDrag == 0) {
                 startMass = body.mass;
-                startDrag = body.drag;
-                startAngleDrag = body.angularDrag;
+                startDrag = body.linearDamping;
+                startAngleDrag = body.angularDamping;
             }
         }
 
@@ -75,12 +75,12 @@ namespace Autohand {
 
             if(startAngleDrag == 0) {
                 startMass = body.mass;
-                startDrag = body.drag;
-                startAngleDrag = body.angularDrag;
+                startDrag = body.linearDamping;
+                startAngleDrag = body.angularDamping;
             }
 
-            body.drag = hand.body.drag;
-            body.angularDrag = hand.body.angularDrag;
+            body.linearDamping = hand.body.linearDamping;
+            body.angularDamping = hand.body.angularDamping;
 
             if(follow == null)
                 follow = heldMoveTo[hand];
@@ -147,7 +147,7 @@ namespace Autohand {
                 vel.y = Mathf.Clamp(vel.y, -velocityClamp, velocityClamp);
                 vel.z = Mathf.Clamp(vel.z, -velocityClamp, velocityClamp);
 
-                body.velocity = Vector3.MoveTowards(body.velocity, vel, 0.5f + body.velocity.magnitude / (velocityClamp));
+                body.linearVelocity = Vector3.MoveTowards(body.linearVelocity, vel, 0.5f + body.linearVelocity.magnitude / (velocityClamp));
             }
             else {
                 var velocityClamp = maxVelocity;
@@ -155,7 +155,7 @@ namespace Autohand {
                 vel.x = Mathf.Clamp(vel.x, -velocityClamp, velocityClamp);
                 vel.y = Mathf.Clamp(vel.y, -velocityClamp, velocityClamp);
                 vel.z = Mathf.Clamp(vel.z, -velocityClamp, velocityClamp);
-                body.velocity = vel;
+                body.linearVelocity = vel;
             }
         }
 
@@ -201,8 +201,8 @@ namespace Autohand {
             if(this.follow == null && follow1 == null) {
                 if(body != null) {
                     body.mass = startMass;
-                    body.drag = startDrag;
-                    body.angularDrag = startAngleDrag;
+                    body.linearDamping = startDrag;
+                    body.angularDamping = startAngleDrag;
                 }
                 Destroy(this);
             }
@@ -217,8 +217,8 @@ namespace Autohand {
             if (body != null)
             {
                 body.mass = startMass;
-                body.drag = startDrag;
-                body.angularDrag = startAngleDrag;
+                body.linearDamping = startDrag;
+                body.angularDamping = startAngleDrag;
             }
         }
     }

@@ -43,7 +43,7 @@ public class DeathScript_Rotors : DeathScriptBase {
         //          add velosity to the base
         //-----------------------------------------------------------------------------------
         Vector3 lCurrentTranslate = this.gameObject.GetComponent<HelicopterControlsAI>().GetCurrentTranslate(false);
-        m_RigidBodyController.GetGameObject(0).GetComponent<Rigidbody>().velocity = lCurrentTranslate * COMPINSATE_FOR_VELOSITY;
+        m_RigidBodyController.GetGameObject(0).GetComponent<Rigidbody>().linearVelocity = lCurrentTranslate * COMPINSATE_FOR_VELOSITY;
 
 
         //-----------------------------------------------------------------------------------
