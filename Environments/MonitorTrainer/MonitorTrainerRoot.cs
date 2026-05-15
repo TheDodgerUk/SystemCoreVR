@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 using static MonitorTrainer.MonitorTrainerConsts;
+#if Photon
 using ExitGames.Client.Photon;
 using Photon.Pun;
+#endif
 using UnityEngine.UI;
 
 namespace MonitorTrainer
