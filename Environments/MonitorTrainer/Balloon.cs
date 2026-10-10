@@ -22,7 +22,7 @@ namespace MonitorTrainer
 
         private AudioSource m_PoppingAudioSource;
         private AudioClip m_PoppingSound;
-        private PhysicsMaterial m_BalloonPhysicMaterial;
+        private PhysicMaterial m_BalloonPhysicMaterial;
 
         private PathCreator m_BalloonPathCreatorComponent;
         private PathFollower m_BalloonPathFollowerComponent;

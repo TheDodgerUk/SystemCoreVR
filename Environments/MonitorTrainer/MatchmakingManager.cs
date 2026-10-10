@@ -25,8 +25,9 @@ namespace MonitorTrainer
         {
             m_remotePlayers = new Dictionary<ulong, User>();
 
-            Matchmaking.SetMatchFoundNotificationCallback(MatchFoundCallback);
-            Rooms.SetUpdateNotificationCallback(MatchmakingRoomUpdateCallback);
+            //HACK
+            //Matchmaking.SetMatchFoundNotificationCallback(MatchFoundCallback);
+            //Rooms.SetUpdateNotificationCallback(MatchmakingRoomUpdateCallback);
         }
 
         public delegate void OnEnqueueResult(bool successful);
@@ -49,7 +50,7 @@ namespace MonitorTrainer
 
         public void QueueForMatch()
         {
-            Matchmaking.Enqueue(NORMAL_POOL).OnComplete(MatchmakingEnqueueCallback);
+            //HACK Matchmaking.Enqueue(NORMAL_POOL).OnComplete(MatchmakingEnqueueCallback);
         }
 
         void MatchmakingEnqueueCallback(Message msg)
@@ -129,7 +130,7 @@ namespace MonitorTrainer
         {
             if (m_matchRoom != 0)
             {
-                Rooms.Leave(m_matchRoom);
+                //HACK Rooms.Leave(m_matchRoom);
                 m_remotePlayers.Clear();
                 ///// PlatformManager.P2P.DisconnectAll();
                 m_matchRoom = 0;
@@ -138,7 +139,7 @@ namespace MonitorTrainer
 
         public void LeaveQueue()
         {
-            Matchmaking.Cancel();
+            //HACK Matchmaking.Cancel();
             EndMatch();
         }
     }

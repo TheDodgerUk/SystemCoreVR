@@ -33,7 +33,7 @@ namespace Autohand.Demo{
             for(int i = 0; i < respawns.Count; i++) {
                 try {
                     if (respawns[i].CanGetComponent(out Rigidbody body)){
-                        body.linearVelocity = Vector3.zero;
+                        body.velocity = Vector3.zero;
                         body.angularVelocity = Vector3.zero;
                         body.ResetInertiaTensor();
                     }

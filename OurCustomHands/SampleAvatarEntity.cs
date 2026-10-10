@@ -14,7 +14,7 @@ public class SampleAvatarEntity : OvrAvatarEntity
 
         // Newer SDKs usually load through OvrAvatarEntity APIs here.
         // If your SDK has LoadUser(ulong), use:
-        LoadUser(userId);
+        LoadUser();
     }
 
     protected override void OnUserAvatarLoaded()

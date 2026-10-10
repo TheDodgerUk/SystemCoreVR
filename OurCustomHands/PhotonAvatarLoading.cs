@@ -131,7 +131,8 @@ namespace Photon.Pun
         private void OwnAvatarLoaded(OvrAvatarEntity arg0)
         {
             Core.VisualLoggerRef.SetInformation(VisualLogger.InformationType.Avatars, VisualLogger.Information.Information_1, $"My ActorNumber {PhotonNetwork.LocalPlayer.ActorNumber.ToString()}, ActorNumber {m_PhotonView.Owner.ActorNumber}");
-            StartCoroutine(SendAvatar(arg0._userId));
+           
+            //HACK StartCoroutine(SendAvatar(arg0._userId));
         }
 
         // send all the time, so when you join it keeps sending 

@@ -365,7 +365,7 @@ namespace Autohand {
 
 
             if(ignoreMoveFrame) {
-                body.linearVelocity = Vector3.zero;
+                body.velocity = Vector3.zero;
                 body.angularVelocity = Vector3.zero;
             }
 
@@ -401,13 +401,13 @@ namespace Autohand {
                 if (holdingObj == null)
                 {
                     MoveTo();
-                    transform.position = Vector3.MoveTowards(transform.position, moveTo.position, body.linearVelocity.magnitude * deltaTime);
-                    body.linearVelocity *= (1 - body.linearDamping * deltaTime);
+                    transform.position = Vector3.MoveTowards(transform.position, moveTo.position, body.velocity.magnitude * deltaTime);
+                    body.velocity *= (1 - body.drag * deltaTime);
                     body.position = transform.position;
 
                     TorqueTo();
                     transform.rotation = Quaternion.Euler(Vector3.MoveTowards(transform.rotation.eulerAngles, moveTo.rotation.eulerAngles, body.angularVelocity.magnitude * deltaTime));
-                    body.angularVelocity *= (1 - body.angularDamping * deltaTime);
+                    body.angularVelocity *= (1 - body.drag * deltaTime);
                     body.rotation = transform.rotation;
 
                     var deltaHandPos = transform.position - startHandPos;
@@ -426,13 +426,13 @@ namespace Autohand {
                     var startGrabRotation = grabPosition.rotation;
 
                     MoveTo();
-                    transform.position = Vector3.MoveTowards(transform.position, moveTo.position, body.linearVelocity.magnitude * deltaTime);
-                    body.linearVelocity *= (1 - body.linearDamping * deltaTime);
+                    transform.position = Vector3.MoveTowards(transform.position, moveTo.position, body.velocity.magnitude * deltaTime);
+                    body.velocity *= (1 - body.drag * deltaTime);
                     body.position = transform.position;
 
                     TorqueTo();
                     transform.rotation = Quaternion.Euler(Vector3.MoveTowards(transform.rotation.eulerAngles, moveTo.rotation.eulerAngles, body.angularVelocity.magnitude * deltaTime));
-                    body.angularVelocity *= (1 - body.angularDamping * deltaTime);
+                    body.angularVelocity *= (1 - body.angularDrag * deltaTime);
                     body.rotation = transform.rotation;
 
                     var deltaHandPos = transform.position - startHandPos;
@@ -595,10 +595,10 @@ namespace Autohand {
 
                 //If not holding an object with more than one hand
                 if(!(holdingObj && holdingObj.HeldCount() > 1))
-                    vel = Vector3.MoveTowards(body.linearVelocity, vel, 0.6f + body.linearVelocity.magnitude / (velocityClamp) * (60f/Time.fixedDeltaTime));
+                    vel = Vector3.MoveTowards(body.velocity, vel, 0.6f + body.velocity.magnitude / (velocityClamp) * (60f/Time.fixedDeltaTime));
 
 
-                body.linearVelocity = vel;
+                body.velocity = vel;
             }
             else {
                 var velocityClamp = maxVelocity;
@@ -606,7 +606,7 @@ namespace Autohand {
                 vel.x = Mathf.Clamp(vel.x, -velocityClamp, velocityClamp);
                 vel.y = Mathf.Clamp(vel.y, -velocityClamp, velocityClamp);
                 vel.z = Mathf.Clamp(vel.z, -velocityClamp, velocityClamp);
-                body.linearVelocity = vel;
+                body.velocity = vel;
             }
 
             //body.velocity *= 1f-positionStiffness;
@@ -677,7 +677,7 @@ namespace Autohand {
                 transform.rotation = rot;
                 body.position = pos;
                 body.rotation = rot;
-                body.linearVelocity = Vector3.zero;
+                body.velocity = Vector3.zero;
                 body.angularVelocity = Vector3.zero;
             }
         }

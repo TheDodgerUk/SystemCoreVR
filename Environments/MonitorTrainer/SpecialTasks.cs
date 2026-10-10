@@ -449,7 +449,7 @@ namespace MonitorTrainer
 
                     // first bounce lesson it 
                     SphereCollider collider = body.GetComponentInChildren<SphereCollider>();
-                    PhysicsMaterial bouncy = collider.material;
+                    PhysicMaterial bouncy = collider.material;
                     collider.material = PhysicMaterials.JengaPhysicMaterial;
                     VelocityImpact velImpact = ball.AddComponent<VelocityImpact>();
                     velImpact.CallbackMagnitude((amount) =>

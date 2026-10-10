@@ -105,10 +105,11 @@ public class AutoHandTransformTrackingInputManager : OvrAvatarInputManager
 
     private void Start()
     {
-        if (BodyTracking != null)
-        {
-            BodyTracking.InputControlDelegate = new AutoHandTrackingTransformsInputControlDelegate();
-            BodyTracking.InputTrackingDelegate = new AutoHandTrackingTransformsInputTrackingDelegate(this);
-        }
+        //HACK
+        //if (BodyTracking != null)
+        //{
+        //    BodyTracking.InputControlDelegate = new AutoHandTrackingTransformsInputControlDelegate();
+        //    BodyTracking.InputTrackingDelegate = new AutoHandTrackingTransformsInputTrackingDelegate(this);
+        //}
     }
 }

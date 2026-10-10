@@ -68,7 +68,7 @@ public class Landing : MonoBehaviour
                 break;
 
             case State.Landed:
-                float lSpeed = lGameObject.GetComponent<Rigidbody>().linearVelocity.magnitude;
+                float lSpeed = lGameObject.GetComponent<Rigidbody>().velocity.magnitude;
                 if (lSpeed < 0.5)
                 {
                     MyGlobals.ChangeAllLayersTo(this.gameObject, InfoManager.LayerInfo.Safe);

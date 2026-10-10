@@ -2358,7 +2358,7 @@ namespace MonitorTrainer
         }
 
 
-        private void FailCallbacks(DisconnectCause fail)
+        private void FailCallbacks(PhotonMultiplayer.NetworkFail fail)
         {
             m_StackScreenMenu.Clear();
             Debug.LogError($"FailCallbacks: {fail}");

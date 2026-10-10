@@ -18,7 +18,7 @@ public class FingerPokeUICanvas : MonoBehaviour
     private UnityEngine.SpatialTracking.TrackedPoseDriver m_TrackedPoseDrivers;
 
     private CapsuleCollider m_IndexTipCollider;
-    private PhysicsMaterial m_IndexTipOriginalPhysicMaterial;
+    private PhysicMaterial m_IndexTipOriginalPhysicMaterial;
     private void Awake()
     {
         SanityCheck();
