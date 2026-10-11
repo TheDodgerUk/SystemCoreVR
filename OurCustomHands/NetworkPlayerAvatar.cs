@@ -69,11 +69,11 @@ public class NetworkPlayerAvatar : OvrAvatarInputManager
     {
         Debug.LogError("This syncs up the Avatar and the \"shadow\"  avatar");
         m_AutoHandAvatarInputManager = CameraControllerVR.Instance.GetComponentInChildren<AutoHandAvatarInputManager>(true);
-        if (BodyTracking != null)
+        if (BodyTrackingContext != null)
         {
             m_RemoteOurOvrInputTrackingDelegate = new RemoteOurOvrInputTrackingDelegate(null, this); //this has been added
-            BodyTracking.InputTrackingDelegate = m_RemoteOurOvrInputTrackingDelegate;
-            BodyTracking.InputControlDelegate = new RemoteOurOvrInputControlDelegate();
+            //BodyTrackingContext. = m_RemoteOurOvrInputTrackingDelegate;
+            //InputControlProvider = new RemoteOurOvrInputControlDelegate();
         }
         m_SampleAvatarEntity = this.GetComponent<SampleAvatarEntity>();
 
@@ -226,34 +226,35 @@ public class NetworkPlayerAvatar : OvrAvatarInputManager
 
     private void DrawTrackingLocations()
     {
-        var inputTrackingState = BodyTracking.InputTrackingState;
+       //// InputTrackingProvider
+       // var inputTrackingState = BodyTracking.InputTrackingState;
 
-        float radius = 0.2f;
-        Quaternion orientation;
-        float outerRadius() => radius + 0.25f;
-        Vector3 forward() => orientation * Vector3.forward;
+       // float radius = 0.2f;
+       // Quaternion orientation;
+       // float outerRadius() => radius + 0.25f;
+       // Vector3 forward() => orientation * Vector3.forward;
 
-        Handles.color = Color.blue;
-        Handles.RadiusHandle(Quaternion.identity, inputTrackingState.headset.position, radius);
+       // Handles.color = Color.blue;
+       // Handles.RadiusHandle(Quaternion.identity, inputTrackingState.headset.position, radius);
 
-        orientation = inputTrackingState.headset.orientation;
-        Handles.DrawLine((Vector3)inputTrackingState.headset.position + forward() * radius,
-            (Vector3)inputTrackingState.headset.position + forward() * outerRadius());
+       // orientation = inputTrackingState.headset.orientation;
+       // Handles.DrawLine((Vector3)inputTrackingState.headset.position + forward() * radius,
+       //     (Vector3)inputTrackingState.headset.position + forward() * outerRadius());
 
-        radius = 0.1f;
-        Handles.color = Color.yellow;
-        Handles.RadiusHandle(Quaternion.identity, inputTrackingState.leftController.position, radius);
+       // radius = 0.1f;
+       // Handles.color = Color.yellow;
+       // Handles.RadiusHandle(Quaternion.identity, inputTrackingState.leftController.position, radius);
 
-        orientation = inputTrackingState.leftController.orientation;
-        Handles.DrawLine((Vector3)inputTrackingState.leftController.position + forward() * radius,
-            (Vector3)inputTrackingState.leftController.position + forward() * outerRadius());
+       // orientation = inputTrackingState.leftController.orientation;
+       // Handles.DrawLine((Vector3)inputTrackingState.leftController.position + forward() * radius,
+       //     (Vector3)inputTrackingState.leftController.position + forward() * outerRadius());
 
-        Handles.color = Color.yellow;
-        Handles.RadiusHandle(Quaternion.identity, inputTrackingState.rightController.position, radius);
+       // Handles.color = Color.yellow;
+       // Handles.RadiusHandle(Quaternion.identity, inputTrackingState.rightController.position, radius);
 
-        orientation = inputTrackingState.rightController.orientation;
-        Handles.DrawLine((Vector3)inputTrackingState.rightController.position + forward() * radius,
-            (Vector3)inputTrackingState.rightController.position + forward() * outerRadius());
+       // orientation = inputTrackingState.rightController.orientation;
+       // Handles.DrawLine((Vector3)inputTrackingState.rightController.position + forward() * radius,
+       //     (Vector3)inputTrackingState.rightController.position + forward() * outerRadius());
     }
 
 #endregion
