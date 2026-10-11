@@ -147,6 +147,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
 
         return Physics.Raycast(
             origin,
+            Vector3.down,
             out hit,
             rayDistance,
             placementLayers,
