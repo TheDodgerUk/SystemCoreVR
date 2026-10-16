@@ -5,6 +5,10 @@ public class TestAutoHand : MonoBehaviour
 {
     public Grabbable grabbable;
 
+    private void Awake()
+    {
+        grabbable = GetComponent<Grabbable>();
+    }
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.G))

@@ -1,8 +1,8 @@
 
 using UnityEngine;
 using Autohand;
+using UnityEditor.SceneManagement;
 
-[RequireComponent(typeof(LineRenderer))]
 [RequireComponent(typeof(Grabbable))]
 public class MiniatureVerticalLine : MonoBehaviour
 {
@@ -18,7 +18,10 @@ public class MiniatureVerticalLine : MonoBehaviour
 
     private void Awake()
     {
-        line = GetComponent<LineRenderer>();
+        GameObject child = new GameObject("VerticalLine");
+        child.transform.SetParent(transform, false);
+        line = child.AddComponent<LineRenderer>();
+        Debug.LogError($"MiniatureVerticalLine Script A added LineRenderer: {line.GetInstanceID()}");
         grabbable = GetComponent<Grabbable>();
 
         line.positionCount = 2;

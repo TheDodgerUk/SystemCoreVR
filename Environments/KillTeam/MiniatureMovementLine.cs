@@ -3,7 +3,6 @@ using UnityEngine;
 using Autohand;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(LineRenderer))]
 [RequireComponent(typeof(Grabbable))]
 public class MiniatureMovementLine : MonoBehaviour
 {
@@ -43,7 +42,10 @@ public class MiniatureMovementLine : MonoBehaviour
 
     private void Awake()
     {
-        line = GetComponent<LineRenderer>();
+        GameObject child = new GameObject("MovementLine");
+        child.transform.SetParent(transform, false);
+        line = child.AddComponent<LineRenderer>();
+        Debug.LogError($"MiniatureMovementLine Script A added LineRenderer: {line.GetInstanceID()}");
         grab = GetComponent<Grabbable>();
 
         line.useWorldSpace = true;
