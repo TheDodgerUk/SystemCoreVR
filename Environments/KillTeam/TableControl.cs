@@ -51,6 +51,15 @@ namespace KillTeam
                 else
                     rightHand = hand.transform;
             }
+
+            leftHand.AddComponent<PalmCardHolder>();
+            rightHand.AddComponent<PalmCardHolder>();
+
+            var orc = this.gameObject.SearchComponent<Transform>("Orc");
+            if (orc != null)
+            {
+                orc.AddComponent<InitiliseMiniture>();
+            }
         }
 
         private void Update()

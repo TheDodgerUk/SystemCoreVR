@@ -25,6 +25,8 @@ public class InitiliseMiniture : MonoBehaviour
         miniatureVerticalLine = gameObject.AddComponent<MiniatureVerticalLine>();
         miniatureMovementLine = gameObject.AddComponent<MiniatureMovementLine>();
         miniaturePlacementValidator = gameObject.AddComponent<MiniaturePlacementValidator>();
+        var rb = gameObject.GetComponent<Rigidbody>();
+        rb.constraints = RigidbodyConstraints.FreezeAll;
     }
 
 
