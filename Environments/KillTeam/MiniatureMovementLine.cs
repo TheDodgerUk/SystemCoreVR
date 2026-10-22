@@ -27,6 +27,7 @@ public class MiniatureMovementLine : MonoBehaviour
 
     private Vector3 startPosition;
     private bool isMoving;
+    private Color color;
 
     private class Node
     {
@@ -114,7 +115,7 @@ public class MiniatureMovementLine : MonoBehaviour
                 path[i - 1], path[i]);
         }
 
-        Color color = distance <= maxMovement
+        color = distance <= maxMovement
             ? validColor
             : invalidColor;
 
@@ -132,6 +133,11 @@ public class MiniatureMovementLine : MonoBehaviour
         }
     }
 
+
+    public bool IsValidPosition()
+    {
+        return (color == validColor);
+    }
     // Get every collider belonging to terrain objects,
     // including colliders on child GameObjects.
     private List<Collider> GetTerrainColliders()

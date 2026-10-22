@@ -25,6 +25,8 @@ public class MiniatureMovement : MonoBehaviour
 
     private Material baseMaterial;
     private Color originalColor;
+    private MiniatureMovementLine miniatureMovementLine;
+    private MiniaturePlacementValidator miniaturePlacementValidator;
 
     void Awake()
     {
@@ -33,6 +35,8 @@ public class MiniatureMovement : MonoBehaviour
             baseMaterial = baseRenderer.material;
             originalColor = baseMaterial.color;
         }
+        miniatureMovementLine = GetComponent<MiniatureMovementLine>();
+        miniaturePlacementValidator = GetComponent<MiniaturePlacementValidator>();
     }
 
     public void BeginMove()
@@ -60,8 +64,10 @@ public class MiniatureMovement : MonoBehaviour
         if (!isMoving)
             return;
 
-        if (!IsValidPosition(transform.position))
+        if(miniatureMovementLine.IsValidPosition() == false || miniaturePlacementValidator.IsValidPlacement() == false)
         {
+            Debug.Log($"miniatureMovementLine: {miniatureMovementLine.IsValidPosition()}"); ;
+            Debug.Log($"miniaturePlacementValidator: {miniaturePlacementValidator.IsValidPlacement()}"); ;
             transform.position = startPosition;
         }
 
