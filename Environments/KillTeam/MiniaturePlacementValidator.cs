@@ -101,18 +101,23 @@ public class MiniaturePlacementValidator : MonoBehaviour
 
         float radius = baseDiameter * 0.5f;
 
-        // Find the central supporting collider.
-        if (!CastDown(position, out RaycastHit centerHit))
+        // Check centre
+        bool centerValid = CastDown(position, out RaycastHit centerHit);
+
+#if UNITY_EDITOR
+        DrawCheckLine(position, centerValid);
+#endif
+
+        if (!centerValid)
             return false;
 
         Collider targetCollider = centerHit.collider;
         float surfaceY = centerHit.point.y;
 
-        // Check points around the circular base.
+        // Check edges
         for (int i = 0; i < edgeSamples; i++)
         {
-            float angle =
-                i * Mathf.PI * 2f / edgeSamples;
+            float angle = i * Mathf.PI * 2f / edgeSamples;
 
             Vector3 offset = new Vector3(
                 Mathf.Cos(angle) * radius,
@@ -121,26 +126,31 @@ public class MiniaturePlacementValidator : MonoBehaviour
 
             Vector3 samplePosition = position + offset;
 
-            if (!CastDown(
-                samplePosition,
-                out RaycastHit edgeHit))
-                return false;
+            bool valid = CastDown(samplePosition, out RaycastHit edgeHit) &&
+                         edgeHit.collider == targetCollider &&
+                         Mathf.Abs(edgeHit.point.y - surfaceY) <= heightTolerance;
 
-            // Every sample must hit the SAME collider.
-            if (edgeHit.collider != targetCollider)
-                return false;
+#if UNITY_EDITOR
+            DrawCheckLine(samplePosition, valid);
+#endif
 
-            // All points must be on the same height.
-            if (Mathf.Abs(
-                edgeHit.point.y - surfaceY) > heightTolerance)
+            if (!valid)
                 return false;
         }
 
-        // Assumes miniature pivot is at bottom of its base.
         validPosition.y = surfaceY;
-
         return true;
     }
+
+#if UNITY_EDITOR
+    private void DrawCheckLine(Vector3 position, bool valid)
+    {
+        Debug.DrawLine(
+            position + Vector3.up * 0.1f,
+            position + Vector3.down * 0.5f,
+            valid ? Color.green : Color.red);
+    }
+#endif
 
     private bool CastDown(
         Vector3 position,
@@ -156,5 +166,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
             rayDistance,
             placementLayers,
             QueryTriggerInteraction.Ignore);
+
+
     }
 }
