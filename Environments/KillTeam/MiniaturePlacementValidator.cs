@@ -56,18 +56,18 @@ public class MiniaturePlacementValidator : MonoBehaviour
         isGrabbed = true;
     }
 
+    public bool IsValidPlacement()
+    {
+        return canPlace;
+    }
     private void OnRelease(Hand hand, Grabbable grabbable)
     {
         isGrabbed = false;
 
-        if (canPlace)
-        {
-            transform.position = placementPosition;
-
             Vector3 rotation = transform.eulerAngles;
             transform.rotation =
                 Quaternion.Euler(0f, rotation.y, 0f);
-        }
+ 
 
         if (baseMaterial != null)
             baseMaterial.color = originalColor;
