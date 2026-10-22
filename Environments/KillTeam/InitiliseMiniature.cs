@@ -21,10 +21,11 @@ public class InitiliseMiniture : MonoBehaviour
     void Start()
     {
         miniatureMovement = gameObject.AddComponent<MiniatureMovement>();
+        miniaturePlacementValidator = gameObject.AddComponent<MiniaturePlacementValidator>();
         vRMiniatureGrab = gameObject.AddComponent<VRMiniatureGrab>();
         miniatureVerticalLine = gameObject.AddComponent<MiniatureVerticalLine>();
         miniatureMovementLine = gameObject.AddComponent<MiniatureMovementLine>();
-        miniaturePlacementValidator = gameObject.AddComponent<MiniaturePlacementValidator>();
+
         gameObject.AddComponent<TestAutoHand>();
         var rb = gameObject.GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeAll;

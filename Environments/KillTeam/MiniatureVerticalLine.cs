@@ -16,6 +16,7 @@ public class MiniatureVerticalLine : MonoBehaviour
     private Grabbable grabbable;
     private bool isGrabbed;
 
+    private MiniaturePlacementValidator miniaturePlacementValidator;
     private void Awake()
     {
         GameObject child = new GameObject("VerticalLine");
@@ -35,6 +36,7 @@ public class MiniatureVerticalLine : MonoBehaviour
         line.startColor = lineColor;
         line.endColor = lineColor;
         line.enabled = false;
+        miniaturePlacementValidator = GetComponent<MiniaturePlacementValidator>();
     }
 
     private void OnEnable()
@@ -79,7 +81,8 @@ public class MiniatureVerticalLine : MonoBehaviour
         {
             end = hit.point;
         }
-
+        line.startColor = miniaturePlacementValidator.GetColour();
+        line.endColor = line.startColor;
         line.SetPosition(0, start);
         line.SetPosition(1, end);
     }

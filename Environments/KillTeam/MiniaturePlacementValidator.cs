@@ -22,7 +22,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
 
     private Grabbable grab;
     private Material baseMaterial;
-    private Color originalColor;
+    public Color originalColor;
 
     private bool isGrabbed;
     public bool canPlace;
@@ -59,6 +59,10 @@ public class MiniaturePlacementValidator : MonoBehaviour
     public bool IsValidPlacement()
     {
         return canPlace;
+    }
+    public Color GetColour()
+    {
+        return originalColor;
     }
     private void OnRelease(Hand hand, Grabbable grabbable)
     {
