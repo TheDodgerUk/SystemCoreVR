@@ -14,7 +14,7 @@ public class VRMiniatureGrab : MonoBehaviour
 
     bool isGabbedEnabled = true;
     private bool isGrabbed;
-    private float lockedHeight;
+
 
     private void Awake()
     {
@@ -37,7 +37,6 @@ public class VRMiniatureGrab : MonoBehaviour
     private void OnGrab(Hand hand, Grabbable grabbable)
     {
         startPosition = transform.position;
-        lockedHeight = transform.position.y;
         movement.BeginMove();
         isGrabbed = true;
     }
@@ -48,7 +47,6 @@ public class VRMiniatureGrab : MonoBehaviour
             return;
 
         Vector3 position = transform.position;
-        position.y = lockedHeight;
 
         movement.UpdateMove(position);
     }
@@ -57,10 +55,7 @@ public class VRMiniatureGrab : MonoBehaviour
     {
         isGrabbed = false;
 
-        // Reset height to original Y
-        Vector3 position = transform.position;
-        position.y = lockedHeight;
-        transform.position = position;
+
 
         // Make miniature upright, but preserve Y rotation
         Vector3 rotation = transform.eulerAngles;

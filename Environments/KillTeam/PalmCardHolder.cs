@@ -32,9 +32,18 @@ public class PalmCardHolder : MonoBehaviour
         new List<GameObject>();
 
     private bool showingCards;
+    private Hand leftHand;
+    private Hand rightHand;
 
     private void Start()
     {
+
+        leftHand = CameraControllerVR.Instance.HandLeftRef;
+
+        rightHand = CameraControllerVR.Instance.HandRightRef;
+
+        palm = leftHand.palmTransform;
+
         if (palm == null)
             palm = transform;
 
