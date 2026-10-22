@@ -1,5 +1,6 @@
 using UnityEngine;
 using Autohand;
+using NaughtyAttributes;
 
 public class TestAutoHand : MonoBehaviour
 {
@@ -7,20 +8,27 @@ public class TestAutoHand : MonoBehaviour
 
     private void Awake()
     {
-        grabbable = GetComponent<Grabbable>();
+        if (grabbable == null)
+            grabbable = GetComponent<Grabbable>();
     }
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.G))
-        {
-            Debug.Log("Test Grab");
-            grabbable.OnGrabEvent?.Invoke(null, grabbable);
-        }
 
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            Debug.Log("Test Release");
-            grabbable.OnReleaseEvent?.Invoke(null, grabbable);
-        }
+    [Button("Grab")]
+    public void Grab()
+    {
+        if (grabbable == null)
+            grabbable = GetComponent<Grabbable>();
+
+        Debug.Log("Test Grab");
+        grabbable.OnGrabEvent?.Invoke(null, grabbable);
+    }
+
+    [Button("Release")]
+    public void Release()
+    {
+        if (grabbable == null)
+            grabbable = GetComponent<Grabbable>();
+
+        Debug.Log("Test Release");
+        grabbable.OnReleaseEvent?.Invoke(null, grabbable);
     }
 }

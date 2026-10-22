@@ -138,10 +138,10 @@ public class MiniatureMovementLine : MonoBehaviour
     {
         List<Collider> result = new List<Collider>();
 
-        Terrian[] terrain =
-            FindObjectsOfType<Terrian>();
+        KillTeam.Terrian[] terrain =
+            FindObjectsOfType<KillTeam.Terrian>();
 
-        foreach (Terrian t in terrain)
+        foreach (KillTeam.Terrian t in terrain)
         {
             Collider[] colliders =
                 t.GetComponentsInChildren<Collider>();

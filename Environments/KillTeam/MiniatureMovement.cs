@@ -46,8 +46,6 @@ public class MiniatureMovement : MonoBehaviour
         if (!isMoving)
             return;
 
-        // Keep the miniature at its original height.
-        targetPosition.y = startPosition.y;
 
         transform.position = targetPosition;
 

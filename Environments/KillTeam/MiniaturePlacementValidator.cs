@@ -6,7 +6,7 @@ using Autohand;
 public class MiniaturePlacementValidator : MonoBehaviour
 {
     [Header("Base")]
-    public float baseDiameter = 0.5f;
+    public float baseDiameter = 0.032f;
     public int edgeSamples = 16;
 
     [Header("Surface")]
