@@ -62,7 +62,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
     }
     public Color GetColour()
     {
-        return originalColor;
+        return baseMaterial.color;
     }
     private void OnRelease(Hand hand, Grabbable grabbable)
     {
