@@ -45,11 +45,13 @@ namespace KillTeam
             if (leftHand == null || rightHand == null)
                 return;
 
-            bool leftGrip = OVRInput.Get(
-                OVRInput.Axis1D.PrimaryHandTrigger) > gripThreshold;
+            bool leftGrip = OVRInput.GetDown(
+                                OVRInput.Button.One,
+                                OVRInput.Controller.LTouch);
 
-            bool rightGrip = OVRInput.Get(
-                OVRInput.Axis1D.SecondaryHandTrigger) > gripThreshold;
+            bool rightGrip = OVRInput.GetDown(
+                                OVRInput.Button.One,
+                                OVRInput.Controller.RTouch);
 
             // Both grips held
             if (leftGrip && rightGrip)
