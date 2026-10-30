@@ -38,6 +38,7 @@ namespace KillTeam
         {
             leftHand = CameraControllerVR.Instance.HandLeftRef.transform;
             rightHand = CameraControllerVR.Instance.HandRightRef.transform;
+            
         }
 
         private void Update()

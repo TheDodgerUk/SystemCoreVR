@@ -3,10 +3,10 @@ using UnityEngine;
 using Autohand;
 
 [RequireComponent(typeof(Grabbable))]
+[RequireComponent(typeof(CapsuleCollider))]
 public class MiniaturePlacementValidator : MonoBehaviour
 {
     [Header("Base")]
-    public float baseDiameter = 0.032f;
     public int edgeSamples = 16;
 
     [Header("Surface")]
@@ -21,6 +21,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
     public Color invalidColor = Color.red;
 
     private Grabbable grab;
+    private CapsuleCollider capsule;
     private Material baseMaterial;
     public Color originalColor;
 
@@ -31,6 +32,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
     private void Awake()
     {
         grab = GetComponent<Grabbable>();
+        capsule = GetComponent<CapsuleCollider>();
 
         if (baseRenderer != null)
         {
@@ -60,18 +62,19 @@ public class MiniaturePlacementValidator : MonoBehaviour
     {
         return canPlace;
     }
+
     public Color GetColour()
     {
         return baseMaterial.color;
     }
+
     private void OnRelease(Hand hand, Grabbable grabbable)
     {
         isGrabbed = false;
 
-            Vector3 rotation = transform.eulerAngles;
-            transform.rotation =
-                Quaternion.Euler(0f, rotation.y, 0f);
- 
+        Vector3 rotation = transform.eulerAngles;
+        transform.rotation =
+            Quaternion.Euler(0f, rotation.y, 0f);
 
         if (baseMaterial != null)
             baseMaterial.color = originalColor;
@@ -99,13 +102,25 @@ public class MiniaturePlacementValidator : MonoBehaviour
     {
         validPosition = position;
 
-        float radius = baseDiameter * 0.5f;
+        // CapsuleCollider radius in world space.
+        // Assumes the capsule is vertical (Direction Y).
+        Vector3 scale = capsule.transform.lossyScale;
 
-        // Check centre
-        bool centerValid = CastDown(position, out RaycastHit centerHit);
+        float radius = capsule.radius *
+            Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+
+        // Account for the collider's centre offset.
+        Vector3 centerOffset =
+            capsule.transform.TransformVector(capsule.center);
+
+        Vector3 centerPosition = position + centerOffset;
+
+        // Check centre.
+        bool centerValid = CastDown(
+            centerPosition, out RaycastHit centerHit);
 
 #if UNITY_EDITOR
-        DrawCheckLine(position, centerValid);
+        DrawCheckLine(centerPosition, centerValid);
 #endif
 
         if (!centerValid)
@@ -114,21 +129,24 @@ public class MiniaturePlacementValidator : MonoBehaviour
         Collider targetCollider = centerHit.collider;
         float surfaceY = centerHit.point.y;
 
-        // Check edges
-        for (int i = 0; i < edgeSamples; i++)
+        // Check edges around the capsule width.
+        int samples = Mathf.Max(3, edgeSamples);
+
+        for (int i = 0; i < samples; i++)
         {
-            float angle = i * Mathf.PI * 2f / edgeSamples;
+            float angle = i * Mathf.PI * 2f / samples;
 
             Vector3 offset = new Vector3(
                 Mathf.Cos(angle) * radius,
                 0f,
                 Mathf.Sin(angle) * radius);
 
-            Vector3 samplePosition = position + offset;
+            Vector3 samplePosition = centerPosition + offset;
 
-            bool valid = CastDown(samplePosition, out RaycastHit edgeHit) &&
-                         edgeHit.collider == targetCollider &&
-                         Mathf.Abs(edgeHit.point.y - surfaceY) <= heightTolerance;
+            bool valid =
+                CastDown(samplePosition, out RaycastHit edgeHit) &&
+                edgeHit.collider == targetCollider &&
+                Mathf.Abs(edgeHit.point.y - surfaceY) <= heightTolerance;
 
 #if UNITY_EDITOR
             DrawCheckLine(samplePosition, valid);
@@ -138,7 +156,9 @@ public class MiniaturePlacementValidator : MonoBehaviour
                 return false;
         }
 
-        validPosition.y = surfaceY;
+        // Preserve the original pivot-to-surface offset.
+        validPosition.y = surfaceY - centerOffset.y;
+
         return true;
     }
 
@@ -156,8 +176,8 @@ public class MiniaturePlacementValidator : MonoBehaviour
         Vector3 position,
         out RaycastHit hit)
     {
-        Vector3 origin = position +
-            Vector3.up * rayStartHeight;
+        Vector3 origin =
+            position + Vector3.up * rayStartHeight;
 
         return Physics.Raycast(
             origin,
@@ -166,7 +186,5 @@ public class MiniaturePlacementValidator : MonoBehaviour
             rayDistance,
             placementLayers,
             QueryTriggerInteraction.Ignore);
-
-
     }
 }
