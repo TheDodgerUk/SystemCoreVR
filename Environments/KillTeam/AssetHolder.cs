@@ -6,8 +6,10 @@ using UnityEngine;
 public class AssetHolder : MonoBehaviour
 {
     // Start is called before the first frame update
+    [SerializeField]
     private List<GameObject> _assets = new List<GameObject>();
-    private SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject> _chars = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject>
+    [SerializeField]
+    private SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject> _chars = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject>();
     void Awake()
     {
 
@@ -54,14 +56,22 @@ public class AssetHolder : MonoBehaviour
                         // Initialise miniature
                         item.gameObject.AddComponent<InitiliseMiniture>();
 
-                        _chars.AddToList(data.m_OperativeStats.teamType,item.gameObject);
+                        _chars.AddToList(data.m_OperativeStats.teamType, item.gameObject);
                     }
                     else
                     {
-                        item.gameObject.transform.SetParent(transform);
+                        Transform assetsFolder = transform.Find("Assets");
+
+                        if (assetsFolder == null)
+                        {
+                            GameObject go = new GameObject("Assets");
+                            assetsFolder = go.transform;
+                            assetsFolder.SetParent(transform, false);
+                        }
+
+                        item.gameObject.transform.SetParent(assetsFolder, false);
                         item.gameObject.transform.localPosition = Vector3.zero;
-                        item.gameObject.transform.localRotation =
-                            Quaternion.Euler(-90, 0, 0);
+                        item.gameObject.transform.localRotation = Quaternion.Euler(-90, 0, 0);
 
                         _assets.Add(item.gameObject);
                     }
@@ -69,7 +79,5 @@ public class AssetHolder : MonoBehaviour
             }
         }
     }
-    }
-
-
 }
+

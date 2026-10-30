@@ -22,6 +22,9 @@ public class InitiliseMiniture : MonoBehaviour
     {
         CameraControllerVR.Instance.AutoHandPlayerRef.useMovement = false;
         CameraControllerVR.Instance.AutoHandPlayerRef.snapTurning = false;
+        CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.position = Vector3.zero;
+        CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.rotation = Quaternion.identity;
+
 
         miniatureMovement = gameObject.AddComponent<MiniatureMovement>();
         miniaturePlacementValidator = gameObject.AddComponent<MiniaturePlacementValidator>();
