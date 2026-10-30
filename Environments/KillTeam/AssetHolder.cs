@@ -11,6 +11,7 @@ public class AssetHolder : MonoBehaviour
     private List<GameObject> _assets = new List<GameObject>();
     [SerializeField]
     private SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject> _chars = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject>();
+    const string ASSETS= "Assets";
     void Awake()
     {
 
@@ -21,6 +22,8 @@ public class AssetHolder : MonoBehaviour
         teamDict.Add(ContentKillTeamMetaData.TeamType.Kommandos, new Vector3(-0.5f, 0.32f, 0));
         teamDict.Add(ContentKillTeamMetaData.TeamType.PlagueMarines, new Vector3(-0.5f, 0.32f, -0.5f));
         teamDict.Add(ContentKillTeamMetaData.TeamType.WolfScouts, new Vector3(0.5f, 0.32f, 0));
+        Vector3 assetsPos = new Vector3(-0.5f, 0.32f, 0.5f);
+
 
         int totalCount = 0;
         foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)
@@ -47,6 +50,12 @@ public class AssetHolder : MonoBehaviour
                 var list = _chars.GetList(key);
                 PrefabRowSpawner spawner = gameObject.transform.Find(key.ToString()).AddComponent<PrefabRowSpawner>();
                 spawner.Spawn(teamDict[key], _chars[key]);
+            }
+
+            if (gameObject.transform.Find(ASSETS) == true)
+            {
+                PrefabRowSpawner spawnerAssets = gameObject.transform.Find(ASSETS).AddComponent<PrefabRowSpawner>();
+                spawnerAssets.Spawn(assetsPos, _assets);
             }
         });
 
@@ -105,11 +114,11 @@ public class AssetHolder : MonoBehaviour
                     }
                     else
                     {
-                        Transform assetsFolder = transform.Find("Assets");
+                        Transform assetsFolder = transform.Find(ASSETS);
 
                         if (assetsFolder == null)
                         {
-                            GameObject go = new GameObject("Assets");
+                            GameObject go = new GameObject(ASSETS);
                             assetsFolder = go.transform;
                             assetsFolder.SetParent(transform, false);
                         }
@@ -119,6 +128,8 @@ public class AssetHolder : MonoBehaviour
                         item.gameObject.transform.localRotation = Quaternion.Euler(-90, 0, 0);
 
                         _assets.Add(item.gameObject);
+                        task.Increment();
+                        Debug.Log($"task {task.GetCount}");
                     }
 
                 });
