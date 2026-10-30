@@ -1,64 +1,74 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using UnityEngine;
 
 public class AssetHolder : MonoBehaviour
 {
     // Start is called before the first frame update
     private List<GameObject> _assets = new List<GameObject>();
-    private List<GameObject> _chars = new List<GameObject>();
+    private SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject> _chars = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject>
     void Awake()
     {
 
         foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)
         {
-            Core.Scene.SpawnObject(catItem, (item) =>
+            var data = catItem.GetMetaData<ContentKillTeamMetaData>();
+
+            int count = data != null
+                ? Mathf.Max(0, data.m_OperativeStats.numberToGenerate)
+                : 1;
+
+            for (int i = 0; i < count; i++)
             {
-                var all = item.Entry.GetAllMetaData();
-                if (item.Entry.GetMetaData<ContentKillTeamMetaData>() != null)
+                Core.Scene.SpawnObject(catItem, (item) =>
                 {
-
-                    item.gameObject.transform.SetParent(transform);
-                    item.gameObject.transform.localPosition = Vector3.zero;
-
-                    var data = item.Entry.GetMetaData<ContentKillTeamMetaData>();
                     if (data != null)
                     {
-                        if (data.m_OperativeStats.rotateX == true)
+                        // Find or create team parent
+                        string teamName = data.m_OperativeStats.teamType.ToString();
+
+                        Transform child = transform.Find(teamName);
+
+                        if (child == null)
                         {
-                            item.gameObject.transform.localRotation = Quaternion.Euler(-90, 0, 0);
+                            GameObject go = new GameObject(teamName);
+                            child = go.transform;
+                            child.SetParent(transform, false);
                         }
-                        else
-                        {
-                            item.gameObject.transform.localRotation = Quaternion.identity;
-                        }
+
+                        // Parent miniature
+                        item.gameObject.transform.SetParent(child, false);
+                        item.gameObject.transform.localPosition = Vector3.zero;
+
+                        // Rotation
+                        item.gameObject.transform.localRotation =
+                            data.m_OperativeStats.rotateX
+                                ? Quaternion.Euler(-90, 0, 0)
+                                : Quaternion.identity;
+
+                        // Metadata
+                        var display = item.AddComponent<KillTeamMetaDataDisplay>();
+                        display.Initialise(data);
+
+                        // Initialise miniature
+                        item.gameObject.AddComponent<InitiliseMiniture>();
+
+                        _chars.AddToList(data.m_OperativeStats.teamType,item.gameObject);
                     }
                     else
                     {
-                        Debug.Log("No Kill Team Meta Data");
+                        item.gameObject.transform.SetParent(transform);
+                        item.gameObject.transform.localPosition = Vector3.zero;
+                        item.gameObject.transform.localRotation =
+                            Quaternion.Euler(-90, 0, 0);
+
+                        _assets.Add(item.gameObject);
                     }
-                    var display = item.AddComponent<KillTeamMetaDataDisplay>();
-                    display.Initialise(data);
-
-
-
-
-
-
-                    item.gameObject.AddComponent<InitiliseMiniture>();
-                    _chars.Add(item.gameObject);
-
-
-                }
-                else
-                {
-                    item.gameObject.transform.SetParent(transform);
-                    item.gameObject.transform.localPosition = Vector3.zero;
-                    item.gameObject.transform.localRotation = Quaternion.Euler(-90, 0, 0);
-                    _assets.Add(item.gameObject);
-                }
-            });
+                });
+            }
         }
+    }
     }
 
 
