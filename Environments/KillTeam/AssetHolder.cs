@@ -7,14 +7,14 @@ public class AssetHolder : MonoBehaviour
     // Start is called before the first frame update
     private List<GameObject> _assets = new List<GameObject>();
     private List<GameObject> _chars = new List<GameObject>();
-    void Start()
+    void Awake()
     {
 
         foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)
         {
             Core.Scene.SpawnObject(catItem, (item) =>
             {
-
+                var all = item.Entry.GetAllMetaData();
                 if (item.Entry.GetMetaData<ContentKillTeamMetaData>() != null)
                 {
                     item.gameObject.transform.SetParent(transform);
