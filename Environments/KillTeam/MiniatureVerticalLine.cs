@@ -82,7 +82,7 @@ public class MiniatureVerticalLine : MonoBehaviour
             end = hit.point;
         }
         line.startColor = miniaturePlacementValidator.GetColour();
-        line.endColor = line.startColor;
+        line.endColor = miniaturePlacementValidator.GetColour();
         line.SetPosition(0, start);
         line.SetPosition(1, end);
     }

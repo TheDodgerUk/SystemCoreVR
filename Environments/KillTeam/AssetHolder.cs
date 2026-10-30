@@ -17,16 +17,38 @@ public class AssetHolder : MonoBehaviour
                 var all = item.Entry.GetAllMetaData();
                 if (item.Entry.GetMetaData<ContentKillTeamMetaData>() != null)
                 {
+
                     item.gameObject.transform.SetParent(transform);
                     item.gameObject.transform.localPosition = Vector3.zero;
-                    item.gameObject.transform.localRotation = Quaternion.identity;
+
+                    var data = item.Entry.GetMetaData<ContentKillTeamMetaData>();
+                    if (data != null)
+                    {
+                        if (data.m_OperativeStats.rotateX == true)
+                        {
+                            item.gameObject.transform.localRotation = Quaternion.Euler(-90, 0, 0);
+                        }
+                        else
+                        {
+                            item.gameObject.transform.localRotation = Quaternion.identity;
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("No Kill Team Meta Data");
+                    }
+                    var display = item.AddComponent<KillTeamMetaDataDisplay>();
+                    display.Initialise(data);
+
+
+
+
+
 
                     item.gameObject.AddComponent<InitiliseMiniture>();
                     _chars.Add(item.gameObject);
 
-                    var data = item.Entry.GetMetaData<ContentKillTeamMetaData>();
-                    var display = item.AddComponent<KillTeamMetaDataDisplay>();
-                    display.Initialise(data);
+
                 }
                 else
                 {

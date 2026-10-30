@@ -5,7 +5,7 @@ using UnityEngine;
 public class KillTeamMetaDataDisplay : MonoBehaviour
 {
     [SerializeField]
-    private ContentKillTeamMetaData contentKillTeamMetaData;
+    public ContentKillTeamMetaData contentKillTeamMetaData;
     // Start is called before the first frame update
     public void Initialise(ContentKillTeamMetaData data)
     {

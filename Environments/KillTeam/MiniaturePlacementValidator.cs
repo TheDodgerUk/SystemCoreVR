@@ -13,16 +13,16 @@ public class MiniaturePlacementValidator : MonoBehaviour
     public LayerMask placementLayers = ~0;
     public float rayStartHeight = 2f;
     public float rayDistance = 5f;
-    public float heightTolerance = 0.01f;
+    public float heightTolerance = 10;
 
     [Header("Visual")]
-    public Renderer baseRenderer;
     public Color validColor = Color.green;
     public Color invalidColor = Color.red;
 
+    public Color currentColor = Color.red;
+
     private Grabbable grab;
     private CapsuleCollider capsule;
-    private Material baseMaterial;
     public Color originalColor;
 
     private bool isGrabbed;
@@ -34,11 +34,6 @@ public class MiniaturePlacementValidator : MonoBehaviour
         grab = GetComponent<Grabbable>();
         capsule = GetComponent<CapsuleCollider>();
 
-        if (baseRenderer != null)
-        {
-            baseMaterial = baseRenderer.material;
-            originalColor = baseMaterial.color;
-        }
     }
 
     private void OnEnable()
@@ -65,7 +60,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
 
     public Color GetColour()
     {
-        return baseMaterial.color;
+        return currentColor;
     }
 
     private void OnRelease(Hand hand, Grabbable grabbable)
@@ -76,8 +71,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
         transform.rotation =
             Quaternion.Euler(0f, rotation.y, 0f);
 
-        if (baseMaterial != null)
-            baseMaterial.color = originalColor;
+        currentColor =  originalColor;
     }
 
     private void LateUpdate()
@@ -89,11 +83,9 @@ public class MiniaturePlacementValidator : MonoBehaviour
             transform.position,
             out placementPosition);
 
-        if (baseMaterial != null)
-        {
-            baseMaterial.color =
+
+            currentColor =
                 canPlace ? validColor : invalidColor;
-        }
     }
 
     public bool CheckPlacement(
