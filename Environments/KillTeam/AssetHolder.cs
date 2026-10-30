@@ -18,9 +18,9 @@ public class AssetHolder : MonoBehaviour
         Dictionary<ContentKillTeamMetaData.TeamType, Vector3> teamDict = new Dictionary<ContentKillTeamMetaData.TeamType, Vector3>();
 
         teamDict.Add(ContentKillTeamMetaData.TeamType.AngelsOfDeath, new Vector3(0.5f, 0.32f,0));
-        teamDict.Add(ContentKillTeamMetaData.TeamType.Deathwatch, new Vector3(0.5f, 0.32f, 0.5f));
-        teamDict.Add(ContentKillTeamMetaData.TeamType.Kommandos, new Vector3(-0.5f, 0.32f, 0));
-        teamDict.Add(ContentKillTeamMetaData.TeamType.PlagueMarines, new Vector3(-0.5f, 0.32f, -0.5f));
+        teamDict.Add(ContentKillTeamMetaData.TeamType.Deathwatch, new Vector3(0.5f, 0.32f, 0.3f));
+        teamDict.Add(ContentKillTeamMetaData.TeamType.Kommandos, new Vector3(0.5f, 0.32f, -0.3f));
+        teamDict.Add(ContentKillTeamMetaData.TeamType.PlagueMarines, new Vector3(0.5f, 0.32f, -0.5f));
         teamDict.Add(ContentKillTeamMetaData.TeamType.WolfScouts, new Vector3(0.5f, 0.32f, 0));
         Vector3 assetsPos = new Vector3(-0.5f, 0.32f, 0.5f);
 
@@ -39,7 +39,7 @@ public class AssetHolder : MonoBehaviour
         }
 
 
-
+        List<string> names = new List<string>();
         Debug.Log($"task FULL  {totalCount}");
         TaskAction task = new TaskAction(totalCount, () =>
         {
@@ -59,12 +59,14 @@ public class AssetHolder : MonoBehaviour
             }
         });
 
+
         int localCount = 0;
         foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)
         {
+            names.Add(catItem.ShortName);
             var data = catItem.GetMetaData<ContentKillTeamMetaData>();
 
-            int count = 0;
+            int count = 1;
             if(data != null)
             {
                 count = Mathf.Max(0, data.m_OperativeStats.numberToGenerate);
