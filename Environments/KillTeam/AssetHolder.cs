@@ -54,7 +54,7 @@ public class AssetHolder : MonoBehaviour
                 {
                     item.gameObject.transform.SetParent(transform);
                     item.gameObject.transform.localPosition = Vector3.zero;
-                    item.gameObject.transform.localRotation = Quaternion.identity;
+                    item.gameObject.transform.localRotation = Quaternion.Euler(-90, 0, 0);
                     _assets.Add(item.gameObject);
                 }
             });
