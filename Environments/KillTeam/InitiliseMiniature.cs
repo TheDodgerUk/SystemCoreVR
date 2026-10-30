@@ -18,8 +18,11 @@ public class InitiliseMiniture : MonoBehaviour
     private MiniatureMovementLine miniatureMovementLine;
     private MiniaturePlacementValidator miniaturePlacementValidator;
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
+        CameraControllerVR.Instance.AutoHandPlayerRef.useMovement = false;
+        CameraControllerVR.Instance.AutoHandPlayerRef.snapTurning = false;
+
         miniatureMovement = gameObject.AddComponent<MiniatureMovement>();
         miniaturePlacementValidator = gameObject.AddComponent<MiniaturePlacementValidator>();
         vRMiniatureGrab = gameObject.AddComponent<VRMiniatureGrab>();
