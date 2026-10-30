@@ -78,7 +78,6 @@ public class AssetHolder : MonoBehaviour
             {
                 Core.Scene.SpawnObject(catItem, (item) =>
                 {
-                    data = catItem.GetMetaData<ContentKillTeamMetaData>();
                     if (data != null)
                     {
                         // Find or create team parent
