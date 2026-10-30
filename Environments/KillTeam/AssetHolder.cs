@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -13,18 +14,60 @@ public class AssetHolder : MonoBehaviour
     void Awake()
     {
 
+        Dictionary<ContentKillTeamMetaData.TeamType, Vector3> teamDict = new Dictionary<ContentKillTeamMetaData.TeamType, Vector3>();
+
+        teamDict.Add(ContentKillTeamMetaData.TeamType.AngelsOfDeath, new Vector3(0.5f, 0.32f,0));
+        teamDict.Add(ContentKillTeamMetaData.TeamType.Deathwatch, new Vector3(0.5f, 0.32f, 0.5f));
+        teamDict.Add(ContentKillTeamMetaData.TeamType.Kommandos, new Vector3(-0.5f, 0.32f, 0));
+        teamDict.Add(ContentKillTeamMetaData.TeamType.PlagueMarines, new Vector3(-0.5f, 0.32f, -0.5f));
+        teamDict.Add(ContentKillTeamMetaData.TeamType.WolfScouts, new Vector3(0.5f, 0.32f, 0));
+
+        int totalCount = 0;
         foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)
         {
             var data = catItem.GetMetaData<ContentKillTeamMetaData>();
 
-            int count = data != null
-                ? Mathf.Max(0, data.m_OperativeStats.numberToGenerate)
-                : 1;
+            if(data != null)
+            {
+                totalCount += Mathf.Max(0, data.m_OperativeStats.numberToGenerate);
+                Debug.Log($"task {data.m_OperativeStats.operativeName} {data.m_OperativeStats.numberToGenerate}");
+            }
 
+        }
+
+
+
+        Debug.Log($"task FULL  {totalCount}");
+        TaskAction task = new TaskAction(totalCount, () =>
+        {
+            Debug.Log($"TaskAction done  {totalCount}");
+            var keys = _chars.GetKeys();
+            foreach (var key in keys)
+            {
+                var list = _chars.GetList(key);
+                PrefabRowSpawner spawner = gameObject.transform.Find(key.ToString()).AddComponent<PrefabRowSpawner>();
+                spawner.Spawn(teamDict[key], _chars[key]);
+            }
+        });
+
+        int localCount = 0;
+        foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)
+        {
+            var data = catItem.GetMetaData<ContentKillTeamMetaData>();
+
+            int count = 0;
+            if(data != null)
+            {
+                count = Mathf.Max(0, data.m_OperativeStats.numberToGenerate);
+
+            }
+            localCount += count;
+            Debug.Log($"task localCount {localCount} of {totalCount}");
             for (int i = 0; i < count; i++)
             {
                 Core.Scene.SpawnObject(catItem, (item) =>
                 {
+                    data = catItem.GetMetaData<ContentKillTeamMetaData>();
                     if (data != null)
                     {
                         // Find or create team parent
@@ -57,6 +100,8 @@ public class AssetHolder : MonoBehaviour
                         item.gameObject.AddComponent<InitiliseMiniture>();
 
                         _chars.AddToList(data.m_OperativeStats.teamType, item.gameObject);
+                        task.Increment();
+                        Debug.Log($"task {task.GetCount}");
                     }
                     else
                     {
@@ -75,9 +120,11 @@ public class AssetHolder : MonoBehaviour
 
                         _assets.Add(item.gameObject);
                     }
+
                 });
             }
         }
+
     }
 }
 
