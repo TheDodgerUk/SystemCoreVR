@@ -6,23 +6,34 @@ using UnityEngine;
 
 public class AssetHolder : MonoBehaviour
 {
+    [SerializeField]
+    private List<CatalogueEntry> catalogueEntry = new List<CatalogueEntry>();
+
     // Start is called before the first frame update
     [SerializeField]
     private List<GameObject> _assets = new List<GameObject>();
     [SerializeField]
     private SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject> _chars = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject>();
     const string ASSETS= "Assets";
+
+    private void CreateMenu()
+    {
+        VRPrefabMenu v = this.AddComponent<VRPrefabMenu>();
+        v.SetEntries(catalogueEntry);
+    }
+
     void Awake()
     {
 
         Dictionary<ContentKillTeamMetaData.TeamType, Vector3> teamDict = new Dictionary<ContentKillTeamMetaData.TeamType, Vector3>();
 
-        teamDict.Add(ContentKillTeamMetaData.TeamType.AngelsOfDeath, new Vector3(0.5f, 0.32f,0));
-        teamDict.Add(ContentKillTeamMetaData.TeamType.Deathwatch, new Vector3(0.5f, 0.32f, 0.3f));
-        teamDict.Add(ContentKillTeamMetaData.TeamType.Kommandos, new Vector3(0.5f, 0.32f, -0.3f));
-        teamDict.Add(ContentKillTeamMetaData.TeamType.PlagueMarines, new Vector3(0.5f, 0.32f, -0.5f));
-        teamDict.Add(ContentKillTeamMetaData.TeamType.WolfScouts, new Vector3(0.5f, 0.32f, 0));
-        Vector3 assetsPos = new Vector3(-0.5f, 0.32f, 0.5f);
+        float yOffset = 0.34248f * 1.01f; // this is to make sure it it ok
+        teamDict.Add(ContentKillTeamMetaData.TeamType.AngelsOfDeath, new Vector3(0.3f, yOffset, 0));
+        teamDict.Add(ContentKillTeamMetaData.TeamType.Deathwatch, new Vector3(0.3f, yOffset, 0.3f));
+        teamDict.Add(ContentKillTeamMetaData.TeamType.Kommandos, new Vector3(0.3f, yOffset, -0.3f));
+        teamDict.Add(ContentKillTeamMetaData.TeamType.PlagueMarines, new Vector3(0.3f, yOffset, -0.3f));
+        teamDict.Add(ContentKillTeamMetaData.TeamType.WolfScouts, new Vector3(0.3f, yOffset, 0));
+        Vector3 assetsPos = new Vector3(-0.3f, yOffset, 0.3f);
 
 
         int totalCount = 0;
@@ -61,6 +72,9 @@ public class AssetHolder : MonoBehaviour
                 PrefabRowSpawner spawnerAssets = gameObject.transform.Find(ASSETS).AddComponent<PrefabRowSpawner>();
                 spawnerAssets.Spawn(assetsPos, _assets);
             }
+
+            CreateMenu();
+
         });
 
 
@@ -100,11 +114,6 @@ public class AssetHolder : MonoBehaviour
                         item.gameObject.transform.SetParent(child, false);
                         item.gameObject.transform.localPosition = Vector3.zero;
 
-                        // Rotation
-                        item.gameObject.transform.localRotation =
-                            data.m_OperativeStats.rotateX
-                                ? Quaternion.Euler(-90, 0, 0)
-                                : Quaternion.identity;
 
                         // Metadata
                         var display = item.AddComponent<KillTeamMetaDataDisplay>();
@@ -135,6 +144,7 @@ public class AssetHolder : MonoBehaviour
                         _assets.Add(item.gameObject);
                         task.Increment();
                         Debug.Log($"task {task.GetCount}");
+                        catalogueEntry.Add(catItem);
                     }
 
                 });

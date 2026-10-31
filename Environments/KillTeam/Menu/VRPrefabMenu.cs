@@ -1,281 +1,437 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using Autohand;
 
 public class VRPrefabMenu : MonoBehaviour
 {
+    [Header("Prefab Data")]
+    [SerializeField]
+    private List<CatalogueEntry> entries =
+        new List<CatalogueEntry>();
+
+    [Header("VR Camera")]
+    [SerializeField]
+    private Transform vrCamera;
+
+    [Header("Canvas")]
+    [SerializeField]
+    private Vector2 canvasSize = new Vector2(600, 400);
+
+    [SerializeField]
+    private float canvasScale = 0.001f;
+
+    [Header("Background")]
+    [SerializeField]
+    private bool showBackground = true;
+
+    [SerializeField]
+    private Color backgroundColor =
+        new Color(0.08f, 0.08f, 0.08f, 0.9f);
+
+    [SerializeField]
+    private Sprite backgroundSprite;
+
+    [Header("Buttons")]
+    [SerializeField]
+    private Vector2 buttonSize = new Vector2(100, 100);
+
+    [SerializeField]
+    private Vector2 spacing = new Vector2(10, 10);
+
+    [SerializeField]
+    private int columns = 5;
+
+    [SerializeField]
+    private float gridPadding = 15f;
+
+    [Header("Spawn")]
+    [SerializeField]
+    private float spawnDistance = 0.5f;
+
     private Canvas canvas;
-    private RectTransform buttonContainer;
+    private RectTransform gridRoot;
+    private Image backgroundImage;
 
-    private Hand leftHand;
-    private Hand rightHand;
-
-    private readonly List<GameObject> buttons =
-        new List<GameObject>();
-
-    private const float CanvasWidth = 800f;
-    private const float CanvasHeight = 500f;
-    private const float CanvasScale = 0.001f;
-
-    private const float ButtonSize = 150f;
-    private const float ButtonSpacing = 10f;
-
-    private const float SpawnDistance = 0.15f;
+    private const string CanvasName = "VR Prefab Canvas";
+    private const string BackgroundName = "Background";
+    private const string GridName = "Thumbnail Grid";
 
     // --------------------------------------------------
-    // INITIALISE
+    // PUBLIC
     // --------------------------------------------------
 
-    public void Initialise(
-        Transform parent,
-        Hand left,
-        Hand right)
+    public void SetEntries(List<CatalogueEntry> newEntries)
     {
-        leftHand = left;
-        rightHand = right;
+        if (vrCamera == null && Camera.main != null)
+            vrCamera = Camera.main.transform;
 
-        CreateCanvas(parent);
-        CreateButtonContainer();
-        EnsureEventSystem();
+        entries = newEntries ?? new List<CatalogueEntry>();
+
+        CreateCanvas();
+        CreateButtons();
     }
 
     // --------------------------------------------------
-    // CREATE CANVAS
+    // CANVAS
     // --------------------------------------------------
 
-    private void CreateCanvas(Transform parent)
+    private void CreateCanvas()
     {
-        GameObject obj = new GameObject(
-            "VR Prefab Canvas",
-            typeof(RectTransform),
-            typeof(Canvas),
-            typeof(CanvasScaler),
-            typeof(GraphicRaycaster)
-        );
+        Transform existing = transform.Find(CanvasName);
 
-        obj.transform.SetParent(parent, false);
+        GameObject canvasObject;
 
-        canvas = obj.GetComponent<Canvas>();
+        if (existing != null)
+        {
+            canvasObject = existing.gameObject;
+        }
+        else
+        {
+            canvasObject = new GameObject(
+                CanvasName,
+                typeof(RectTransform),
+                typeof(Canvas),
+                typeof(CanvasScaler),
+                typeof(GraphicRaycaster)
+            );
+
+            canvasObject.transform.SetParent(
+                transform, false);
+        }
+
+        canvas = canvasObject.GetComponent<Canvas>();
+
+        if (canvas == null)
+            canvas = canvasObject.AddComponent<Canvas>();
+
         canvas.renderMode = RenderMode.WorldSpace;
 
+        if (canvasObject.GetComponent<CanvasScaler>() == null)
+            canvasObject.AddComponent<CanvasScaler>();
+
+        if (canvasObject.GetComponent<GraphicRaycaster>() == null)
+            canvasObject.AddComponent<GraphicRaycaster>();
+
         RectTransform rect =
-            obj.GetComponent<RectTransform>();
+            canvasObject.GetComponent<RectTransform>();
 
-        rect.sizeDelta = new Vector2(
-            CanvasWidth,
-            CanvasHeight
-        );
+        rect.sizeDelta = canvasSize;
 
-        rect.localScale =
-            Vector3.one * CanvasScale;
+        // Only set the initial scale for a new canvas.
+        if (existing == null)
+            rect.localScale = Vector3.one * canvasScale;
+
+        // Create or update background
+        CreateBackground(canvasObject);
+
+        // Create or update grid
+        CreateGrid(canvasObject);
+    }
+
+    // --------------------------------------------------
+    // BACKGROUND
+    // --------------------------------------------------
+
+    private void CreateBackground(GameObject canvasObject)
+    {
+        Transform existing =
+            canvasObject.transform.Find(BackgroundName);
+
+        GameObject backgroundObject;
+
+        if (existing != null)
+        {
+            backgroundObject = existing.gameObject;
+        }
+        else
+        {
+            backgroundObject = new GameObject(
+                BackgroundName,
+                typeof(RectTransform),
+                typeof(Image)
+            );
+
+            backgroundObject.transform.SetParent(
+                canvasObject.transform, false);
+        }
+
+        RectTransform rect =
+            backgroundObject.GetComponent<RectTransform>();
+
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
 
         rect.localPosition = Vector3.zero;
         rect.localRotation = Quaternion.identity;
+        rect.localScale = Vector3.one;
 
-        CanvasScaler scaler =
-            obj.GetComponent<CanvasScaler>();
+        backgroundImage =
+            backgroundObject.GetComponent<Image>();
 
-        scaler.dynamicPixelsPerUnit = 10f;
+        if (backgroundImage == null)
+            backgroundImage =
+                backgroundObject.AddComponent<Image>();
 
-        Image background = obj.AddComponent<Image>();
-        background.color = new Color(0, 0, 0, 0.8f);
-        background.raycastTarget = false;
+        backgroundImage.color = backgroundColor;
+        backgroundImage.sprite = backgroundSprite;
+        backgroundImage.enabled = showBackground;
+
+        if (backgroundSprite != null &&
+            backgroundSprite.border.sqrMagnitude > 0f)
+        {
+            backgroundImage.type = Image.Type.Sliced;
+        }
+        else
+        {
+            backgroundImage.type = Image.Type.Simple;
+        }
+
+        // Background must not block UI buttons.
+        backgroundImage.raycastTarget = false;
+
+        // Render behind all thumbnail buttons.
+        backgroundObject.transform.SetAsFirstSibling();
     }
 
     // --------------------------------------------------
-    // CREATE GRID
+    // GRID
     // --------------------------------------------------
 
-    private void CreateButtonContainer()
+    private void CreateGrid(GameObject canvasObject)
     {
-        GameObject obj = new GameObject(
-            "Button Container",
-            typeof(RectTransform),
-            typeof(GridLayoutGroup)
-        );
+        Transform existing =
+            canvasObject.transform.Find(GridName);
 
-        obj.transform.SetParent(
-            canvas.transform,
-            false
-        );
+        GameObject gridObject;
 
-        buttonContainer =
-            obj.GetComponent<RectTransform>();
+        if (existing != null)
+        {
+            gridObject = existing.gameObject;
+        }
+        else
+        {
+            gridObject = new GameObject(
+                GridName,
+                typeof(RectTransform),
+                typeof(GridLayoutGroup)
+            );
 
-        buttonContainer.anchorMin = Vector2.zero;
-        buttonContainer.anchorMax = Vector2.one;
+            gridObject.transform.SetParent(
+                canvasObject.transform, false);
+        }
 
-        buttonContainer.offsetMin =
-            new Vector2(20, 20);
+        gridRoot =
+            gridObject.GetComponent<RectTransform>();
 
-        buttonContainer.offsetMax =
-            new Vector2(-20, -20);
+        gridRoot.anchorMin = Vector2.zero;
+        gridRoot.anchorMax = Vector2.one;
+
+        gridRoot.offsetMin =
+            new Vector2(gridPadding, gridPadding);
+
+        gridRoot.offsetMax =
+            new Vector2(-gridPadding, -gridPadding);
+
+        gridRoot.localRotation = Quaternion.identity;
+        gridRoot.localScale = Vector3.one;
 
         GridLayoutGroup grid =
-            obj.GetComponent<GridLayoutGroup>();
+            gridObject.GetComponent<GridLayoutGroup>();
 
-        grid.cellSize = new Vector2(
-            ButtonSize,
-            ButtonSize
-        );
+        if (grid == null)
+            grid = gridObject.AddComponent<GridLayoutGroup>();
 
-        grid.spacing = new Vector2(
-            ButtonSpacing,
-            ButtonSpacing
-        );
+        grid.cellSize = buttonSize;
+        grid.spacing = spacing;
 
         grid.constraint =
             GridLayoutGroup.Constraint.FixedColumnCount;
 
-        grid.constraintCount = 4;
+        grid.constraintCount = Mathf.Max(1, columns);
 
-        grid.childAlignment =
-            TextAnchor.UpperLeft;
+        grid.childAlignment = TextAnchor.UpperLeft;
+
+        grid.startCorner =
+            GridLayoutGroup.Corner.UpperLeft;
+
+        grid.startAxis =
+            GridLayoutGroup.Axis.Horizontal;
+
+        grid.padding = new RectOffset(0, 0, 0, 0);
+
+        // Ensure buttons render above the background.
+        gridObject.transform.SetAsLastSibling();
     }
 
     // --------------------------------------------------
-    // SET MENU ITEMS
+    // BUTTONS
     // --------------------------------------------------
 
-    public void SetItems(List<VRMenuItem> items)
+    private void CreateButtons()
     {
-        ClearButtons();
-
-        if (items == null)
+        if (gridRoot == null)
             return;
 
-        foreach (VRMenuItem item in items)
+        // Remove old buttons.
+        for (int i = gridRoot.childCount - 1; i >= 0; i--)
         {
-            if (item == null || item.prefab == null)
+            GameObject child =
+                gridRoot.GetChild(i).gameObject;
+
+            child.transform.SetParent(null);
+
+            if (Application.isPlaying)
+                Destroy(child);
+            else
+                DestroyImmediate(child);
+        }
+
+        foreach (CatalogueEntry entry in entries)
+        {
+            if (entry == null)
                 continue;
 
-            CreateButton(item);
+            CreateButton(entry);
         }
     }
 
-    // --------------------------------------------------
-    // CREATE BUTTON
-    // --------------------------------------------------
-
-    private void CreateButton(VRMenuItem item)
+    private void CreateButton(CatalogueEntry entry)
     {
-        GameObject obj = new GameObject(
-            item.prefab.name,
-            typeof(RectTransform),
-            typeof(Image),
-            typeof(Button)
-        );
+        GameObject buttonObject =
+            new GameObject(
+                entry.ShortName,
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button)
+            );
 
-        obj.transform.SetParent(
-            buttonContainer,
-            false
-        );
+        buttonObject.transform.SetParent(
+            gridRoot, false);
 
         Image image =
-            obj.GetComponent<Image>();
+            buttonObject.GetComponent<Image>();
 
-        image.sprite = item.thumbnail;
         image.color = Color.white;
         image.preserveAspect = true;
         image.raycastTarget = true;
 
         Button button =
-            obj.GetComponent<Button>();
+            buttonObject.GetComponent<Button>();
 
         button.targetGraphic = image;
 
-        VRMenuItem capturedItem = item;
+        string prefabGuid = entry.Guid;
 
         button.onClick.AddListener(() =>
         {
-            SpawnPrefab(
-                capturedItem.prefab,
-                rightHand
-            );
+            SpawnPrefab(prefabGuid);
         });
 
-        buttons.Add(obj);
+        // Load thumbnail from existing AssetBundle system.
+        Core.AssetBundlesRef
+            .CatalogueThumbnailAssetBundleRef
+            .GetItem(Core.Mono, entry.Guid, (texture) =>
+            {
+                // The button may have been destroyed while
+                // the thumbnail was loading.
+                if (image == null)
+                    return;
+
+                if (texture != null)
+                {
+                    Sprite sprite = Sprite.Create(
+                        texture,
+                        new Rect(
+                            0,
+                            0,
+                            texture.width,
+                            texture.height
+                        ),
+                        new Vector2(0.5f, 0.5f)
+                    );
+
+                    image.sprite = sprite;
+                    image.color = Color.white;
+                    image.preserveAspect = true;
+                }
+                else
+                {
+                    Debug.LogError(
+                        $"Can't find Thumbnail for " +
+                        $"{entry.FullName} {entry.Guid}"
+                    );
+                }
+            });
     }
 
     // --------------------------------------------------
-    // SPAWN AND GRAB
+    // SPAWN
     // --------------------------------------------------
 
-    public GameObject SpawnPrefab(
-        GameObject prefab,
-        Hand hand)
+    public void SpawnPrefab(string prefabGuid)
     {
-        if (prefab == null || hand == null)
-            return null;
-
-        Vector3 position =
-            hand.transform.position +
-            hand.transform.forward * SpawnDistance;
-
-        GameObject instance = Instantiate(
-            prefab,
-            position,
-            hand.transform.rotation
-        );
-
-        Grabbable grabbable =
-            instance.GetComponent<Grabbable>();
-
-        if (grabbable == null)
-        {
-            Debug.LogError(
-                $"Missing Grabbable on {prefab.name}"
-            );
-
-            Destroy(instance);
-            return null;
-        }
-
-        hand.TryGrab(grabbable);
-
-        return instance;
-    }
-
-    // --------------------------------------------------
-    // CLEAR MENU
-    // --------------------------------------------------
-
-    private void ClearButtons()
-    {
-        foreach (GameObject obj in buttons)
-        {
-            if (obj != null)
-                Destroy(obj);
-        }
-
-        buttons.Clear();
-    }
-
-    // --------------------------------------------------
-    // EVENT SYSTEM
-    // --------------------------------------------------
-
-    private void EnsureEventSystem()
-    {
-        if (EventSystem.current != null)
+        if (string.IsNullOrEmpty(prefabGuid))
             return;
 
-        new GameObject(
-            "EventSystem",
-            typeof(EventSystem),
-            typeof(StandaloneInputModule)
-        );
+        if (vrCamera == null)
+        {
+            Debug.LogError("VR Camera not assigned.");
+            return;
+        }
+
+        Vector3 position =
+            vrCamera.position +
+            vrCamera.forward * spawnDistance;
+
+        Core.Scene.SpawnObject(prefabGuid, (item) =>
+        {
+            if (item == null)
+                return;
+
+            item.transform.position = position;
+            item.transform.rotation = Quaternion.identity;
+
+            Debug.Log($"Spawned: {item.name}");
+        });
     }
 
     // --------------------------------------------------
-    // CLEANUP
+    // BACKGROUND CONTROLS
     // --------------------------------------------------
 
-    private void OnDestroy()
+    public void SetBackgroundColor(Color color)
     {
-        if (canvas != null)
-            Destroy(canvas.gameObject);
+        backgroundColor = color;
+
+        if (backgroundImage != null)
+            backgroundImage.color = color;
+    }
+
+    public void SetBackgroundSprite(Sprite sprite)
+    {
+        backgroundSprite = sprite;
+
+        if (backgroundImage != null)
+        {
+            backgroundImage.sprite = sprite;
+
+            backgroundImage.type =
+                sprite != null &&
+                sprite.border.sqrMagnitude > 0f
+                    ? Image.Type.Sliced
+                    : Image.Type.Simple;
+        }
+    }
+
+    public void ShowBackground(bool visible)
+    {
+        showBackground = visible;
+
+        if (backgroundImage != null)
+            backgroundImage.enabled = visible;
     }
 }
