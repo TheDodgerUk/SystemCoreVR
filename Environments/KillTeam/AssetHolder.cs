@@ -35,6 +35,10 @@ public class AssetHolder : MonoBehaviour
                 totalCount += Mathf.Max(0, data.m_OperativeStats.numberToGenerate);
                 Debug.Log($"task {data.m_OperativeStats.operativeName} {data.m_OperativeStats.numberToGenerate}");
             }
+            else
+            {
+                totalCount++;
+            }
 
         }
 
@@ -69,7 +73,7 @@ public class AssetHolder : MonoBehaviour
             int count = 1;
             if(data != null)
             {
-                count = Mathf.Max(0, data.m_OperativeStats.numberToGenerate);
+                count = Mathf.Max(1, data.m_OperativeStats.numberToGenerate);
 
             }
             localCount += count;
