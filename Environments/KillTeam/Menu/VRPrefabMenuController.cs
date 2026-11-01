@@ -13,6 +13,42 @@ public class VRPrefabMenuController : MonoBehaviour
     {
         m_menu = this.AddComponent<VRPrefabMenu>();
         KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
+        m_menu.SpawnedCallback += (entry, item) =>
+        {
+            Setup(entry, item);
+        };
+    }
+
+    private void Setup(CatalogueEntry entry, ModuleObject obj)
+    {
+        switch (KillTeamGameManager.Instance.CurrentState)
+        {
+            case KillTeamGameManager.GameState.WaitingForPlayers:
+                break;
+            case KillTeamGameManager.GameState.BoardSetup:
+                break;
+            case KillTeamGameManager.GameState.TerrainSetup:
+                KillTeamGameManager.Instance.SetUpItem(entry, obj, KillTeamGameManager.ItemType.Terrain);
+                break;
+            case KillTeamGameManager.GameState.BarracadeSetup:
+                KillTeamGameManager.Instance.SetUpItem(entry, obj, KillTeamGameManager.ItemType.Barracade);
+                break;
+            case KillTeamGameManager.GameState.MissionSetup:
+                break;
+            case KillTeamGameManager.GameState.TeamSelection:
+                break;
+            case KillTeamGameManager.GameState.Deployment:
+                KillTeamGameManager.Instance.SetUpItem(entry, obj, KillTeamGameManager.ItemType.Player);
+                break;
+            case KillTeamGameManager.GameState.ReadyToStart:
+                break;
+            case KillTeamGameManager.GameState.Playing:
+                break;
+            case KillTeamGameManager.GameState.Finished:
+                break;
+            default:
+                break;
+        }
     }
 
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)

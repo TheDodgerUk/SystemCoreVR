@@ -9,6 +9,12 @@ public class KillTeamGameManager : MonoBehaviour
     public static KillTeamGameManager Instance { get; private set; }
 
 
+    public enum ItemType
+    {
+        Player,
+        Terrain,
+        Barracade
+    }
 
     public enum LayerType
     {
@@ -108,8 +114,6 @@ public class KillTeamGameManager : MonoBehaviour
     public IReadOnlyList<PlayerData> Players => players;
 
     public GameObject BoardRoot => boardRoot;
-    public Transform TerrainRoot => terrainRoot;
-    public Transform OperativeRoot => operativeRoot;
 
     public bool IsSinglePlayer => gameMode == GameMode.SinglePlayer;
     public bool IsMultiplayer => gameMode == GameMode.Multiplayer;
@@ -160,7 +164,7 @@ public class KillTeamGameManager : MonoBehaviour
         OnStateChanged += KillTeamGameManager_OnStateChanged;
 
 
-        m_currentScene = SceneManager.GetActiveScene();
+        m_currentScene = gameObject.scene;
     }
 
     private void KillTeamGameManager_OnStateChanged(GameState obj)
@@ -169,6 +173,39 @@ public class KillTeamGameManager : MonoBehaviour
 
 
 
+    public void SetUpItem(CatalogueEntry entry, ModuleObject item, ItemType itemType)
+    {
+        if (item == null)
+            return;
+
+        if(item.gameObject.transform.parent == null)
+        {
+            // can only be done if no parent, otherwise it will be moved to the scene of the parent
+            SceneManager.MoveGameObjectToScene(
+                item.gameObject,
+                m_currentScene
+            );
+        }
+
+        switch (itemType)
+        {
+            case ItemType.Player:
+                item.gameObject.AddComponent<InitiliseMiniture>();
+                var display = item.AddComponent<KillTeamMetaDataDisplay>();
+                var data = entry.GetMetaData<ContentKillTeamMetaData>();
+                display.Initialise(data);
+                break;
+            case ItemType.Terrain:
+                item.gameObject.AddComponent<InitiliseTerrain>();
+                break;
+            case ItemType.Barracade:
+                item.gameObject.AddComponent<InitiliseTerrain>();
+                break;
+            default:
+                break;
+        }
+
+    }
     private void Update()
     {
 #if UNITY_EDITOR
@@ -305,6 +342,9 @@ public class KillTeamGameManager : MonoBehaviour
     {
         if (currentState == state)
         {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.Beep();
+#endif
             Debug.LogError($"Kill Team Game Manager: Attempted to set state to {state}, but it is already the current state.");
             return;
         }

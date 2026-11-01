@@ -3,7 +3,6 @@ using UnityEngine;
 using Autohand;
 
 [RequireComponent(typeof(Grabbable))]
-[RequireComponent(typeof(CapsuleCollider))]
 public class MiniaturePlacementValidator : MonoBehaviour
 {
     [Header("Base")]

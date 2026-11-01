@@ -96,6 +96,7 @@ public class VRPrefabMenu : MonoBehaviour
     // ----------------------------------------------
 
     public event Action<int, Texture2D> OnTextureSelected;
+    public Action<CatalogueEntry, ModuleObject> SpawnedCallback { get; set; }
 
     // ----------------------------------------------
     // SET ENTRIES - CATALOGUE
@@ -440,7 +441,7 @@ public class VRPrefabMenu : MonoBehaviour
 
         button.onClick.AddListener(() =>
         {
-            SpawnPrefab(button, prefabGuid);
+            SpawnPrefab(entry,button, prefabGuid);
         });
 
         int requestVersion = menuVersion;
@@ -621,7 +622,7 @@ public class VRPrefabMenu : MonoBehaviour
     // SPAWN PREFAB
     // ----------------------------------------------
 
-    public void SpawnPrefab(Button button, string prefabGuid)
+    private void SpawnPrefab(CatalogueEntry entry,Button button, string prefabGuid)
     {
         if (string.IsNullOrEmpty(prefabGuid))
             return;
@@ -645,8 +646,8 @@ public class VRPrefabMenu : MonoBehaviour
 
             item.transform.position = position;
             item.transform.rotation = Quaternion.identity;
-
-            
+            SpawnedCallback?.Invoke(entry,item);
+            SetupItem(item);
             button.enabled = false;
             Debug.Log($"Spawned: {item.name}  button.enabled = false {button.enabled = false}");
 #if UNITY_EDITOR
@@ -655,6 +656,11 @@ public class VRPrefabMenu : MonoBehaviour
             SceneManager.MoveGameObjectToScene(item.gameObject, KillTeamGameManager.Instance.currentScene);
 #endif
         });
+    }
+    
+    private void SetupItem(ModuleObject item)
+    {
+
     }
 
     // ----------------------------------------------
