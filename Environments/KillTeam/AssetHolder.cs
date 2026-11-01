@@ -24,6 +24,9 @@ public class AssetHolder : MonoBehaviour
 
     [SerializeField]
     public Texture2D nextIcon;
+
+    [SerializeField]
+    public Material wallMaterail;
     const string ASSETS= "Assets";
 
 
@@ -49,8 +52,11 @@ public class AssetHolder : MonoBehaviour
             if(data != null)
             {
                 totalCount += Mathf.Max(0, data.m_OperativeStats.numberToGenerate);
-                Debug.Log($"task {data.m_OperativeStats.operativeName} {data.m_OperativeStats.numberToGenerate}");
-                catalogueEntryPlayer.AddToList(data.m_OperativeStats.teamType, catItem);
+                
+                for(int i = 0; i < Mathf.Max(0, data.m_OperativeStats.numberToGenerate); i++)
+                {
+                    catalogueEntryPlayer.AddToList(data.m_OperativeStats.teamType, catItem);
+                };
             }
             else
             {
@@ -76,6 +82,15 @@ public class AssetHolder : MonoBehaviour
             if(texture == null)
             {
                 Debug.LogError("Next icon not found");
+            }
+        });
+
+        Core.AssetBundlesRef.MaterialAssetBundleRef.GetItem(Core.Mono, "Wall_Brick_Generic_Mat_Scale4", (textmature) =>
+        {
+            wallMaterail = textmature;
+            if (wallMaterail == null)
+            {
+                Debug.LogError("Wall material not found");
             }
         });
 

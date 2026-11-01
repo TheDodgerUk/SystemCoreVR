@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using Camera = UnityEngine.Camera;
 using Image = UnityEngine.UI.Image;
 
@@ -32,7 +33,7 @@ public class VRPrefabMenu : MonoBehaviour
 
     [SerializeField]
     private Color backgroundColor =
-        new Color(0.08f, 0.08f, 0.08f, 0.9f);
+        new Color32(21, 25, 31, 245);
 
     [SerializeField]
     private Sprite backgroundSprite;
@@ -46,7 +47,7 @@ public class VRPrefabMenu : MonoBehaviour
 
 
     [SerializeField]
-    private Vector2 spacing = new Vector2(10, 10);
+    private Vector2 spacing = new Vector2(12, 12);
 
     [SerializeField]
     private int columns = 5;
@@ -56,7 +57,17 @@ public class VRPrefabMenu : MonoBehaviour
 
     [Header("Button Background")]
     [SerializeField]
-    private Color buttonBackgroundColor = Color.blue;
+    private Color buttonBackgroundColor = new Color32(32, 37, 44, 255); // #20252C
+
+    [Header("Sci-Fi Button Styling")]
+    [SerializeField] private Color borderColor = new Color32(74, 85, 99, 255);
+    [SerializeField] private Color hoverColor = new Color32(88, 166, 255, 255);
+    [SerializeField] private Color selectedColor = new Color32(212, 166, 74, 255);
+    [SerializeField] private Color labelColor = new Color32(230, 230, 230, 255);
+    [SerializeField, Range(1f, 8f)] private float borderThickness = 2f;
+    [SerializeField] private bool showButtonLabels = true;
+    [SerializeField, Range(9, 24)] private int labelFontSize = 12;
+    [SerializeField] private bool selectOnClick = true;
 
     [SerializeField]
     private Vector2 thumbnailPadding = new Vector2(5f, 5f);
@@ -75,6 +86,9 @@ public class VRPrefabMenu : MonoBehaviour
 
     private readonly List<Image> buttonBackgrounds =
         new List<Image>();
+
+    private readonly List<VRMenuButtonVisual> buttonVisuals =
+        new List<VRMenuButtonVisual>();
 
     private readonly List<Button> createdButtons =
         new List<Button>();
@@ -136,20 +150,24 @@ public class VRPrefabMenu : MonoBehaviour
 
 
 
-        float aspectRatio = (float)textures[0].width / textures[0].height;
-
-        if (aspectRatio > 1f)
+        if (textures != null && textures.Count > 0 && textures[0] != null)
         {
-            // Wider than tall
-            buttonSize = new Vector2(buttonSize.x, buttonSize.y / aspectRatio);
-        }
-        else
-        {
-            // Taller than wide
-            buttonSize = new Vector2(buttonSize.x * aspectRatio, buttonSize.y);
-        }
+            float aspectRatio = (float)textures[0].width / textures[0].height;
+
+            if (aspectRatio > 1f)
+            {
+                // Wider than tall
+                buttonSize = new Vector2(buttonSize.x, buttonSize.y / aspectRatio);
+            }
+            else
+            {
+                // Taller than wide
+                buttonSize = new Vector2(buttonSize.x * aspectRatio, buttonSize.y);
+            }
 
 
+
+        }
 
         SetupCamera();
 
@@ -204,6 +222,7 @@ public class VRPrefabMenu : MonoBehaviour
         menuVersion++;
 
         buttonBackgrounds.Clear();
+        buttonVisuals.Clear();
         createdButtons.Clear();
 
         canvas = null;
@@ -441,7 +460,8 @@ public class VRPrefabMenu : MonoBehaviour
 
         button.onClick.AddListener(() =>
         {
-            SpawnPrefab(entry,button, prefabGuid);
+            SelectButton(button);
+            SpawnPrefab(entry, button, prefabGuid);
         });
 
         int requestVersion = menuVersion;
@@ -497,6 +517,7 @@ public class VRPrefabMenu : MonoBehaviour
 
         button.onClick.AddListener(() =>
         {
+            SelectButton(button);
             Debug.Log(
                 $"Texture button clicked: " +
                 $"{selectedIndex} - {selectedTexture.name}"
@@ -526,71 +547,105 @@ public class VRPrefabMenu : MonoBehaviour
     // SHARED BUTTON CREATION
     // ----------------------------------------------
 
-    private Button CreateBaseButton(
-        string buttonName,
-        out Image thumbnailImage)
+    private Button CreateBaseButton(string buttonName, out Image thumbnailImage)
     {
         GameObject buttonObject = new GameObject(
-            buttonName,
-            typeof(RectTransform),
-            typeof(Image),
-            typeof(Button)
-        );
-
+            buttonName, typeof(RectTransform), typeof(Image), typeof(Button),
+            typeof(VRMenuButtonVisual));
         buttonObject.transform.SetParent(gridRoot, false);
 
-        Image buttonBackground =
-            buttonObject.GetComponent<Image>();
-
+        Image buttonBackground = buttonObject.GetComponent<Image>();
         buttonBackground.color = buttonBackgroundColor;
         buttonBackground.raycastTarget = true;
-
         buttonBackgrounds.Add(buttonBackground);
 
-        Button button =
-            buttonObject.GetComponent<Button>();
-
+        Button button = buttonObject.GetComponent<Button>();
+        button.targetGraphic = buttonBackground;
+        button.transition = Selectable.Transition.None;
         createdButtons.Add(button);
 
-        button.targetGraphic = buttonBackground;
+        // Four narrow border strips: no textures or additional shaders required.
+        CreateBorder(buttonObject.transform, "Border Top", true, true);
+        CreateBorder(buttonObject.transform, "Border Bottom", true, false);
+        CreateBorder(buttonObject.transform, "Border Left", false, true);
+        CreateBorder(buttonObject.transform, "Border Right", false, false);
 
-        // Prevent Unity's button transition
-        // from changing the background colour.
-        button.transition = Selectable.Transition.None;
-
-        // Thumbnail child.
         GameObject thumbnailObject = new GameObject(
-            "Thumbnail",
-            typeof(RectTransform),
-            typeof(Image)
-        );
-
-        thumbnailObject.transform.SetParent(
-            buttonObject.transform, false
-        );
-
-        RectTransform thumbnailRect =
-            thumbnailObject.GetComponent<RectTransform>();
-
+            "Thumbnail", typeof(RectTransform), typeof(Image));
+        thumbnailObject.transform.SetParent(buttonObject.transform, false);
+        RectTransform thumbnailRect = thumbnailObject.GetComponent<RectTransform>();
         thumbnailRect.anchorMin = Vector2.zero;
         thumbnailRect.anchorMax = Vector2.one;
-
-        thumbnailRect.offsetMin = thumbnailPadding;
-        thumbnailRect.offsetMax = -thumbnailPadding;
-
-        thumbnailRect.localRotation = Quaternion.identity;
-        thumbnailRect.localScale = Vector3.one;
-
-        thumbnailImage =
-            thumbnailObject.GetComponent<Image>();
-
+        thumbnailRect.offsetMin = new Vector2(thumbnailPadding.x + borderThickness,
+            thumbnailPadding.y + borderThickness + (showButtonLabels ? 19f : 0f));
+        thumbnailRect.offsetMax = new Vector2(-thumbnailPadding.x - borderThickness,
+            -thumbnailPadding.y - borderThickness);
+        thumbnailImage = thumbnailObject.GetComponent<Image>();
         thumbnailImage.color = Color.white;
         thumbnailImage.preserveAspect = true;
-
-        // Allow the parent button to receive clicks.
         thumbnailImage.raycastTarget = false;
 
+        if (showButtonLabels)
+        {
+            GameObject labelObject = new GameObject("Label", typeof(RectTransform), typeof(Text));
+            labelObject.transform.SetParent(buttonObject.transform, false);
+            RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+            labelRect.anchorMin = new Vector2(0f, 0f);
+            labelRect.anchorMax = new Vector2(1f, 0f);
+            labelRect.pivot = new Vector2(0.5f, 0f);
+            labelRect.offsetMin = new Vector2(4f, 3f);
+            labelRect.offsetMax = new Vector2(-4f, 21f);
+            Text label = labelObject.GetComponent<Text>();
+            label.text = buttonName;
+            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.fontSize = labelFontSize;
+            label.color = labelColor;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.resizeTextForBestFit = true;
+            label.resizeTextMinSize = 8;
+            label.resizeTextMaxSize = labelFontSize;
+            label.raycastTarget = false;
+        }
+
+        // Put borders in front of the thumbnail without blocking raycasts.
+        foreach (Transform child in buttonObject.transform)
+            if (child.name.StartsWith("Border ")) child.SetAsLastSibling();
+
+        VRMenuButtonVisual visual = buttonObject.GetComponent<VRMenuButtonVisual>();
+        visual.Configure(buttonBackground, borderColor, hoverColor, selectedColor);
+        buttonVisuals.Add(visual);
         return button;
+    }
+
+    private void CreateBorder(Transform parent, string borderName, bool horizontal, bool first)
+    {
+        GameObject go = new GameObject(borderName, typeof(RectTransform), typeof(Image));
+        go.transform.SetParent(parent, false);
+        RectTransform rect = go.GetComponent<RectTransform>();
+        if (horizontal)
+        {
+            rect.anchorMin = new Vector2(0f, first ? 1f : 0f);
+            rect.anchorMax = new Vector2(1f, first ? 1f : 0f);
+            rect.pivot = new Vector2(0.5f, first ? 1f : 0f);
+            rect.sizeDelta = new Vector2(0f, borderThickness);
+        }
+        else
+        {
+            rect.anchorMin = new Vector2(first ? 0f : 1f, 0f);
+            rect.anchorMax = new Vector2(first ? 0f : 1f, 1f);
+            rect.pivot = new Vector2(first ? 0f : 1f, 0.5f);
+            rect.sizeDelta = new Vector2(borderThickness, 0f);
+        }
+        Image border = go.GetComponent<Image>();
+        border.color = borderColor;
+        border.raycastTarget = false;
+    }
+
+    private void SelectButton(Button button)
+    {
+        if (!selectOnClick) return;
+        foreach (VRMenuButtonVisual visual in buttonVisuals)
+            if (visual != null) visual.SetSelected(visual.gameObject == button.gameObject);
     }
 
     // ----------------------------------------------
@@ -622,7 +677,7 @@ public class VRPrefabMenu : MonoBehaviour
     // SPAWN PREFAB
     // ----------------------------------------------
 
-    private void SpawnPrefab(CatalogueEntry entry,Button button, string prefabGuid)
+    private void SpawnPrefab(CatalogueEntry entry, Button button, string prefabGuid)
     {
         if (string.IsNullOrEmpty(prefabGuid))
             return;
@@ -646,18 +701,23 @@ public class VRPrefabMenu : MonoBehaviour
 
             item.transform.position = position;
             item.transform.rotation = Quaternion.identity;
-            SpawnedCallback?.Invoke(entry,item);
+            SpawnedCallback?.Invoke(entry, item);
             SetupItem(item);
             button.enabled = false;
             Debug.Log($"Spawned: {item.name}  button.enabled = false {button.enabled = false}");
 #if UNITY_EDITOR
-        //EditorSceneManager.MoveGameObjectToScene(obj, targetScene);
+            //EditorSceneManager.MoveGameObjectToScene(obj, targetScene);
 #else
-            SceneManager.MoveGameObjectToScene(item.gameObject, KillTeamGameManager.Instance.currentScene);
+            Scene targetScene = KillTeamGameManager.Instance.currentScene;
+            if (targetScene.IsValid() && targetScene.isLoaded)
+            {
+                item.transform.SetParent(null, true);
+                SceneManager.MoveGameObjectToScene(item.gameObject, targetScene);
+            }
 #endif
         });
     }
-    
+
     private void SetupItem(ModuleObject item)
     {
 
@@ -757,8 +817,7 @@ public class VRPrefabMenu : MonoBehaviour
 
         foreach (Image image in buttonBackgrounds)
         {
-            if (image != null)
-                image.color = color;
+            if (image != null) image.color = color;
         }
     }
 
@@ -842,6 +901,7 @@ public class VRPrefabMenu : MonoBehaviour
         // Assign callback
         button.onClick.AddListener(() =>
         {
+            SelectButton(button);
             Debug.Log($"Button clicked: {button.name}");
             callback?.Invoke();
         });
@@ -852,4 +912,59 @@ public class VRPrefabMenu : MonoBehaviour
         );
     }
 
+}
+
+// Receives pointer enter/exit events from the Unity UI EventSystem.
+// In VR, your tracked pointer must send standard UI pointer events.
+public class VRMenuButtonVisual : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    private Image background;
+    private Image[] borders;
+    private Color normalBorder;
+    private Color hoverBorder;
+    private Color selectedBorder;
+    private bool hovered;
+    private bool selected;
+
+    public void Configure(Image bg, Color normal, Color hover, Color selection)
+    {
+        background = bg;
+        normalBorder = normal;
+        hoverBorder = hover;
+        selectedBorder = selection;
+        var images = new List<Image>();
+        foreach (Transform child in transform)
+        {
+            if (child.name.StartsWith("Border "))
+                images.Add(child.GetComponent<Image>());
+        }
+        borders = images.ToArray();
+        Refresh();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        hovered = true;
+        Refresh();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        hovered = false;
+        Refresh();
+    }
+
+    public void SetSelected(bool value)
+    {
+        selected = value;
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        if (borders == null) return;
+        Color color = selected ? selectedBorder : hovered ? hoverBorder : normalBorder;
+        foreach (Image border in borders)
+            if (border != null) border.color = color;
+    }
 }
