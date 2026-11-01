@@ -8,6 +8,9 @@ public class AssetHolder : MonoBehaviour
 {
     [SerializeField]
     public List<CatalogueEntry> catalogueEntryTerrain = new List<CatalogueEntry>();
+
+    [SerializeField]
+    public List<CatalogueEntry> catalogueEntryBaracade = new List<CatalogueEntry>();
     public SimpleDictionaryList<ContentKillTeamMetaData.TeamType, CatalogueEntry> catalogueEntryPlayer = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, CatalogueEntry>();
     // Start is called before the first frame update
     [SerializeField]
@@ -44,8 +47,14 @@ public class AssetHolder : MonoBehaviour
             }
             else
             {
-                var dd = catItem.CatalogueFilters;
-                catalogueEntryTerrain.Add(catItem);
+                if(catItem.CatalogueFilters.Contains(KillTeamGameManager.Instance.Barracade))
+                {
+                    catalogueEntryTerrain.Add(catItem);
+                }
+                else 
+                {
+                    catalogueEntryBaracade.Add(catItem);
+                }
                 totalCount++;
             }
 

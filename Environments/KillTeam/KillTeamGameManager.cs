@@ -107,6 +107,8 @@ public class KillTeamGameManager : MonoBehaviour
     public bool IsSinglePlayer => gameMode == GameMode.SinglePlayer;
     public bool IsMultiplayer => gameMode == GameMode.Multiplayer;
 
+    public string Barracade => "KillTeam/Barracade";
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
