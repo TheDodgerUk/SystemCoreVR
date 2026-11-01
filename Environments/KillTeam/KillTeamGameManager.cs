@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class KillTeamGameManager : MonoBehaviour
 {
@@ -11,7 +12,7 @@ public class KillTeamGameManager : MonoBehaviour
 
     public enum LayerType
     {
-        Player =16,
+        Player = 16,
         AI,
         Terrain,
         Start,
@@ -89,12 +90,18 @@ public class KillTeamGameManager : MonoBehaviour
     public AssetHolder AssetHolder { get; private set; }
     public VRPrefabMenu PrefabMenu { get; private set; }
 
+    public VRPrefabMenuController PrefabMenuController { get; private set; }
+
     public event Action<GameState> OnStateChanged;
     public event Action<PlayerData> OnPlayerJoined;
     public event Action<PlayerData> OnPlayerLeft;
     public event Action<PlayerData> OnTeamSelected;
     public event Action<PlayerData> OnDeploymentComplete;
     public event Action OnGameStarted;
+
+    // Tracks the state last processed by SetState.
+    // Inspector edits are detected during Play Mode in Update.
+    private GameState lastAppliedState;
 
     public GameMode CurrentGameMode => gameMode;
     public GameState CurrentState => currentState;
@@ -110,6 +117,9 @@ public class KillTeamGameManager : MonoBehaviour
 
     public string Barracade => "KillTeam/Barracade";
 
+    private Scene m_currentScene;
+    public Scene currentScene => m_currentScene;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -119,6 +129,7 @@ public class KillTeamGameManager : MonoBehaviour
         }
 
         Instance = this;
+        lastAppliedState = currentState;
         menuPoint = this.transform.FindChildRecursive("MenuPoint").gameObject;
         menuPoint.GetComponent<MeshRenderer>().enabled = false;
 
@@ -136,7 +147,7 @@ public class KillTeamGameManager : MonoBehaviour
         vRPrefabMenu.transform.SetParent(transform, false);
         PrefabMenu = vRPrefabMenu.AddComponent<VRPrefabMenu>();
 
-
+        PrefabMenuController = this.AddComponent<VRPrefabMenuController>();
 
         boardRoot = this.transform.FindChildRecursive("TableBoard").gameObject;
         boardRoot.layer = (int)LayerType.Board;
@@ -153,18 +164,21 @@ public class KillTeamGameManager : MonoBehaviour
         };
 
         OnStateChanged += KillTeamGameManager_OnStateChanged;
+
+
+        m_currentScene = SceneManager.GetActiveScene();
     }
 
     private void KillTeamGameManager_OnStateChanged(GameState obj)
     {
-        if(obj == GameState.BarracadeSetup)
+        if (obj == GameState.BarracadeSetup)
         {
             PrefabMenu.SetEntries(AssetHolder.catalogueEntryBaracade);
         }
         else if (obj == GameState.TeamSelection)
         {
-            List<Texture2D> teamIcons = new List<Texture2D>();
-            PrefabMenu.SetEntries(teamIcons, OnTexture2dClicked);
+
+            PrefabMenu.SetEntries(AssetHolder.teamIcons, OnTexture2dClicked);
         }
     }
 
@@ -176,6 +190,20 @@ public class KillTeamGameManager : MonoBehaviour
         Debug.Log($"Selected texture: {texture.name}");
 
         // Your logic here
+    }
+
+    private void Update()
+    {
+#if UNITY_EDITOR
+        // Changing the serialized enum in the Inspector bypasses SetState.
+        // Reapply it through SetState so listeners receive the event.
+        if (currentState != lastAppliedState)
+        {
+            GameState inspectorState = currentState;
+            currentState = lastAppliedState;
+            SetState(inspectorState);
+        }
+#endif
     }
 
     private void Start()
@@ -302,6 +330,7 @@ public class KillTeamGameManager : MonoBehaviour
             return;
 
         currentState = state;
+        lastAppliedState = state;
 
         Debug.Log($"Kill Team State: {state}");
 

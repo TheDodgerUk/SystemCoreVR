@@ -3,7 +3,10 @@ using glTFLoader2.Schema;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Camera = UnityEngine.Camera;
+using Image = UnityEngine.UI.Image;
 
 public class VRPrefabMenu : MonoBehaviour
 {
@@ -644,6 +647,12 @@ public class VRPrefabMenu : MonoBehaviour
             item.transform.rotation = Quaternion.identity;
 
             Debug.Log($"Spawned: {item.name}");
+
+#if UNITY_EDITOR
+        //EditorSceneManager.MoveGameObjectToScene(obj, targetScene);
+#else
+            SceneManager.MoveGameObjectToScene(item.gameObject, KillTeamGameManager.Instance.currentScene);
+#endif
         });
     }
 
@@ -759,4 +768,42 @@ public class VRPrefabMenu : MonoBehaviour
         if (image != null)
             image.color = color;
     }
+
+
+    public int GetButtonCount()
+    {
+        return createdButtons.Count;
+    }
+
+    public string GetButtonName(int index)
+    {
+        if (index < 0 || index >= createdButtons.Count)
+            return "Invalid";
+
+        Button button = createdButtons[index];
+
+        return button != null ? button.name : "Missing";
+    }
+
+    public void TestButtonClick(int index)
+    {
+        if (!Application.isPlaying)
+            return;
+
+        if (index < 0 || index >= createdButtons.Count)
+        {
+            Debug.LogWarning($"Invalid button index: {index}");
+            return;
+        }
+
+        Button button = createdButtons[index];
+
+        if (button == null)
+            return;
+
+        Debug.Log($"Testing button {index}: {button.name}");
+
+        button.onClick.Invoke();
+    }
+
 }
