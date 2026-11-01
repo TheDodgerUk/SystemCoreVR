@@ -304,8 +304,10 @@ public class KillTeamGameManager : MonoBehaviour
     public void SetState(GameState state)
     {
         if (currentState == state)
+        {
+            Debug.LogError($"Kill Team Game Manager: Attempted to set state to {state}, but it is already the current state.");
             return;
-
+        }
         currentState = state;
         lastAppliedState = state;
 

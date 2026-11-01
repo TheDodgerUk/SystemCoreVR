@@ -810,36 +810,40 @@ public class VRPrefabMenu : MonoBehaviour
     {
         if (texture == null || gridRoot == null)
         {
-            Debug.LogError("Texture or menu gridRoot is missing.", this);
+            Debug.LogError(
+                "Texture or menu gridRoot is missing.",
+                this
+            );
             return;
         }
 
-        GameObject buttonObject = new GameObject(
+        Image thumbnailImage;
+
+        // Creates the button and registers it
+        // in createdButtons automatically.
+        Button button = CreateBaseButton(
             texture.name + "_Button",
-            typeof(RectTransform),
-            typeof(UnityEngine.UI.RawImage),
-            typeof(UnityEngine.UI.Button)
+            out thumbnailImage
         );
 
-        buttonObject.transform.SetParent(gridRoot, false);
+        // Assign texture
+        Sprite sprite = CreateRuntimeSprite(texture);
 
-        RectTransform rect =
-            buttonObject.GetComponent<RectTransform>();
+        thumbnailImage.sprite = sprite;
+        thumbnailImage.color = Color.white;
+        thumbnailImage.preserveAspect = true;
 
-        rect.sizeDelta = new Vector2(100f, 100f);
+        // Assign callback
+        button.onClick.AddListener(() =>
+        {
+            Debug.Log($"Button clicked: {button.name}");
+            callback?.Invoke();
+        });
 
-        UnityEngine.UI.RawImage image =
-            buttonObject.GetComponent<UnityEngine.UI.RawImage>();
-
-        image.texture = texture;
-        image.color = Color.white;
-        image.raycastTarget = true;
-
-        UnityEngine.UI.Button button =
-            buttonObject.GetComponent<UnityEngine.UI.Button>();
-
-        button.targetGraphic = image;
-        button.onClick.AddListener(() => callback?.Invoke());
+        Debug.Log(
+            $"Added button: {button.name}, " +
+            $"Total buttons: {createdButtons.Count}"
+        );
     }
 
 }

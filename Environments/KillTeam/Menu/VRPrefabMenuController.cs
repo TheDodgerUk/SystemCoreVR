@@ -37,7 +37,7 @@ public class VRPrefabMenuController : MonoBehaviour
                 m_menu.SetEntries(KillTeamGameManager.Instance.AssetHolder.catalogueEntryBaracade);
                 m_menu.AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
                 {
-                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.BarracadeSetup);
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamSelection);
                 });
                 break;
             case KillTeamGameManager.GameState.MissionSetup:
