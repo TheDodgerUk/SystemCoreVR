@@ -145,10 +145,8 @@ public class AssetHolder : MonoBehaviour
                             child = go.transform;
                             child.SetParent(transform, false);
                         }
-                        KillTeamGameManager.Instance.SetUpItem(catItem, item, KillTeamGameManager.ItemType.Player);
-                        // Parent miniature
-                        item.gameObject.transform.SetParent(child, false);
-                        item.gameObject.transform.localPosition = Vector3.zero;
+                        KillTeamGameManager.Instance.SetUpItem(child, catItem, item, KillTeamGameManager.LayerType.Player);
+
 
 
                         // Metadata
@@ -173,10 +171,8 @@ public class AssetHolder : MonoBehaviour
                             assetsFolder = go.transform;
                             assetsFolder.SetParent(transform, false);
                         }
-                        KillTeamGameManager.Instance.SetUpItem(catItem,item, KillTeamGameManager.ItemType.Terrain);
-                        item.gameObject.transform.SetParent(assetsFolder, false);
-                        item.gameObject.transform.localPosition = Vector3.zero;
-                        item.gameObject.transform.localRotation = Quaternion.Euler(-90, 0, 0);
+                        KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Terrain);
+
                         _assets.Add(item.gameObject);
                         task.Increment();
                         Debug.Log($"task {task.GetCount}");

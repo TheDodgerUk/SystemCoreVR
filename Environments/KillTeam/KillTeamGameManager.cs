@@ -9,20 +9,14 @@ public class KillTeamGameManager : MonoBehaviour
     public static KillTeamGameManager Instance { get; private set; }
 
 
-    public enum ItemType
-    {
-        Player,
-        Terrain,
-        Barracade
-    }
 
     public enum LayerType
     {
         Player = 16,
-        AI,
         Terrain,
-        Start,
-        Board
+        Barracade,
+        PlayerSetup,
+        TableBoard
     }
     public enum GameMode
     {
@@ -137,8 +131,8 @@ public class KillTeamGameManager : MonoBehaviour
         menuPoint.GetComponent<MeshRenderer>().enabled = false;
 
 
-        start = this.transform.FindChildRecursive("Start").gameObject;
-        start.layer = (int)LayerType.Start;
+        start = this.transform.FindChildRecursive(LayerType.PlayerSetup.ToString()).gameObject;
+        start.layer = (int)LayerType.PlayerSetup;
         start.GetComponent<MeshRenderer>().enabled = false;
 
         var assetHolder = new GameObject("assetHolder");
@@ -151,29 +145,19 @@ public class KillTeamGameManager : MonoBehaviour
         vRPrefabMenu.transform.SetParent(transform, false);
         PrefabMenuController = vRPrefabMenu.AddComponent<VRPrefabMenuController>();
 
-        boardRoot = this.transform.FindChildRecursive("TableBoard").gameObject;
-        boardRoot.layer = (int)LayerType.Board;
+        boardRoot = this.transform.FindChildRecursive(LayerType.TableBoard.ToString()).gameObject;
+        boardRoot.layer = (int)LayerType.TableBoard;
 
         Core.Environment.OnEnvironmentLoadingComplete += () =>
         {
-
             PrefabMenuController.transform.SetParent(null);
             AssetHolder.transform.SetParent(null);
         };
 
-        OnStateChanged += KillTeamGameManager_OnStateChanged;
-
-
         m_currentScene = gameObject.scene;
     }
 
-    private void KillTeamGameManager_OnStateChanged(GameState obj)
-    {
-    }
-
-
-
-    public void SetUpItem(CatalogueEntry entry, ModuleObject item, ItemType itemType)
+    public void SetUpItem(Transform trans, CatalogueEntry entry, ModuleObject item, LayerType itemType)
     {
         if (item == null)
             return;
@@ -189,21 +173,24 @@ public class KillTeamGameManager : MonoBehaviour
 
         switch (itemType)
         {
-            case ItemType.Player:
+            case LayerType.Player:
                 item.gameObject.AddComponent<InitiliseMiniture>();
                 var display = item.AddComponent<KillTeamMetaDataDisplay>();
                 var data = entry.GetMetaData<ContentKillTeamMetaData>();
                 display.Initialise(data);
                 break;
-            case ItemType.Terrain:
+            case LayerType.Terrain:
                 item.gameObject.AddComponent<InitiliseTerrain>();
                 break;
-            case ItemType.Barracade:
+            case LayerType.Barracade:
                 item.gameObject.AddComponent<InitiliseTerrain>();
                 break;
             default:
                 break;
         }
+
+        item.gameObject.transform.SetParent(trans, false);
+        item.gameObject.transform.localPosition = Vector3.zero;
 
     }
     private void Update()

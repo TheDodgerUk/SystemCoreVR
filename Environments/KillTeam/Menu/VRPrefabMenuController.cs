@@ -28,17 +28,17 @@ public class VRPrefabMenuController : MonoBehaviour
             case KillTeamGameManager.GameState.BoardSetup:
                 break;
             case KillTeamGameManager.GameState.TerrainSetup:
-                KillTeamGameManager.Instance.SetUpItem(entry, obj, KillTeamGameManager.ItemType.Terrain);
+                KillTeamGameManager.Instance.SetUpItem(null, entry, obj, KillTeamGameManager.LayerType.Terrain);
                 break;
             case KillTeamGameManager.GameState.BarracadeSetup:
-                KillTeamGameManager.Instance.SetUpItem(entry, obj, KillTeamGameManager.ItemType.Barracade);
+                KillTeamGameManager.Instance.SetUpItem(null, entry, obj, KillTeamGameManager.LayerType.Barracade);
                 break;
             case KillTeamGameManager.GameState.MissionSetup:
                 break;
             case KillTeamGameManager.GameState.TeamSelection:
                 break;
             case KillTeamGameManager.GameState.Deployment:
-                KillTeamGameManager.Instance.SetUpItem(entry, obj, KillTeamGameManager.ItemType.Player);
+                KillTeamGameManager.Instance.SetUpItem(null, entry, obj, KillTeamGameManager.LayerType.Player);
                 break;
             case KillTeamGameManager.GameState.ReadyToStart:
                 break;

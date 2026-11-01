@@ -9,7 +9,7 @@ public class TerrainPlacementValidator : MonoBehaviour
     public int edgeSamples = 16;
 
     [Header("Surface")]
-    public LayerMask placementLayers = (1 << (int)KillTeamGameManager.LayerType.Board);
+    public LayerMask placementLayers = (1 << (int)KillTeamGameManager.LayerType.TableBoard);
     public float rayStartHeight = 2f;
     public float rayDistance = 5f;
     public float heightTolerance = 10;
@@ -27,22 +27,41 @@ public class TerrainPlacementValidator : MonoBehaviour
     public bool canPlace;
     private Vector3 placementPosition;
 
-
-    public void SetLayerMode(bool setup)
-    {
-        if (setup)
-        {
-            placementLayers = (1 << (int)KillTeamGameManager.LayerType.Start);
-        }
-        else
-        {
-            placementLayers = (1 << (int)KillTeamGameManager.LayerType.Board) | (1 << (int)KillTeamGameManager.LayerType.Terrain);
-        }
-    }
     private void Awake()
     {
         grab = GetComponent<Grabbable>();
+        KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
+        placementLayers = (1 << (int)KillTeamGameManager.LayerType.TableBoard);
     }
+    private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
+    {
+        switch (state)
+        {
+            case KillTeamGameManager.GameState.WaitingForPlayers:
+                break;
+            case KillTeamGameManager.GameState.BoardSetup:
+                break;
+            case KillTeamGameManager.GameState.TerrainSetup:
+                break;
+            case KillTeamGameManager.GameState.BarracadeSetup:
+                break;
+            case KillTeamGameManager.GameState.MissionSetup:
+                break;
+            case KillTeamGameManager.GameState.TeamSelection:
+                break;
+            case KillTeamGameManager.GameState.Deployment:
+                break;
+            case KillTeamGameManager.GameState.ReadyToStart:
+                break;
+            case KillTeamGameManager.GameState.Playing:
+                break;
+            case KillTeamGameManager.GameState.Finished:
+                break;
+            default:
+                break;
+        }
+    }
+
 
     private void OnEnable()
     {
