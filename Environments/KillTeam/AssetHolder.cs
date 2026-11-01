@@ -49,11 +49,11 @@ public class AssetHolder : MonoBehaviour
             {
                 if(catItem.CatalogueFilters.Contains(KillTeamGameManager.Instance.Barracade))
                 {
-                    catalogueEntryTerrain.Add(catItem);
+                    catalogueEntryBaracade.Add(catItem);
                 }
                 else 
                 {
-                    catalogueEntryBaracade.Add(catItem);
+                    catalogueEntryTerrain.Add(catItem);
                 }
                 totalCount++;
             }
@@ -106,7 +106,7 @@ public class AssetHolder : MonoBehaviour
                         // Find or create team parent
                         string teamName = data.m_OperativeStats.teamType.ToString();
 
-                        Transform child = transform.Find(teamName);
+                        Transform child = this.transform.FindChildRecursive(teamName);
 
                         if (child == null)
                         {
@@ -146,7 +146,7 @@ public class AssetHolder : MonoBehaviour
                         item.gameObject.transform.SetParent(assetsFolder, false);
                         item.gameObject.transform.localPosition = Vector3.zero;
                         item.gameObject.transform.localRotation = Quaternion.Euler(-90, 0, 0);
-
+                        item.gameObject.layer = (int)KillTeamGameManager.LayerType.Terrain;
                         _assets.Add(item.gameObject);
                         task.Increment();
                         Debug.Log($"task {task.GetCount}");

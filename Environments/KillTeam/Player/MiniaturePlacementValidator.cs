@@ -10,7 +10,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
     public int edgeSamples = 16;
 
     [Header("Surface")]
-    public LayerMask placementLayers = ~0;
+    public LayerMask placementLayers = (1 << (int)KillTeamGameManager.LayerType.Board) | (1 << (int)KillTeamGameManager.LayerType.Terrain);
     public float rayStartHeight = 2f;
     public float rayDistance = 5f;
     public float heightTolerance = 10;
@@ -29,6 +29,18 @@ public class MiniaturePlacementValidator : MonoBehaviour
     public bool canPlace;
     private Vector3 placementPosition;
 
+
+    public void SetLayerMode(bool setup)
+    {
+        if (setup)
+        {
+            placementLayers = (1 << (int)KillTeamGameManager.LayerType.Start);
+        }
+        else
+        {
+            placementLayers = (1 << (int)KillTeamGameManager.LayerType.Board) | (1 << (int)KillTeamGameManager.LayerType.Terrain);
+        }
+    }
     private void Awake()
     {
         grab = GetComponent<Grabbable>();

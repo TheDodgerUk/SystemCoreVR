@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -45,6 +46,13 @@ public class VRPrefabMenu : MonoBehaviour
     [SerializeField]
     private float gridPadding = 15f;
 
+    [Header("Button Background")]
+    [SerializeField]
+    private Color buttonBackgroundColor = Color.blue;
+
+    [SerializeField]
+    private Vector2 thumbnailPadding = new Vector2(5f, 5f);
+
     [Header("Spawn")]
     [SerializeField]
     private float spawnDistance = 0.5f;
@@ -52,6 +60,40 @@ public class VRPrefabMenu : MonoBehaviour
     private Canvas canvas;
     private RectTransform gridRoot;
     private Image backgroundImage;
+
+    private readonly List<Image> buttonBackgrounds =
+        new List<Image>();
+
+    [Header("Inspector Testing")]
+    [SerializeField, Min(0)]
+    private int testButtonIndex = 0;
+
+    private readonly List<Button> createdButtons = new List<Button>();
+
+    public void TestButtonClick()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("Test Button Click requires Play Mode.", this);
+            return;
+        }
+
+        if (testButtonIndex < 0 || testButtonIndex >= createdButtons.Count)
+        {
+            Debug.LogWarning($"Invalid test button index {testButtonIndex}. Created buttons: {createdButtons.Count}. Call SetEntries first.", this);
+            return;
+        }
+
+        Button button = createdButtons[testButtonIndex];
+        if (button == null)
+        {
+            Debug.LogWarning($"Button {testButtonIndex} no longer exists.", this);
+            return;
+        }
+
+        Debug.Log($"Testing button {testButtonIndex}: {button.name}", button);
+        button.onClick.Invoke();
+    }
 
     private const string CanvasName = "VR Prefab Canvas";
     private const string BackgroundName = "Background";
@@ -72,20 +114,22 @@ public class VRPrefabMenu : MonoBehaviour
         CreateButtons();
     }
 
-
-    public void Update()
+    private void Update()
     {
+        if (Camera.main == null)
+            return;
+
         Vector3 direction =
             Camera.main.transform.position - transform.position;
 
-        if (true)
-            direction.y = 0f;
+        direction.y = 0f;
 
         if (direction.sqrMagnitude < 0.0001f)
             return;
 
         transform.rotation = Quaternion.LookRotation(direction);
     }
+
     // --------------------------------------------------
     // CANVAS
     // --------------------------------------------------
@@ -110,8 +154,7 @@ public class VRPrefabMenu : MonoBehaviour
                 typeof(GraphicRaycaster)
             );
 
-            canvasObject.transform.SetParent(
-                transform, false);
+            canvasObject.transform.SetParent(transform, false);
         }
 
         canvas = canvasObject.GetComponent<Canvas>();
@@ -132,19 +175,15 @@ public class VRPrefabMenu : MonoBehaviour
 
         rect.sizeDelta = canvasSize;
 
-        // Only set the initial scale for a new canvas.
         if (existing == null)
             rect.localScale = Vector3.one * canvasScale;
 
-        // Create or update background
         CreateBackground(canvasObject);
-
-        // Create or update grid
         CreateGrid(canvasObject);
     }
 
     // --------------------------------------------------
-    // BACKGROUND
+    // CANVAS BACKGROUND
     // --------------------------------------------------
 
     private void CreateBackground(GameObject canvasObject)
@@ -187,27 +226,20 @@ public class VRPrefabMenu : MonoBehaviour
             backgroundObject.GetComponent<Image>();
 
         if (backgroundImage == null)
-            backgroundImage =
-                backgroundObject.AddComponent<Image>();
+            backgroundImage = backgroundObject.AddComponent<Image>();
 
         backgroundImage.color = backgroundColor;
         backgroundImage.sprite = backgroundSprite;
         backgroundImage.enabled = showBackground;
 
-        if (backgroundSprite != null &&
-            backgroundSprite.border.sqrMagnitude > 0f)
-        {
-            backgroundImage.type = Image.Type.Sliced;
-        }
-        else
-        {
-            backgroundImage.type = Image.Type.Simple;
-        }
+        backgroundImage.type =
+            backgroundSprite != null &&
+            backgroundSprite.border.sqrMagnitude > 0f
+                ? Image.Type.Sliced
+                : Image.Type.Simple;
 
-        // Background must not block UI buttons.
         backgroundImage.raycastTarget = false;
 
-        // Render behind all thumbnail buttons.
         backgroundObject.transform.SetAsFirstSibling();
     }
 
@@ -277,7 +309,6 @@ public class VRPrefabMenu : MonoBehaviour
 
         grid.padding = new RectOffset(0, 0, 0, 0);
 
-        // Ensure buttons render above the background.
         gridObject.transform.SetAsLastSibling();
     }
 
@@ -290,7 +321,9 @@ public class VRPrefabMenu : MonoBehaviour
         if (gridRoot == null)
             return;
 
-        // Remove old buttons.
+        buttonBackgrounds.Clear();
+        createdButtons.Clear();
+
         for (int i = gridRoot.childCount - 1; i >= 0; i--)
         {
             GameObject child =
@@ -315,28 +348,33 @@ public class VRPrefabMenu : MonoBehaviour
 
     private void CreateButton(CatalogueEntry entry)
     {
-        GameObject buttonObject =
-            new GameObject(
-                entry.ShortName,
-                typeof(RectTransform),
-                typeof(Image),
-                typeof(Button)
-            );
+        // Main button - blue background
+        GameObject buttonObject = new GameObject(
+            entry.ShortName,
+            typeof(RectTransform),
+            typeof(Image),
+            typeof(Button)
+        );
 
-        buttonObject.transform.SetParent(
-            gridRoot, false);
+        buttonObject.transform.SetParent(gridRoot, false);
 
-        Image image =
+        Image buttonBackground =
             buttonObject.GetComponent<Image>();
 
-        image.color = Color.white;
-        image.preserveAspect = true;
-        image.raycastTarget = true;
+        buttonBackground.color = buttonBackgroundColor;
+        buttonBackground.raycastTarget = true;
+
+        buttonBackgrounds.Add(buttonBackground);
 
         Button button =
             buttonObject.GetComponent<Button>();
 
-        button.targetGraphic = image;
+        createdButtons.Add(button);
+        button.targetGraphic = buttonBackground;
+
+        // Keep the chosen background colour visible.
+        // Button colour transitions would otherwise tint it.
+        button.transition = Selectable.Transition.None;
 
         string prefabGuid = entry.Guid;
 
@@ -345,14 +383,49 @@ public class VRPrefabMenu : MonoBehaviour
             SpawnPrefab(prefabGuid);
         });
 
-        // Load thumbnail from existing AssetBundle system.
+        // ----------------------------------------------
+        // THUMBNAIL CHILD
+        // ----------------------------------------------
+
+        GameObject thumbnailObject = new GameObject(
+            "Thumbnail",
+            typeof(RectTransform),
+            typeof(Image)
+        );
+
+        thumbnailObject.transform.SetParent(
+            buttonObject.transform, false);
+
+        RectTransform thumbnailRect =
+            thumbnailObject.GetComponent<RectTransform>();
+
+        thumbnailRect.anchorMin = Vector2.zero;
+        thumbnailRect.anchorMax = Vector2.one;
+
+        thumbnailRect.offsetMin = thumbnailPadding;
+        thumbnailRect.offsetMax = -thumbnailPadding;
+
+        thumbnailRect.localRotation = Quaternion.identity;
+        thumbnailRect.localScale = Vector3.one;
+
+        Image thumbnailImage =
+            thumbnailObject.GetComponent<Image>();
+
+        thumbnailImage.color = Color.white;
+        thumbnailImage.preserveAspect = true;
+
+        // Let the parent button receive clicks.
+        thumbnailImage.raycastTarget = false;
+
+        // ----------------------------------------------
+        // LOAD THUMBNAIL
+        // ----------------------------------------------
+
         Core.AssetBundlesRef
             .CatalogueThumbnailAssetBundleRef
             .GetItem(Core.Mono, entry.Guid, (texture) =>
             {
-                // The button may have been destroyed while
-                // the thumbnail was loading.
-                if (image == null)
+                if (thumbnailImage == null)
                     return;
 
                 if (texture != null)
@@ -368,9 +441,9 @@ public class VRPrefabMenu : MonoBehaviour
                         new Vector2(0.5f, 0.5f)
                     );
 
-                    image.sprite = sprite;
-                    image.color = Color.white;
-                    image.preserveAspect = true;
+                    thumbnailImage.sprite = sprite;
+                    thumbnailImage.color = Color.white;
+                    thumbnailImage.preserveAspect = true;
                 }
                 else
                 {
@@ -447,5 +520,31 @@ public class VRPrefabMenu : MonoBehaviour
 
         if (backgroundImage != null)
             backgroundImage.enabled = visible;
+    }
+
+    // --------------------------------------------------
+    // BUTTON COLOUR CONTROLS
+    // --------------------------------------------------
+
+    public void SetButtonBackgroundColor(Color color)
+    {
+        buttonBackgroundColor = color;
+
+        foreach (Image image in buttonBackgrounds)
+        {
+            if (image != null)
+                image.color = color;
+        }
+    }
+
+    public void SetButtonBackgroundColor(int index, Color color)
+    {
+        if (index < 0 || index >= buttonBackgrounds.Count)
+            return;
+
+        Image image = buttonBackgrounds[index];
+
+        if (image != null)
+            image.color = color;
     }
 }

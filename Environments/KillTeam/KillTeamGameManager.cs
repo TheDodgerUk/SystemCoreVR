@@ -9,9 +9,9 @@ public class KillTeamGameManager : MonoBehaviour
 
 
 
-    public enum TagType
+    public enum LayerType
     {
-        Player =1,
+        Player =16,
         AI,
         Terrain,
         Start,
@@ -119,22 +119,37 @@ public class KillTeamGameManager : MonoBehaviour
 
         Instance = this;
         menuPoint = this.transform.FindChildRecursive("MenuPoint").gameObject;
+        menuPoint.GetComponent<MeshRenderer>().enabled = false;
+
+
         start = this.transform.FindChildRecursive("Start").gameObject;
+        start.layer = (int)LayerType.Start;
+        start.GetComponent<MeshRenderer>().enabled = false;
 
         var assetHolder = new GameObject("assetHolder");
-        assetHolder.transform.SetParent(this.transform);
+        assetHolder.transform.SetParent(transform, false);
         AssetHolder = assetHolder.transform.AddComponent<AssetHolder>();
 
 
-
         var vRPrefabMenu = new GameObject("vRPrefabMenu");
-        vRPrefabMenu.transform.SetParent(this.transform);
+        vRPrefabMenu.transform.SetParent(transform, false);
         PrefabMenu = vRPrefabMenu.AddComponent<VRPrefabMenu>();
-        PrefabMenu.SetEntries(AssetHolder.catalogueEntryTerrain);
-        vRPrefabMenu.transform.position = menuPoint.transform.position;
+
+
 
         boardRoot = this.transform.FindChildRecursive("TableBoard").gameObject;
-        boardRoot.tag = TagType.Board.ToString();
+        boardRoot.layer = (int)LayerType.Board;
+
+        Core.Environment.OnEnvironmentLoadingComplete += () =>
+        {
+            PrefabMenu.SetEntries(AssetHolder.catalogueEntryTerrain);
+            PrefabMenu.SetBackgroundColor(Color.grey);
+            vRPrefabMenu.transform.position = menuPoint.transform.position;
+
+
+            vRPrefabMenu.transform.SetParent(null);
+            AssetHolder.transform.SetParent(null);
+        };
     }
 
     private void Start()
