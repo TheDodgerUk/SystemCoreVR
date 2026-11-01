@@ -28,6 +28,7 @@ public class KillTeamGameManager : MonoBehaviour
         WaitingForPlayers,
         BoardSetup,
         TerrainSetup,
+        BarracadeSetup,
         MissionSetup,
         TeamSelection,
         Deployment,
@@ -150,6 +151,31 @@ public class KillTeamGameManager : MonoBehaviour
             vRPrefabMenu.transform.SetParent(null);
             AssetHolder.transform.SetParent(null);
         };
+
+        OnStateChanged += KillTeamGameManager_OnStateChanged;
+    }
+
+    private void KillTeamGameManager_OnStateChanged(GameState obj)
+    {
+        if(obj == GameState.BarracadeSetup)
+        {
+            PrefabMenu.SetEntries(AssetHolder.catalogueEntryBaracade);
+        }
+        else if (obj == GameState.TeamSelection)
+        {
+            List<Texture2D> teamIcons = new List<Texture2D>();
+            PrefabMenu.SetEntries(teamIcons, OnTexture2dClicked);
+        }
+    }
+
+    private void OnTexture2dClicked(int index, Texture2D texture)
+    {
+        SetState(GameState.Deployment);
+        PrefabMenu.SetEntries(AssetHolder.catalogueEntryPlayer[(ContentKillTeamMetaData.TeamType)(index)]);
+        Debug.Log($"Clicked button {index}");
+        Debug.Log($"Selected texture: {texture.name}");
+
+        // Your logic here
     }
 
     private void Start()

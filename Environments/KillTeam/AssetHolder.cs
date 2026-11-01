@@ -1,3 +1,4 @@
+using Fixtures;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,6 +18,9 @@ public class AssetHolder : MonoBehaviour
     public List<GameObject> _assets = new List<GameObject>();
     [SerializeField]
     public SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject> _chars = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject>();
+
+    [SerializeField]
+    public List<Texture2D> teamIcons = new List<Texture2D>();
     const string ASSETS= "Assets";
 
 
@@ -58,6 +62,14 @@ public class AssetHolder : MonoBehaviour
                 totalCount++;
             }
 
+        }
+
+        foreach (var team in ContentKillTeamMetaData.TeamType.GetValues(typeof(ContentKillTeamMetaData.TeamType)))
+        {
+            Core.AssetBundlesRef.Texture2DAssetBundleRef.GetItem(Core.Mono, team.ToString(), (texture) =>
+            {
+                teamIcons.Add(texture);
+            });
         }
 
 
