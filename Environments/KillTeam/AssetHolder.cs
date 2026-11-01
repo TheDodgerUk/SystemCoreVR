@@ -7,8 +7,8 @@ using UnityEngine;
 public class AssetHolder : MonoBehaviour
 {
     [SerializeField]
-    private List<CatalogueEntry> catalogueEntry = new List<CatalogueEntry>();
-
+    private List<CatalogueEntry> catalogueEntryTerrain = new List<CatalogueEntry>();
+    private SimpleDictionaryList<ContentKillTeamMetaData.TeamType, CatalogueEntry> catalogueEntryPlayer = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, CatalogueEntry>();
     // Start is called before the first frame update
     [SerializeField]
     private List<GameObject> _assets = new List<GameObject>();
@@ -19,7 +19,7 @@ public class AssetHolder : MonoBehaviour
     private void CreateMenu()
     {
         VRPrefabMenu v = this.AddComponent<VRPrefabMenu>();
-        v.SetEntries(catalogueEntry);
+        v.SetEntries(catalogueEntryTerrain);
     }
 
     void Awake()
@@ -125,6 +125,7 @@ public class AssetHolder : MonoBehaviour
                         _chars.AddToList(data.m_OperativeStats.teamType, item.gameObject);
                         task.Increment();
                         Debug.Log($"task {task.GetCount}");
+                        catalogueEntryPlayer.AddToList(data.m_OperativeStats.teamType, catItem);
                     }
                     else
                     {
@@ -144,7 +145,7 @@ public class AssetHolder : MonoBehaviour
                         _assets.Add(item.gameObject);
                         task.Increment();
                         Debug.Log($"task {task.GetCount}");
-                        catalogueEntry.Add(catItem);
+                        catalogueEntryTerrain.Add(catItem);
                     }
 
                 });

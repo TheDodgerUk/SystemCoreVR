@@ -22,7 +22,6 @@ public class MiniatureVerticalLine : MonoBehaviour
         GameObject child = new GameObject("VerticalLine");
         child.transform.SetParent(transform, false);
         line = child.AddComponent<LineRenderer>();
-        Debug.LogError($"MiniatureVerticalLine Script A added LineRenderer: {line.GetInstanceID()}");
         grabbable = GetComponent<Grabbable>();
 
         line.positionCount = 2;

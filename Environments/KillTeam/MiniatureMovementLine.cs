@@ -46,7 +46,6 @@ public class MiniatureMovementLine : MonoBehaviour
         GameObject child = new GameObject("MovementLine");
         child.transform.SetParent(transform, false);
         line = child.AddComponent<LineRenderer>();
-        Debug.LogError($"MiniatureMovementLine Script A added LineRenderer: {line.GetInstanceID()}");
         grab = GetComponent<Grabbable>();
 
         line.useWorldSpace = true;
