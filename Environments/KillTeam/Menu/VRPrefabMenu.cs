@@ -440,7 +440,7 @@ public class VRPrefabMenu : MonoBehaviour
 
         button.onClick.AddListener(() =>
         {
-            SpawnPrefab(prefabGuid);
+            SpawnPrefab(button, prefabGuid);
         });
 
         int requestVersion = menuVersion;
@@ -621,7 +621,7 @@ public class VRPrefabMenu : MonoBehaviour
     // SPAWN PREFAB
     // ----------------------------------------------
 
-    public void SpawnPrefab(string prefabGuid)
+    public void SpawnPrefab(Button button, string prefabGuid)
     {
         if (string.IsNullOrEmpty(prefabGuid))
             return;
@@ -646,8 +646,9 @@ public class VRPrefabMenu : MonoBehaviour
             item.transform.position = position;
             item.transform.rotation = Quaternion.identity;
 
-            Debug.Log($"Spawned: {item.name}");
-
+            
+            button.enabled = false;
+            Debug.Log($"Spawned: {item.name}  button.enabled = false {button.enabled = false}");
 #if UNITY_EDITOR
         //EditorSceneManager.MoveGameObjectToScene(obj, targetScene);
 #else
@@ -804,6 +805,41 @@ public class VRPrefabMenu : MonoBehaviour
         Debug.Log($"Testing button {index}: {button.name}");
 
         button.onClick.Invoke();
+    }
+    public void AddButton(Texture2D texture, System.Action callback)
+    {
+        if (texture == null || gridRoot == null)
+        {
+            Debug.LogError("Texture or menu gridRoot is missing.", this);
+            return;
+        }
+
+        GameObject buttonObject = new GameObject(
+            texture.name + "_Button",
+            typeof(RectTransform),
+            typeof(UnityEngine.UI.RawImage),
+            typeof(UnityEngine.UI.Button)
+        );
+
+        buttonObject.transform.SetParent(gridRoot, false);
+
+        RectTransform rect =
+            buttonObject.GetComponent<RectTransform>();
+
+        rect.sizeDelta = new Vector2(100f, 100f);
+
+        UnityEngine.UI.RawImage image =
+            buttonObject.GetComponent<UnityEngine.UI.RawImage>();
+
+        image.texture = texture;
+        image.color = Color.white;
+        image.raycastTarget = true;
+
+        UnityEngine.UI.Button button =
+            buttonObject.GetComponent<UnityEngine.UI.Button>();
+
+        button.targetGraphic = image;
+        button.onClick.AddListener(() => callback?.Invoke());
     }
 
 }

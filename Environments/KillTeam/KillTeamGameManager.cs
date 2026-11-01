@@ -78,7 +78,7 @@ public class KillTeamGameManager : MonoBehaviour
     private Transform operativeRoot;
 
     [SerializeField]
-    private GameObject menuPoint;
+    public GameObject menuPoint;
 
     [SerializeField]
     private GameObject start;
@@ -88,7 +88,6 @@ public class KillTeamGameManager : MonoBehaviour
     private List<PlayerData> players = new List<PlayerData>();
 
     public AssetHolder AssetHolder { get; private set; }
-    public VRPrefabMenu PrefabMenu { get; private set; }
 
     public VRPrefabMenuController PrefabMenuController { get; private set; }
 
@@ -143,23 +142,18 @@ public class KillTeamGameManager : MonoBehaviour
         AssetHolder = assetHolder.transform.AddComponent<AssetHolder>();
 
 
-        var vRPrefabMenu = new GameObject("vRPrefabMenu");
-        vRPrefabMenu.transform.SetParent(transform, false);
-        PrefabMenu = vRPrefabMenu.AddComponent<VRPrefabMenu>();
 
-        PrefabMenuController = this.AddComponent<VRPrefabMenuController>();
+        var vRPrefabMenu = new GameObject("VRPrefabMenuController");
+        vRPrefabMenu.transform.SetParent(transform, false);
+        PrefabMenuController = vRPrefabMenu.AddComponent<VRPrefabMenuController>();
 
         boardRoot = this.transform.FindChildRecursive("TableBoard").gameObject;
         boardRoot.layer = (int)LayerType.Board;
 
         Core.Environment.OnEnvironmentLoadingComplete += () =>
         {
-            PrefabMenu.SetEntries(AssetHolder.catalogueEntryTerrain);
-            PrefabMenu.SetBackgroundColor(Color.grey);
-            vRPrefabMenu.transform.position = menuPoint.transform.position;
 
-
-            vRPrefabMenu.transform.SetParent(null);
+            PrefabMenuController.transform.SetParent(null);
             AssetHolder.transform.SetParent(null);
         };
 
@@ -171,26 +165,9 @@ public class KillTeamGameManager : MonoBehaviour
 
     private void KillTeamGameManager_OnStateChanged(GameState obj)
     {
-        if (obj == GameState.BarracadeSetup)
-        {
-            PrefabMenu.SetEntries(AssetHolder.catalogueEntryBaracade);
-        }
-        else if (obj == GameState.TeamSelection)
-        {
-
-            PrefabMenu.SetEntries(AssetHolder.teamIcons, OnTexture2dClicked);
-        }
     }
 
-    private void OnTexture2dClicked(int index, Texture2D texture)
-    {
-        SetState(GameState.Deployment);
-        PrefabMenu.SetEntries(AssetHolder.catalogueEntryPlayer[(ContentKillTeamMetaData.TeamType)(index)]);
-        Debug.Log($"Clicked button {index}");
-        Debug.Log($"Selected texture: {texture.name}");
 
-        // Your logic here
-    }
 
     private void Update()
     {
@@ -324,7 +301,7 @@ public class KillTeamGameManager : MonoBehaviour
     // GAME STATE
     // --------------------------------------------------
 
-    private void SetState(GameState state)
+    public void SetState(GameState state)
     {
         if (currentState == state)
             return;

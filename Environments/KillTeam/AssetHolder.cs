@@ -21,6 +21,9 @@ public class AssetHolder : MonoBehaviour
 
     [SerializeField]
     public List<Texture2D> teamIcons = new List<Texture2D>();
+
+    [SerializeField]
+    public Texture2D nextIcon;
     const string ASSETS= "Assets";
 
 
@@ -53,6 +56,9 @@ public class AssetHolder : MonoBehaviour
             {
                 if(catItem.CatalogueFilters.Contains(KillTeamGameManager.Instance.Barracade))
                 {
+                    // we need 3 of them
+                    catalogueEntryBaracade.Add(catItem);
+                    catalogueEntryBaracade.Add(catItem);
                     catalogueEntryBaracade.Add(catItem);
                 }
                 else 
@@ -64,11 +70,24 @@ public class AssetHolder : MonoBehaviour
 
         }
 
+        Core.AssetBundlesRef.Texture2DAssetBundleRef.GetItem(Core.Mono, "Next", (texture) =>
+        {
+            nextIcon = texture;
+            if(texture == null)
+            {
+                Debug.LogError("Next icon not found");
+            }
+        });
+
         foreach (var team in ContentKillTeamMetaData.TeamType.GetValues(typeof(ContentKillTeamMetaData.TeamType)))
         {
             Core.AssetBundlesRef.Texture2DAssetBundleRef.GetItem(Core.Mono, team.ToString(), (texture) =>
             {
                 teamIcons.Add(texture);
+                if (texture == null)
+                {
+                    Debug.LogError($"Team icon not found for {team}");
+                }
             });
         }
 
