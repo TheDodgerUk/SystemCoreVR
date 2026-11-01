@@ -7,6 +7,16 @@ public class KillTeamGameManager : MonoBehaviour
 {
     public static KillTeamGameManager Instance { get; private set; }
 
+
+
+    public enum TagType
+    {
+        Player =1,
+        AI,
+        Terrain,
+        Start,
+        Board
+    }
     public enum GameMode
     {
         SinglePlayer,
@@ -57,7 +67,7 @@ public class KillTeamGameManager : MonoBehaviour
 
     [Header("Board")]
     [SerializeField]
-    private Transform boardRoot;
+    private GameObject boardRoot;
 
     [SerializeField]
     private Transform terrainRoot;
@@ -65,9 +75,18 @@ public class KillTeamGameManager : MonoBehaviour
     [SerializeField]
     private Transform operativeRoot;
 
+    [SerializeField]
+    private GameObject menuPoint;
+
+    [SerializeField]
+    private GameObject start;
+
     [Header("Players")]
     [SerializeField]
     private List<PlayerData> players = new List<PlayerData>();
+
+    public AssetHolder AssetHolder { get; private set; }
+    public VRPrefabMenu PrefabMenu { get; private set; }
 
     public event Action<GameState> OnStateChanged;
     public event Action<PlayerData> OnPlayerJoined;
@@ -81,7 +100,7 @@ public class KillTeamGameManager : MonoBehaviour
 
     public IReadOnlyList<PlayerData> Players => players;
 
-    public Transform BoardRoot => boardRoot;
+    public GameObject BoardRoot => boardRoot;
     public Transform TerrainRoot => terrainRoot;
     public Transform OperativeRoot => operativeRoot;
 
@@ -97,6 +116,23 @@ public class KillTeamGameManager : MonoBehaviour
         }
 
         Instance = this;
+        menuPoint = this.transform.FindChildRecursive("MenuPoint").gameObject;
+        start = this.transform.FindChildRecursive("Start").gameObject;
+
+        var assetHolder = new GameObject("assetHolder");
+        assetHolder.transform.SetParent(this.transform);
+        AssetHolder = assetHolder.transform.AddComponent<AssetHolder>();
+
+
+
+        var vRPrefabMenu = new GameObject("vRPrefabMenu");
+        vRPrefabMenu.transform.SetParent(this.transform);
+        PrefabMenu = vRPrefabMenu.AddComponent<VRPrefabMenu>();
+        PrefabMenu.SetEntries(AssetHolder.catalogueEntryTerrain);
+        vRPrefabMenu.transform.position = menuPoint.transform.position;
+
+        boardRoot = this.transform.FindChildRecursive("TableBoard").gameObject;
+        boardRoot.tag = TagType.Board.ToString();
     }
 
     private void Start()

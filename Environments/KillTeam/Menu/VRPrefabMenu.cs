@@ -72,6 +72,20 @@ public class VRPrefabMenu : MonoBehaviour
         CreateButtons();
     }
 
+
+    public void Update()
+    {
+        Vector3 direction =
+            Camera.main.transform.position - transform.position;
+
+        if (true)
+            direction.y = 0f;
+
+        if (direction.sqrMagnitude < 0.0001f)
+            return;
+
+        transform.rotation = Quaternion.LookRotation(direction);
+    }
     // --------------------------------------------------
     // CANVAS
     // --------------------------------------------------

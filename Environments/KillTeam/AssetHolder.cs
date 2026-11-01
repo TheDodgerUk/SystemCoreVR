@@ -7,20 +7,15 @@ using UnityEngine;
 public class AssetHolder : MonoBehaviour
 {
     [SerializeField]
-    private List<CatalogueEntry> catalogueEntryTerrain = new List<CatalogueEntry>();
-    private SimpleDictionaryList<ContentKillTeamMetaData.TeamType, CatalogueEntry> catalogueEntryPlayer = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, CatalogueEntry>();
+    public List<CatalogueEntry> catalogueEntryTerrain = new List<CatalogueEntry>();
+    public SimpleDictionaryList<ContentKillTeamMetaData.TeamType, CatalogueEntry> catalogueEntryPlayer = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, CatalogueEntry>();
     // Start is called before the first frame update
     [SerializeField]
-    private List<GameObject> _assets = new List<GameObject>();
+    public List<GameObject> _assets = new List<GameObject>();
     [SerializeField]
-    private SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject> _chars = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject>();
+    public SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject> _chars = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject>();
     const string ASSETS= "Assets";
 
-    private void CreateMenu()
-    {
-        VRPrefabMenu v = this.AddComponent<VRPrefabMenu>();
-        v.SetEntries(catalogueEntryTerrain);
-    }
 
     void Awake()
     {
@@ -45,9 +40,12 @@ public class AssetHolder : MonoBehaviour
             {
                 totalCount += Mathf.Max(0, data.m_OperativeStats.numberToGenerate);
                 Debug.Log($"task {data.m_OperativeStats.operativeName} {data.m_OperativeStats.numberToGenerate}");
+                catalogueEntryPlayer.AddToList(data.m_OperativeStats.teamType, catItem);
             }
             else
             {
+                var dd = catItem.CatalogueFilters;
+                catalogueEntryTerrain.Add(catItem);
                 totalCount++;
             }
 
@@ -72,8 +70,6 @@ public class AssetHolder : MonoBehaviour
                 PrefabRowSpawner spawnerAssets = gameObject.transform.Find(ASSETS).AddComponent<PrefabRowSpawner>();
                 spawnerAssets.Spawn(assetsPos, _assets);
             }
-
-            CreateMenu();
 
         });
 
@@ -125,7 +121,7 @@ public class AssetHolder : MonoBehaviour
                         _chars.AddToList(data.m_OperativeStats.teamType, item.gameObject);
                         task.Increment();
                         Debug.Log($"task {task.GetCount}");
-                        catalogueEntryPlayer.AddToList(data.m_OperativeStats.teamType, catItem);
+                        
                     }
                     else
                     {
@@ -145,7 +141,7 @@ public class AssetHolder : MonoBehaviour
                         _assets.Add(item.gameObject);
                         task.Increment();
                         Debug.Log($"task {task.GetCount}");
-                        catalogueEntryTerrain.Add(catItem);
+                        
                     }
 
                 });
