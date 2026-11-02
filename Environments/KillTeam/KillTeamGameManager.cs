@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static UnityEngine.UI.ContentSizeFitter;
 
 
 public class KillTeamGameManager : MonoBehaviour
@@ -187,10 +188,12 @@ public class KillTeamGameManager : MonoBehaviour
                 display.Initialise(data);
                 break;
             case LayerType.Terrain:
-                item.gameObject.AddComponent<InitiliseTerrain>();
+                var t = item.gameObject.AddComponent<InitiliseTerrain>();
+                t.SetMode(LayerType.Terrain);
                 break;
             case LayerType.Barracade:
-                item.gameObject.AddComponent<InitiliseTerrain>();
+                var i = item.gameObject.AddComponent<InitiliseTerrain>();
+                i.SetMode(LayerType.Barracade);
                 break;
             default:
                 break;

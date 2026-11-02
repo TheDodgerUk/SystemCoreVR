@@ -5,11 +5,17 @@ using Autohand;
 [RequireComponent(typeof(Grabbable))]
 public class TerrainPlacementValidator : MonoBehaviour
 {
+    [Header("Line Settings")]
+    public float lineWidth = 0.005f;
+    public float maxDistance = 5f;
+
+
+
     [Header("Base")]
     public int edgeSamples = 16;
 
     [Header("Surface")]
-    public LayerMask placementLayers = (1 << (int)KillTeamGameManager.LayerType.TableBoard);
+    public LayerMask placementLayers  = ~0;
     public float rayStartHeight = 2f;
     public float rayDistance = 5f;
     public float heightTolerance = 10;
@@ -26,15 +32,35 @@ public class TerrainPlacementValidator : MonoBehaviour
     private bool isGrabbed;
     public bool canPlace;
     private Vector3 placementPosition;
+    private Vector3 startPosition;
+
+    private LineRenderer line;
+    KillTeamGameManager.LayerType mLayer;
 
     private void Awake()
     {
         grab = GetComponent<Grabbable>();
         KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
-        placementLayers = (1 << (int)KillTeamGameManager.LayerType.TableBoard);
+
+
+        GameObject child = new GameObject("VerticalLine");
+        child.transform.SetParent(transform, false);
+        line = child.AddComponent<LineRenderer>();
+
+        line.positionCount = 2;
+        line.useWorldSpace = true;
+        line.startWidth = lineWidth;
+        line.endWidth = lineWidth;
+
+
+    }
+    public void SetMode(KillTeamGameManager.LayerType layer)
+    {
+        mLayer = layer;
     }
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
+        grab.enabled = false;
         switch (state)
         {
             case KillTeamGameManager.GameState.WaitingForPlayers:
@@ -42,6 +68,14 @@ public class TerrainPlacementValidator : MonoBehaviour
             case KillTeamGameManager.GameState.BoardSetup:
                 break;
             case KillTeamGameManager.GameState.TerrainSetup:
+                if (mLayer == KillTeamGameManager.LayerType.Terrain)
+                {
+                    grab.enabled = true;
+                }
+                if (mLayer == KillTeamGameManager.LayerType.Barracade)
+                {
+                    grab.enabled = true;
+                }
                 break;
             case KillTeamGameManager.GameState.BarracadeSetup:
                 break;
@@ -77,6 +111,7 @@ public class TerrainPlacementValidator : MonoBehaviour
 
     private void OnGrab(Hand hand, Grabbable grabbable)
     {
+        startPosition = this.transform.position;
         isGrabbed = true;
     }
 
@@ -99,10 +134,25 @@ public class TerrainPlacementValidator : MonoBehaviour
             Quaternion.Euler(0f, rotation.y, 0f);
 
         currentColor = originalColor;
+
+        canPlace = CheckPlacement(
+                transform.position,
+                out placementPosition);
+
+
+        if (canPlace)
+        {
+            transform.position = placementPosition;
+        }
+        else
+        {
+            startPosition = transform.position;
+        }
     }
 
     private void LateUpdate()
     {
+        line.enabled = isGrabbed;
         if (!isGrabbed)
             return;
 
@@ -113,6 +163,26 @@ public class TerrainPlacementValidator : MonoBehaviour
 
         currentColor =
             canPlace ? validColor : invalidColor;
+
+
+        Vector3 start = transform.position;
+        Vector3 end = start + Vector3.down * maxDistance;
+
+        if (Physics.Raycast(
+            start,
+            Vector3.down,
+            out RaycastHit hit,
+            maxDistance,
+            placementLayers,
+            QueryTriggerInteraction.Ignore))
+        {
+            end = hit.point;
+        }
+        line.startColor = currentColor;
+        line.endColor = currentColor;
+        line.SetPosition(0, start);
+        line.SetPosition(1, end);
+
     }
 
     public bool CheckPlacement(
@@ -133,7 +203,8 @@ public class TerrainPlacementValidator : MonoBehaviour
         float surfaceY = 0f;
         bool firstHit = true;
 
-        foreach (BoxCollider box in boxColliders)
+        BoxCollider box = boxColliders[0]; // just placement one
+                                           //foreach (BoxCollider box in boxColliders)
         {
             Vector3 halfSize = box.size * 0.5f;
 
@@ -159,6 +230,7 @@ public class TerrainPlacementValidator : MonoBehaviour
                     worldPoint,
                     out RaycastHit hit);
 
+                validPosition = hit.point;
                 if (valid)
                 {
                     if (firstHit)
@@ -186,6 +258,7 @@ public class TerrainPlacementValidator : MonoBehaviour
         if (firstHit)
             return false;
 
+       
         return true;
     }
 
@@ -199,19 +272,96 @@ public class TerrainPlacementValidator : MonoBehaviour
     }
 #endif
 
-    private bool CastDown(
-        Vector3 position,
-        out RaycastHit hit)
+
+    private bool CastDown(Vector3 position, out RaycastHit hit)
     {
+        hit = default(RaycastHit);
+
         Vector3 origin =
             position + Vector3.up * rayStartHeight;
 
-        return Physics.Raycast(
+        RaycastHit[] hits = Physics.RaycastAll(
             origin,
             Vector3.down,
-            out hit,
             rayDistance,
             placementLayers,
-            QueryTriggerInteraction.Ignore);
+            QueryTriggerInteraction.Ignore
+        );
+
+        float closestDistance = float.MaxValue;
+        bool hasHit = false;
+
+        int requiredLayer = -1;
+
+        switch (mLayer)
+        {
+            case KillTeamGameManager.LayerType.Terrain:
+                requiredLayer =
+                    (int)KillTeamGameManager.LayerType.TableBoard;
+                break;
+
+            case KillTeamGameManager.LayerType.Barracade:
+                requiredLayer =
+                    (int)KillTeamGameManager.LayerType.PlayerSetup;
+                break;
+        }
+
+        foreach (RaycastHit h in hits)
+        {
+            if (h.collider == null)
+                continue;
+
+            // Ignore this GameObject and all child colliders
+            if (h.collider.transform == transform ||
+                h.collider.transform.IsChildOf(transform))
+            {
+                continue;
+            }
+
+            // Only accept the required placement layer
+            if (requiredLayer < 0 ||
+                h.collider.gameObject.layer != requiredLayer)
+            {
+                continue;
+            }
+
+            // Find closest valid surface
+            if (h.distance < closestDistance)
+            {
+                closestDistance = h.distance;
+                hit = h;
+                hasHit = true;
+            }
+        }
+
+#if UNITY_EDITOR
+    Debug.DrawRay(
+        origin,
+        Vector3.down * (hasHit ? hit.distance : rayDistance),
+        hasHit ? Color.green : Color.red
+    );
+
+    if (hasHit)
+    {
+        Debug.Log(
+            $"VALID HIT: {hit.collider.name} | " +
+            $"Position: {hit.point} | " +
+            $"Layer: {LayerMask.LayerToName(hit.collider.gameObject.layer)} | " +
+            $"Distance: {hit.distance:F3}"
+        );
     }
+    else
+    {
+        Debug.LogWarning(
+            $"NO VALID HIT | " +
+            $"Origin: {origin} | " +
+            $"Required Layer: {requiredLayer} | " +
+            $"Ray Distance: {rayDistance}"
+        );
+    }
+#endif
+
+        return hasHit;
+    }
+
 }

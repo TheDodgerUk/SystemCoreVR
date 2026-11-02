@@ -10,9 +10,8 @@ using UnityEngine;
 [RequireComponent(typeof(Grabbable))]
 public class InitiliseTerrain : MonoBehaviour
 {
-    private VRMiniatureGrab vRMiniatureGrab;
     private TerrainPlacementValidator terrainPlacementValidator;
-    // Start is called before the first frame update
+
     void Awake()
     {
         CameraControllerVR.Instance.AutoHandPlayerRef.useMovement = false;
@@ -22,7 +21,6 @@ public class InitiliseTerrain : MonoBehaviour
 
 
         terrainPlacementValidator = gameObject.AddComponent<TerrainPlacementValidator>();
-        vRMiniatureGrab = gameObject.AddComponent<VRMiniatureGrab>();
 
         gameObject.AddComponent<TestAutoHand>();
         var rb = gameObject.GetComponent<Rigidbody>();
@@ -30,14 +28,13 @@ public class InitiliseTerrain : MonoBehaviour
         this.gameObject.layer = (int)KillTeamGameManager.LayerType.Terrain;
     }
 
-
-    public void SetGrabEnabled(bool can)
+    public void SetMode(KillTeamGameManager.LayerType layer)
     {
-        vRMiniatureGrab.SetGrabEnabled(can);
+        terrainPlacementValidator.SetMode(layer);
     }
+
+
     public void OnDestroy()
     {
-        Destroy(GetComponent<MiniatureMovement>());
-        Destroy(GetComponent<VRMiniatureGrab>());
     }
 }

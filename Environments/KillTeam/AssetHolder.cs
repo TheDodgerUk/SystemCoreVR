@@ -95,13 +95,19 @@ public class AssetHolder : MonoBehaviour
 
     public void SpawnTerrain()
     {
+
+        int muliplier = 2;
         List<GameObject> terrainGameObjects = new List<GameObject>();
-        TaskAction task = new TaskAction(catalogueEntryTerrain.Count, () =>
+        TaskAction task = new TaskAction(catalogueEntryTerrain.Count * muliplier, () =>
         {
             PrefabRowSpawner spawnerAssets = this.AddComponent<PrefabRowSpawner>();
             spawnerAssets.Spawn(KillTeamGameManager.Instance.StartTable, terrainGameObjects);
             DestroyImmediate(spawnerAssets);
         });
+
+        for (int i = 0; i < muliplier; i++)
+        {
+      
         foreach (CatalogueEntry catItem in catalogueEntryTerrain)
         {
             Core.Scene.SpawnObject(catItem, (item) =>
@@ -118,6 +124,7 @@ public class AssetHolder : MonoBehaviour
                 task.Increment();
             });
         }
+    }
     }
 
     public void SpawnBarracades()
