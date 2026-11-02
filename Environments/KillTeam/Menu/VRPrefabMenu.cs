@@ -617,6 +617,88 @@ public class VRPrefabMenu : MonoBehaviour
         return button;
     }
 
+
+    private Button CreateBaseButton(out Image thumbnailImage)
+    {
+        GameObject buttonObject = new GameObject(
+            $"Button_{createdButtons.Count}",
+            typeof(RectTransform),
+            typeof(Image),
+            typeof(Button),
+            typeof(VRMenuButtonVisual)
+        );
+
+        buttonObject.transform.SetParent(gridRoot, false);
+
+        Image buttonBackground = buttonObject.GetComponent<Image>();
+        buttonBackground.color = buttonBackgroundColor;
+        buttonBackground.raycastTarget = true;
+        buttonBackgrounds.Add(buttonBackground);
+
+        Button button = buttonObject.GetComponent<Button>();
+        button.targetGraphic = buttonBackground;
+        button.transition = Selectable.Transition.None;
+        createdButtons.Add(button);
+
+        // Borders
+        CreateBorder(buttonObject.transform, "Border Top", true, true);
+        CreateBorder(buttonObject.transform, "Border Bottom", true, false);
+        CreateBorder(buttonObject.transform, "Border Left", false, true);
+        CreateBorder(buttonObject.transform, "Border Right", false, false);
+
+        // Thumbnail
+        GameObject thumbnailObject = new GameObject(
+            "Thumbnail",
+            typeof(RectTransform),
+            typeof(Image)
+        );
+
+        thumbnailObject.transform.SetParent(buttonObject.transform, false);
+
+        RectTransform thumbnailRect =
+            thumbnailObject.GetComponent<RectTransform>();
+
+        thumbnailRect.anchorMin = Vector2.zero;
+        thumbnailRect.anchorMax = Vector2.one;
+
+        thumbnailRect.offsetMin = new Vector2(
+            thumbnailPadding.x + borderThickness,
+            thumbnailPadding.y + borderThickness
+        );
+
+        thumbnailRect.offsetMax = new Vector2(
+            -thumbnailPadding.x - borderThickness,
+            -thumbnailPadding.y - borderThickness
+        );
+
+        thumbnailImage = thumbnailObject.GetComponent<Image>();
+        thumbnailImage.color = Color.white;
+        thumbnailImage.preserveAspect = true;
+        thumbnailImage.raycastTarget = false;
+
+        // Bring borders to front
+        foreach (Transform child in buttonObject.transform)
+        {
+            if (child.name.StartsWith("Border "))
+                child.SetAsLastSibling();
+        }
+
+        VRMenuButtonVisual visual =
+            buttonObject.GetComponent<VRMenuButtonVisual>();
+
+        visual.Configure(
+            buttonBackground,
+            borderColor,
+            hoverColor,
+            selectedColor
+        );
+
+        buttonVisuals.Add(visual);
+
+        return button;
+    }
+
+
     private void CreateBorder(Transform parent, string borderName, bool horizontal, bool first)
     {
         GameObject go = new GameObject(borderName, typeof(RectTransform), typeof(Image));
@@ -887,7 +969,47 @@ public class VRPrefabMenu : MonoBehaviour
         // Creates the button and registers it
         // in createdButtons automatically.
         Button button = CreateBaseButton(
-            texture.name + "_Button",
+            out thumbnailImage
+        );
+
+        // Assign texture
+        Sprite sprite = CreateRuntimeSprite(texture);
+
+        thumbnailImage.sprite = sprite;
+        thumbnailImage.color = Color.white;
+        thumbnailImage.preserveAspect = true;
+
+        // Assign callback
+        button.onClick.AddListener(() =>
+        {
+            SelectButton(button);
+            Debug.Log($"Button clicked: {button.name}");
+            callback?.Invoke();
+        });
+
+        Debug.Log(
+            $"Added button: {button.name}, " +
+            $"Total buttons: {createdButtons.Count}"
+        );
+    }
+
+    public void AddButton(Texture2D texture, string buttonName, System.Action callback)
+    {
+        if (texture == null || gridRoot == null)
+        {
+            Debug.LogError(
+                "Texture or menu gridRoot is missing.",
+                this
+            );
+            return;
+        }
+
+        Image thumbnailImage;
+
+        // Creates the button and registers it
+        // in createdButtons automatically.
+        Button button = CreateBaseButton(
+            buttonName,
             out thumbnailImage
         );
 

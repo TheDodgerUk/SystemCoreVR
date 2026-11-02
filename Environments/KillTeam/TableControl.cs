@@ -1,60 +1,74 @@
 
 using UnityEngine;
-using Autohand;
 
 namespace KillTeam
 {
     public class TableControl : MonoBehaviour
     {
-        [Header("Quest Controller Anchors")]
+        [Header("VR Rig")]
+        public Transform rigRoot;
+        public Transform head;
+
+        [Header("Controller Anchors")]
         public Transform leftHand;
         public Transform rightHand;
 
         [Header("Settings")]
-        public float gripThreshold = 0.5f;
         public float minScale = 0.2f;
         public float maxScale = 5f;
+        public float movementSpeed = 1f;
+        public float rotationSpeed = 1f;
 
         private Transform activeHand;
-
-        // Single hand movement
-        private Vector3 positionOffset;
-        private float startHandYaw;
-        private float startBoardYaw;
-        private Vector3 startHandPosition;
-        private Vector3 startBoardPosition;
-
-        // Two hand movement
         private bool twoHanded;
-        private float startDistance;
-        private Vector3 startScale;
-        private float startTwoHandYaw;
-        private Vector3 startMidpoint;
-        private Vector3 startBoardOffset;
-        private Vector3 startDirection;
 
+        // Single hand
+        private Vector3 startHandPosition;
+        private Vector3 startRigPosition;
+        private float startHandYaw;
+        private Quaternion startRigRotation;
+
+        // Two hands
+        private float startDistance;
+        private float startScale;
+        private Vector3 startMidpoint;
+        private Vector3 startDirection;
+        private Quaternion startTwoHandRotation;
+
+        // World-space pivot on the board
+        private Vector3 startPivot;
 
         private void Awake()
         {
-            leftHand = CameraControllerVR.Instance.HandLeftRef.transform;
-            rightHand = CameraControllerVR.Instance.HandRightRef.transform;
-            
+            if (CameraControllerVR.Instance != null)
+            {
+                leftHand =
+                    CameraControllerVR.Instance.HandLeftRef.transform;
+
+                rightHand =
+                    CameraControllerVR.Instance.HandRightRef.transform;
+            }
+
+            if (head == null && Camera.main != null)
+                head = Camera.main.transform;
         }
 
         private void Update()
         {
-            if (leftHand == null || rightHand == null)
+            if (rigRoot == null ||
+                leftHand == null ||
+                rightHand == null)
                 return;
 
-            bool leftGrip = OVRInput.GetDown(
-                                OVRInput.Button.One,
-                                OVRInput.Controller.LTouch);
+            // Use Get, not GetDown, to detect held buttons.
+            bool leftGrip = OVRInput.Get(
+                OVRInput.Button.One,
+                OVRInput.Controller.LTouch);
 
-            bool rightGrip = OVRInput.GetDown(
-                                OVRInput.Button.One,
-                                OVRInput.Controller.RTouch);
+            bool rightGrip = OVRInput.Get(
+                OVRInput.Button.One,
+                OVRInput.Controller.RTouch);
 
-            // Both grips held
             if (leftGrip && rightGrip)
             {
                 if (!twoHanded)
@@ -93,38 +107,33 @@ namespace KillTeam
         private void BeginSingleHand()
         {
             startHandPosition = activeHand.position;
-            startBoardPosition = transform.position;
+            startRigPosition = rigRoot.position;
 
             startHandYaw = activeHand.eulerAngles.y;
-            startBoardYaw = transform.eulerAngles.y;
-
-            positionOffset =
-                transform.position - activeHand.position;
+            startRigRotation = rigRoot.rotation;
         }
 
         private void UpdateSingleHand()
         {
-            // Move board with hand
             Vector3 movement =
                 activeHand.position - startHandPosition;
 
-            // Rotate around Y axis only
             float yawChange = Mathf.DeltaAngle(
                 startHandYaw,
                 activeHand.eulerAngles.y);
 
-            Quaternion rotation =
-                Quaternion.Euler(0f, yawChange, 0f);
+            Quaternion rotation = Quaternion.Euler(
+                0f,
+                -yawChange * rotationSpeed,
+                0f);
 
-            transform.rotation =
-                Quaternion.Euler(
-                    0f,
-                    startBoardYaw + yawChange,
-                    0f);
+            // Inverse hand movement:
+            // dragging the world right moves the rig left.
+            rigRoot.position =
+                startRigPosition - movement * movementSpeed;
 
-            // Move relative to original hand position
-            transform.position =
-                startBoardPosition + movement;
+            rigRoot.rotation =
+                rotation * startRigRotation;
         }
 
         private void BeginTwoHand()
@@ -133,17 +142,18 @@ namespace KillTeam
                 leftHand.position,
                 rightHand.position);
 
-            startScale = transform.localScale;
-            startTwoHandYaw = transform.eulerAngles.y;
+            startScale = rigRoot.localScale.x;
+            startRigPosition = rigRoot.position;
+            startTwoHandRotation = rigRoot.rotation;
 
             startMidpoint =
                 (leftHand.position + rightHand.position) * 0.5f;
 
-            startBoardOffset =
-                transform.position - startMidpoint;
-
             startDirection =
                 rightHand.position - leftHand.position;
+
+            // Pivot is fixed in world space.
+            startPivot = startMidpoint;
         }
 
         private void UpdateTwoHand()
@@ -156,30 +166,27 @@ namespace KillTeam
 
             float distance = direction.magnitude;
 
-            if (startDistance < 0.001f || distance < 0.001f)
+            if (startDistance < 0.001f ||
+                distance < 0.001f)
                 return;
 
-            // Zoom in and out
-            float scaleFactor = distance / startDistance;
-
-            float originalScale = Mathf.Max(
-                Mathf.Abs(startScale.x),
-                Mathf.Abs(startScale.y),
-                Mathf.Abs(startScale.z));
+            // Inverse scale:
+            // hands apart -> player becomes smaller -> zoom out.
+            // hands together -> player becomes bigger -> zoom in.
+            float handFactor = distance / startDistance;
 
             float newScale = Mathf.Clamp(
-                originalScale * scaleFactor,
+                startScale / handFactor,
                 minScale,
                 maxScale);
 
-            scaleFactor = originalScale > 0.0001f
-                ? newScale / originalScale
-                : 1f;
+            float scaleFactor =
+                newScale / Mathf.Max(startScale, 0.0001f);
 
-            transform.localScale =
-                startScale * scaleFactor;
+            rigRoot.localScale =
+                Vector3.one * newScale;
 
-            // Rotate horizontally only
+            // Horizontal rotation
             Vector3 startFlat =
                 Vector3.ProjectOnPlane(startDirection, Vector3.up);
 
@@ -197,19 +204,22 @@ namespace KillTeam
                     Vector3.up);
             }
 
-            Quaternion rotation =
-                Quaternion.Euler(0f, yawChange, 0f);
+            Quaternion rotation = Quaternion.Euler(
+                0f,
+                -yawChange * rotationSpeed,
+                0f);
 
-            transform.rotation =
-                Quaternion.Euler(
-                    0f,
-                    startTwoHandYaw + yawChange,
-                    0f);
+            rigRoot.rotation =
+                rotation * startTwoHandRotation;
 
-            // Move, rotate and scale around hand midpoint
-            transform.position =
-                midpoint +
-                rotation * (startBoardOffset * scaleFactor);
+            // Keep the original world pivot stationary
+            // relative to the scaled/rotated rig.
+            Vector3 offset = startRigPosition - startPivot;
+
+            rigRoot.position =
+                startPivot +
+                rotation * (offset * scaleFactor)
+                - (midpoint - startMidpoint);
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Numerics;
 using UnityEngine;
 
 public class AssetHolder : MonoBehaviour
@@ -13,11 +14,6 @@ public class AssetHolder : MonoBehaviour
     [SerializeField]
     public List<CatalogueEntry> catalogueEntryBaracade = new List<CatalogueEntry>();
     public SimpleDictionaryList<ContentKillTeamMetaData.TeamType, CatalogueEntry> catalogueEntryPlayer = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, CatalogueEntry>();
-    // Start is called before the first frame update
-    [SerializeField]
-    public List<GameObject> _assets = new List<GameObject>();
-    [SerializeField]
-    public SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject> _chars = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, GameObject>();
 
     [SerializeField]
     public List<Texture2D> teamIcons = new List<Texture2D>();
@@ -27,47 +23,36 @@ public class AssetHolder : MonoBehaviour
 
     [SerializeField]
     public Material wallMaterail;
-    const string ASSETS= "Assets";
+    const string ASSETS = "Assets";
 
 
     void Awake()
     {
-
-        Dictionary<ContentKillTeamMetaData.TeamType, Vector3> teamDict = new Dictionary<ContentKillTeamMetaData.TeamType, Vector3>();
-
-        float yOffset = 0.34248f * 1.01f; // this is to make sure it it ok
-        teamDict.Add(ContentKillTeamMetaData.TeamType.AngelsOfDeath, new Vector3(0.3f, yOffset, 0));
-        teamDict.Add(ContentKillTeamMetaData.TeamType.Deathwatch, new Vector3(0.3f, yOffset, 0.3f));
-        teamDict.Add(ContentKillTeamMetaData.TeamType.Kommandos, new Vector3(0.3f, yOffset, -0.3f));
-        teamDict.Add(ContentKillTeamMetaData.TeamType.PlagueMarines, new Vector3(0.3f, yOffset, -0.3f));
-        teamDict.Add(ContentKillTeamMetaData.TeamType.WolfScouts, new Vector3(0.3f, yOffset, 0));
-        Vector3 assetsPos = new Vector3(-0.3f, yOffset, 0.3f);
-
-
         int totalCount = 0;
         foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)
         {
             var data = catItem.GetMetaData<ContentKillTeamMetaData>();
 
-            if(data != null)
+            if (data != null)
             {
                 totalCount += Mathf.Max(0, data.m_OperativeStats.numberToGenerate);
-                
-                for(int i = 0; i < Mathf.Max(0, data.m_OperativeStats.numberToGenerate); i++)
+
+                for (int i = 0; i < Mathf.Max(0, data.m_OperativeStats.numberToGenerate); i++)
                 {
                     catalogueEntryPlayer.AddToList(data.m_OperativeStats.teamType, catItem);
-                };
+                }
+                ;
             }
             else
             {
-                if(catItem.CatalogueFilters.Contains(KillTeamGameManager.Instance.Barracade))
+                if (catItem.CatalogueFilters.Contains(KillTeamGameManager.Instance.Barracade))
                 {
                     // we need 3 of them
                     catalogueEntryBaracade.Add(catItem);
                     catalogueEntryBaracade.Add(catItem);
                     catalogueEntryBaracade.Add(catItem);
                 }
-                else 
+                else
                 {
                     catalogueEntryTerrain.Add(catItem);
                 }
@@ -79,7 +64,7 @@ public class AssetHolder : MonoBehaviour
         Core.AssetBundlesRef.Texture2DAssetBundleRef.GetItem(Core.Mono, "Next", (texture) =>
         {
             nextIcon = texture;
-            if(texture == null)
+            if (texture == null)
             {
                 Debug.LogError("Next icon not found");
             }
@@ -106,98 +91,104 @@ public class AssetHolder : MonoBehaviour
             });
         }
 
+    }
 
-        List<string> names = new List<string>();
-        Debug.Log($"task FULL  {totalCount}");
-        TaskAction task = new TaskAction(totalCount, () =>
+    public void SpawnTerrain()
+    {
+        List<GameObject> terrainGameObjects = new List<GameObject>();
+        TaskAction task = new TaskAction(catalogueEntryTerrain.Count, () =>
         {
-            Debug.Log($"TaskAction done  {totalCount}");
-            var keys = _chars.GetKeys();
-            foreach (var key in keys)
+            PrefabRowSpawner spawnerAssets = this.AddComponent<PrefabRowSpawner>();
+            spawner.Spawn(KillTeamGameManager.Instance.StartTable, terrainGameObjects);
+            DestroyImmediate(spawnerAssets);
+        });
+        foreach (CatalogueEntry catItem in catalogueEntryTerrain)
+        {
+            Core.Scene.SpawnObject(catItem, (item) =>
             {
-                var list = _chars.GetList(key);
-                PrefabRowSpawner spawner = gameObject.transform.Find(key.ToString()).AddComponent<PrefabRowSpawner>();
-                spawner.Spawn(teamDict[key], _chars[key]);
-            }
+                Transform assetsFolder = transform.Find(ASSETS);
+                if (assetsFolder == null)
+                {
+                    GameObject go = new GameObject(ASSETS);
+                    assetsFolder = go.transform;
+                    assetsFolder.SetParent(transform, false);
+                }
+                KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Terrain);
+                terrainGameObjects.Add(item.gameObject);
+                task.Increment();
+            });
+        }
+    }
 
-            if (gameObject.transform.Find(ASSETS) == true)
-            {
-                PrefabRowSpawner spawnerAssets = gameObject.transform.Find(ASSETS).AddComponent<PrefabRowSpawner>();
-                spawnerAssets.Spawn(assetsPos, _assets);
-            }
-
+    public void SpawnBarracades()
+    {
+        List<GameObject> barracadeGameObjects = new List<GameObject>();
+        TaskAction task = new TaskAction(catalogueEntryBaracade.Count, () =>
+        {
+            PrefabRowSpawner spawnerAssets = this.AddComponent < PrefabRowSpawner>();
+            spawnerAssets.Spawn(KillTeamGameManager.Instance.StartTable, barracadeGameObjects);
+            DestroyImmediate(spawnerAssets);
         });
 
-
-        int localCount = 0;
-        foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)
+        foreach (CatalogueEntry catItem in catalogueEntryBaracade)
         {
-            names.Add(catItem.ShortName);
-            var data = catItem.GetMetaData<ContentKillTeamMetaData>();
-
-            int count = 1;
-            if(data != null)
+            Core.Scene.SpawnObject(catItem, (item) =>
             {
-                count = Mathf.Max(1, data.m_OperativeStats.numberToGenerate);
-
-            }
-            localCount += count;
-            Debug.Log($"task localCount {localCount} of {totalCount}");
-            for (int i = 0; i < count; i++)
-            {
-                Core.Scene.SpawnObject(catItem, (item) =>
+                Transform assetsFolder = transform.Find(ASSETS);
+                if (assetsFolder == null)
                 {
-                    if (data != null)
-                    {
-                        // Find or create team parent
-                        string teamName = data.m_OperativeStats.teamType.ToString();
-
-                        Transform child = this.transform.FindChildRecursive(teamName);
-
-                        if (child == null)
-                        {
-                            GameObject go = new GameObject(teamName);
-                            child = go.transform;
-                            child.SetParent(transform, false);
-                        }
-                        KillTeamGameManager.Instance.SetUpItem(child, catItem, item, KillTeamGameManager.LayerType.Player);
-
-
-
-                        // Metadata
-                        var display = item.AddComponent<KillTeamMetaDataDisplay>();
-                        display.Initialise(data);
-
-                        // Initialise miniature
-                        item.gameObject.AddComponent<InitiliseMiniture>();
-
-                        _chars.AddToList(data.m_OperativeStats.teamType, item.gameObject);
-                        task.Increment();
-                        Debug.Log($"task {task.GetCount}");
-                        
-                    }
-                    else
-                    {
-                        Transform assetsFolder = transform.Find(ASSETS);
-
-                        if (assetsFolder == null)
-                        {
-                            GameObject go = new GameObject(ASSETS);
-                            assetsFolder = go.transform;
-                            assetsFolder.SetParent(transform, false);
-                        }
-                        KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Terrain);
-
-                        _assets.Add(item.gameObject);
-                        task.Increment();
-                        Debug.Log($"task {task.GetCount}");
-                        
-                    }
-
-                });
-            }
+                    GameObject go = new GameObject(ASSETS);
+                    assetsFolder = go.transform;
+                    assetsFolder.SetParent(transform, false);
+                }
+                KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Barracade);
+                barracadeGameObjects.Add(item.gameObject);
+                task.Increment();
+            });
         }
+    }
 
+    public void SpawnPlayers(ContentKillTeamMetaData.TeamType teamType)
+    {
+        List<GameObject> playerGameObjects = new List<GameObject>();
+
+        List<CatalogueEntry> all = catalogueEntryPlayer[teamType];
+
+        TaskAction task = new TaskAction(all.Count, () =>
+        {
+            PrefabRowSpawner spawnerAssets = this.AddComponent<PrefabRowSpawner>();
+            spawnerAssets.Spawn(
+                KillTeamGameManager.Instance.StartTable,
+                playerGameObjects
+            );
+            DestroyImmediate(spawnerAssets);
+        });
+
+        foreach (CatalogueEntry catItem in all)
+        {
+            Core.Scene.SpawnObject(catItem, (item) =>
+            {
+                Transform assetsFolder = transform.Find(ASSETS);
+
+                if (assetsFolder == null)
+                {
+                    GameObject go = new GameObject(ASSETS);
+                    assetsFolder = go.transform;
+                    assetsFolder.SetParent(transform, false);
+                }
+
+                KillTeamGameManager.Instance.SetUpItem(
+                    assetsFolder,
+                    catItem,
+                    item,
+                    KillTeamGameManager.LayerType.Player
+                );
+
+                playerGameObjects.Add(item.gameObject);
+
+                task.Increment();
+            });
+        }
     }
 }
 

@@ -1,15 +1,21 @@
 
+using Org.BouncyCastle.Asn1.Mozilla;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 
 public class KillTeamGameManager : MonoBehaviour
 {
     public static KillTeamGameManager Instance { get; private set; }
 
 
-
+    public enum Player
+    {
+        Player1 = 1,
+        Player2
+    }
     public enum LayerType
     {
         Player = 16,
@@ -113,6 +119,7 @@ public class KillTeamGameManager : MonoBehaviour
     public bool IsMultiplayer => gameMode == GameMode.Multiplayer;
 
     public string Barracade => "KillTeam/Barracade";
+    public Vector3 StartTable => new Vector3(0.369f, 0.332f, 0.462f);
 
     private Scene m_currentScene;
     public Scene currentScene => m_currentScene;
@@ -126,6 +133,8 @@ public class KillTeamGameManager : MonoBehaviour
         }
 
         Instance = this;
+
+       
         lastAppliedState = currentState;
         menuPoint = this.transform.FindChildRecursive("MenuPoint").gameObject;
         menuPoint.GetComponent<MeshRenderer>().enabled = false;
@@ -162,14 +171,12 @@ public class KillTeamGameManager : MonoBehaviour
         if (item == null)
             return;
 
-        if(item.gameObject.transform.parent == null)
-        {
-            // can only be done if no parent, otherwise it will be moved to the scene of the parent
-            SceneManager.MoveGameObjectToScene(
-                item.gameObject,
-                m_currentScene
-            );
-        }
+        item.gameObject.transform.SetParent(null, false);
+        // can only be done if no parent, otherwise it will be moved to the scene of the parent
+        SceneManager.MoveGameObjectToScene(
+            item.gameObject,
+            m_currentScene
+        );
 
         switch (itemType)
         {
@@ -539,6 +546,9 @@ public class KillTeamGameManager : MonoBehaviour
         if (players.TrueForAll(p => p.ready))
         {
             SetState(GameState.Playing);
+            BattleStateMachine.Instance.StartBattle();
+
+
             OnGameStarted?.Invoke();
         }
 
