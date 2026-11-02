@@ -1,9 +1,10 @@
+
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PrefabRowSpawner : MonoBehaviour
 {
-    [Tooltip("0.5 means a gap of half the previous collider size.")]
+    [Tooltip("0.5 = gap of half the previous collider size")]
     [SerializeField, Min(0f)]
     private float spacingMultiplier = 0.5f;
 
@@ -15,6 +16,7 @@ public class PrefabRowSpawner : MonoBehaviour
         public GameObject instance;
         public Bounds bounds;
         public float x;
+        public float z;
     }
 
     public void Spawn(Vector3 centrePoint, List<GameObject> gameObjects)
@@ -35,53 +37,58 @@ public class PrefabRowSpawner : MonoBehaviour
         int columns = Mathf.CeilToInt(Mathf.Sqrt(count));
         int rowCount = Mathf.CeilToInt(count / (float)columns);
 
-        var rows = new List<List<Item>>();
-        var rowDepths = new List<float>();
-
         float gapMultiplier = Mathf.Max(0f, spacingMultiplier);
+
+        List<List<Item>> rows = new List<List<Item>>();
+        List<float> rowDepths = new List<float>();
+
         int index = 0;
 
-        // Measure the existing objects and calculate each row.
+        // Build rows and calculate their widths.
         for (int row = 0; row < rowCount; row++)
         {
-            var items = new List<Item>();
+            List<Item> items = new List<Item>();
 
             float rightEdge = 0f;
             float previousWidth = 0f;
-            float depth = 0f;
+            float maxDepth = 0f;
 
-            for (int column = 0;
-                 column < columns && index < count;
-                 column++)
+            for (int col = 0; col < columns && index < count; col++)
             {
                 GameObject instance = validObjects[index++];
                 Bounds bounds = GetColliderBounds(instance);
 
                 float width = bounds.size.x;
 
-                if (column > 0)
+                if (col > 0)
                     rightEdge += previousWidth * gapMultiplier;
 
-                items.Add(new Item
+                Item item = new Item
                 {
                     instance = instance,
                     bounds = bounds,
                     x = rightEdge + width * 0.5f
-                });
+                };
+
+                items.Add(item);
 
                 rightEdge += width;
                 previousWidth = width;
-                depth = Mathf.Max(depth, bounds.size.z);
+
+                maxDepth = Mathf.Max(maxDepth, bounds.size.z);
             }
 
-            // Centre each row.
+            // Centre each row on X = 0.
+            float rowCentre = rightEdge * 0.5f;
+
             foreach (Item item in items)
-                item.x -= rightEdge * 0.5f;
+                item.x -= rowCentre;
 
             rows.Add(items);
-            rowDepths.Add(depth);
+            rowDepths.Add(maxDepth);
         }
 
+        // Calculate total layout depth.
         float totalDepth = 0f;
 
         for (int row = 0; row < rowCount; row++)
@@ -92,29 +99,54 @@ public class PrefabRowSpawner : MonoBehaviour
                 totalDepth += rowDepths[row] * gapMultiplier;
         }
 
-        float frontEdge = totalDepth * 0.5f;
+        // Start at the front of the centred layout.
+        float currentZ = totalDepth * 0.5f;
 
-        // Reposition the existing objects.
         for (int row = 0; row < rowCount; row++)
         {
-            float z = frontEdge - rowDepths[row] * 0.5f;
+            float depth = rowDepths[row];
+
+            float rowZ = currentZ - depth * 0.5f;
 
             foreach (Item item in rows[row])
             {
-                // Place the bottom of the collider at centrePoint.y.
+                item.z = rowZ;
+
                 Vector3 targetBoundsCentre = new Vector3(
                     centrePoint.x + item.x,
                     centrePoint.y + item.bounds.extents.y,
-                    centrePoint.z + z
+                    centrePoint.z + item.z
                 );
 
-                // Account for the collider's offset from the object pivot.
+                // Correct for collider offset from pivot.
                 item.instance.transform.position +=
                     targetBoundsCentre - item.bounds.center;
             }
 
-            frontEdge -= rowDepths[row] * (1f + gapMultiplier);
+            currentZ -= depth * (1f + gapMultiplier);
         }
+
+        Physics.SyncTransforms();
+
+        // Final correction: centre the entire collection
+        // using its combined collider bounds.
+        Bounds combinedBounds = GetColliderBounds(validObjects[0]);
+
+        for (int i = 1; i < validObjects.Count; i++)
+        {
+            combinedBounds.Encapsulate(
+                GetColliderBounds(validObjects[i])
+            );
+        }
+
+        Vector3 correction = new Vector3(
+            centrePoint.x - combinedBounds.center.x,
+            0f,
+            centrePoint.z - combinedBounds.center.z
+        );
+
+        foreach (GameObject obj in validObjects)
+            obj.transform.position += correction;
 
         Physics.SyncTransforms();
     }
@@ -127,27 +159,29 @@ public class PrefabRowSpawner : MonoBehaviour
         if (collisionTransform != null)
         {
             BoxCollider collider =
-                collisionTransform.GetComponentInChildren<BoxCollider>();
-            Bounds b;
+                collisionTransform.GetComponentInChildren<BoxCollider>(true);
+
             if (collider != null)
             {
-                if(collider.enabled == false)
+                bool wasEnabled = collider.enabled;
+
+                if (!wasEnabled)
                 {
                     collider.enabled = true;
-                    b = collider.bounds;
-                    collider.enabled = false;
+                    Physics.SyncTransforms();
                 }
-                else
-                {
-                    b = collider.bounds;
-                }  
 
-                return b;
+                Bounds bounds = collider.bounds;
+
+                if (!wasEnabled)
+                    collider.enabled = false;
+
+                return bounds;
             }
         }
 
         Debug.LogWarning(
-            $"No active PlacementCollision BoxCollider found on {instance.name}. " +
+            $"No PlacementCollision BoxCollider found on {instance.name}. " +
             "Using fallback size.",
             instance
         );

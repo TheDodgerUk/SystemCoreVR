@@ -33,7 +33,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
     {
         if (setup)
         {
-            placementLayers = (1 << (int)KillTeamGameManager.LayerType.PlayerSetup);
+            placementLayers = (1 << (int)KillTeamGameManager.LayerType.PlayerSetupStrip);
         }
         else
         {

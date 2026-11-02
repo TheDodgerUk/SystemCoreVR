@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static KillTeamGameManager;
 using static UnityEngine.UI.ContentSizeFitter;
 
 
@@ -22,7 +23,7 @@ public class KillTeamGameManager : MonoBehaviour
         Player = 16,
         Terrain,
         Barracade,
-        PlayerSetup,
+        PlayerSetupStrip,
         TableBoard
     }
     public enum GameMode
@@ -74,22 +75,6 @@ public class KillTeamGameManager : MonoBehaviour
     [SerializeField]
     private bool autoStartSinglePlayer = true;
 
-    [Header("Board")]
-    [SerializeField]
-    private GameObject boardRoot;
-
-    [SerializeField]
-    private Transform terrainRoot;
-
-    [SerializeField]
-    private Transform operativeRoot;
-
-    [SerializeField]
-    public GameObject menuPoint;
-
-    [SerializeField]
-    private GameObject start;
-
     [Header("Players")]
     [SerializeField]
     private List<PlayerData> players = new List<PlayerData>();
@@ -114,16 +99,41 @@ public class KillTeamGameManager : MonoBehaviour
 
     public IReadOnlyList<PlayerData> Players => players;
 
-    public GameObject BoardRoot => boardRoot;
+
 
     public bool IsSinglePlayer => gameMode == GameMode.SinglePlayer;
     public bool IsMultiplayer => gameMode == GameMode.Multiplayer;
 
-    public string Barracade => "KillTeam/Barracade";
-    public Vector3 StartTable => new Vector3(0.369f, 0.332f, 0.462f);
-
     private Scene m_currentScene;
     public Scene currentScene => m_currentScene;
+    public class Helpers
+    {
+        public string Barracade => "KillTeam/Barracade";
+        public string Ignore => "KillTeam/Ignore";
+        public Vector3 StartTable => new Vector3(0.369f, 0.332f, 0.462f);
+
+
+
+        [Header("Board")]
+        [SerializeField]
+        public GameObject boardRoot;
+
+        [SerializeField]
+        public Transform terrainRoot;
+
+        [SerializeField]
+        public Transform operativeRoot;
+
+        [SerializeField]
+        public GameObject menuPoint;
+
+        [SerializeField]
+        public GameObject playerSetupStrip;
+        public GameObject BoardRoot => boardRoot;
+
+    }
+
+    public Helpers helpers;
 
     private void Awake()
     {
@@ -134,16 +144,16 @@ public class KillTeamGameManager : MonoBehaviour
         }
 
         Instance = this;
+        helpers = new Helpers();
 
-       
         lastAppliedState = currentState;
-        menuPoint = this.transform.FindChildRecursive("MenuPoint").gameObject;
-        menuPoint.GetComponent<MeshRenderer>().enabled = false;
+        helpers.menuPoint = this.transform.FindChildRecursive("MenuPoint").gameObject;
+        helpers.menuPoint.GetComponent<MeshRenderer>().enabled = false;
 
 
-        start = this.transform.FindChildRecursive(LayerType.PlayerSetup.ToString()).gameObject;
-        start.layer = (int)LayerType.PlayerSetup;
-        start.GetComponent<MeshRenderer>().enabled = false;
+        helpers.playerSetupStrip = this.transform.FindChildRecursive(LayerType.PlayerSetupStrip.ToString()).gameObject;
+        helpers.playerSetupStrip.layer = (int)LayerType.PlayerSetupStrip;
+        helpers.playerSetupStrip.GetComponent<MeshRenderer>().enabled = false;
 
         var assetHolder = new GameObject("assetHolder");
         assetHolder.transform.SetParent(transform, false);
@@ -155,8 +165,8 @@ public class KillTeamGameManager : MonoBehaviour
         vRPrefabMenu.transform.SetParent(transform, false);
         PrefabMenuController = vRPrefabMenu.AddComponent<VRPrefabMenuController>();
 
-        boardRoot = this.transform.FindChildRecursive(LayerType.TableBoard.ToString()).gameObject;
-        boardRoot.layer = (int)LayerType.TableBoard;
+        helpers.boardRoot = this.transform.FindChildRecursive(LayerType.TableBoard.ToString()).gameObject;
+        helpers.boardRoot.layer = (int)LayerType.TableBoard;
 
         Core.Environment.OnEnvironmentLoadingComplete += () =>
         {

@@ -156,6 +156,10 @@ public class TerrainPlacementValidator : MonoBehaviour
         if (!isGrabbed)
             return;
 
+        line.startWidth = lineWidth;
+        line.endWidth = lineWidth;
+
+
         canPlace = CheckPlacement(
             transform.position,
             out placementPosition);
@@ -166,22 +170,21 @@ public class TerrainPlacementValidator : MonoBehaviour
 
 
         Vector3 start = transform.position;
-        Vector3 end = start + Vector3.down * maxDistance;
 
-        if (Physics.Raycast(
-            start,
-            Vector3.down,
-            out RaycastHit hit,
-            maxDistance,
-            placementLayers,
-            QueryTriggerInteraction.Ignore))
-        {
-            end = hit.point;
-        }
+
+
         line.startColor = currentColor;
         line.endColor = currentColor;
         line.SetPosition(0, start);
-        line.SetPosition(1, end);
+        if(canPlace)
+        {
+            line.SetPosition(1, placementPosition);
+        }
+        else
+        {
+            line.SetPosition(1, new Vector3(placementPosition.x, 0, placementPosition.z));
+        }
+
 
     }
 
@@ -200,65 +203,71 @@ public class TerrainPlacementValidator : MonoBehaviour
             return false;
         }
 
-        float surfaceY = 0f;
-        bool firstHit = true;
+        // Use the placement collider.
+        BoxCollider box = boxColliders[0];
 
-        BoxCollider box = boxColliders[0]; // just placement one
-                                           //foreach (BoxCollider box in boxColliders)
+        Vector3 halfSize = box.size * 0.5f;
+
+        Vector3[] localPoints =
         {
-            Vector3 halfSize = box.size * 0.5f;
+        box.center + new Vector3(-halfSize.x, -halfSize.y, -halfSize.z),
+        box.center + new Vector3( halfSize.x, -halfSize.y, -halfSize.z),
+        box.center + new Vector3(-halfSize.x, -halfSize.y,  halfSize.z),
+        box.center + new Vector3( halfSize.x, -halfSize.y,  halfSize.z),
+        box.center + new Vector3(0f, -halfSize.y, 0f)
+    };
 
-            // Bottom corners in local collider space.
-            Vector3[] localPoints =
-            {
-            box.center + new Vector3(-halfSize.x, -halfSize.y, -halfSize.z),
-            box.center + new Vector3( halfSize.x, -halfSize.y, -halfSize.z),
-            box.center + new Vector3(-halfSize.x, -halfSize.y,  halfSize.z),
-            box.center + new Vector3( halfSize.x, -halfSize.y,  halfSize.z),
-            box.center + new Vector3(0f, -halfSize.y, 0f)
-        };
+        float highestSurfaceY = float.NegativeInfinity;
+        float lowestSurfaceY = float.PositiveInfinity;
+        float lowestColliderY = float.PositiveInfinity;
 
-            foreach (Vector3 localPoint in localPoints)
-            {
-                Vector3 worldPoint =
-                    box.transform.TransformPoint(localPoint);
+        Vector3 positionOffset = position - transform.position;
 
-                // Account for proposed position.
-                worldPoint += position - transform.position;
+        foreach (Vector3 localPoint in localPoints)
+        {
+            Vector3 worldPoint =
+                box.transform.TransformPoint(localPoint) + positionOffset;
 
-                bool valid = CastDown(
-                    worldPoint,
-                    out RaycastHit hit);
+            lowestColliderY = Mathf.Min(
+                lowestColliderY,
+                worldPoint.y
+            );
 
-                validPosition = hit.point;
-                if (valid)
-                {
-                    if (firstHit)
-                    {
-                        surfaceY = hit.point.y;
-                        firstHit = false;
-                    }
-                    else
-                    {
-                        valid =
-                            Mathf.Abs(hit.point.y - surfaceY)
-                            <= heightTolerance;
-                    }
-                }
+            bool valid = CastDown(
+                worldPoint,
+                out RaycastHit hit
+            );
 
 #if UNITY_EDITOR
-            DrawCheckLine(worldPoint, valid);
+        DrawCheckLine(worldPoint, valid);
 #endif
 
-                if (!valid)
-                    return false;
-            }
+            if (!valid)
+                return false;
+
+            highestSurfaceY = Mathf.Max(
+                highestSurfaceY,
+                hit.point.y
+            );
+
+            lowestSurfaceY = Mathf.Min(
+                lowestSurfaceY,
+                hit.point.y
+            );
         }
 
-        if (firstHit)
+        // Reject surfaces with too much height difference.
+        if (highestSurfaceY - lowestSurfaceY > heightTolerance)
             return false;
 
-       
+        // Raise the object so its lowest collider point
+        // rests on the highest detected surface.
+        float heightAdjustment =
+            highestSurfaceY - lowestColliderY;
+
+        validPosition = position +
+            Vector3.up * heightAdjustment;
+
         return true;
     }
 
@@ -302,7 +311,7 @@ public class TerrainPlacementValidator : MonoBehaviour
 
             case KillTeamGameManager.LayerType.Barracade:
                 requiredLayer =
-                    (int)KillTeamGameManager.LayerType.PlayerSetup;
+                    (int)KillTeamGameManager.LayerType.PlayerSetupStrip;
                 break;
         }
 

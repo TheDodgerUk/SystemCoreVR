@@ -57,7 +57,7 @@ public class VRPrefabMenuController : MonoBehaviour
     {
 
         m_menu.SetBackgroundColor(Color.grey);
-        m_menu.transform.position = KillTeamGameManager.Instance.menuPoint.transform.position;
+        m_menu.transform.position = KillTeamGameManager.Instance.helpers.menuPoint.transform.position;
         switch (state)
         {
             case KillTeamGameManager.GameState.WaitingForPlayers:
@@ -73,6 +73,8 @@ public class VRPrefabMenuController : MonoBehaviour
                 });
                 break;
             case KillTeamGameManager.GameState.BarracadeSetup:
+
+
                 KillTeamGameManager.Instance.AssetHolder.SpawnBarracades();
                 m_menu.SetEntries(new List<CatalogueEntry>());
                 m_menu.AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
@@ -106,6 +108,23 @@ public class VRPrefabMenuController : MonoBehaviour
             default:
                 break;
         }
+
+    }
+
+    private void RevoveNonValid()
+    {
+        var all = Core.Scene.GetAllSpawnedVrInteraction();
+        foreach (var item in all)
+        {
+            var val = item.gameObject.GetComponent<TerrainPlacementValidator>();
+            if(val != null && val.canPlace == false)
+            {
+                Core.Scene.RemoveSpawnedVrInteraction(item);
+                Destroy(item.gameObject);
+            }
+        }
+        
+
 
     }
 

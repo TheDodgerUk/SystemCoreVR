@@ -45,20 +45,26 @@ public class AssetHolder : MonoBehaviour
             }
             else
             {
-                if (catItem.CatalogueFilters.Contains(KillTeamGameManager.Instance.Barracade))
+                if (catItem.CatalogueFilters.Contains(KillTeamGameManager.Instance.helpers.Ignore) == true || catItem.CatalogueFilters.Count == 0)
                 {
-                    // we need 3 of them
-                    catalogueEntryBaracade.Add(catItem);
-                    catalogueEntryBaracade.Add(catItem);
-                    catalogueEntryBaracade.Add(catItem);
+                    // reversed logic as easy to read
                 }
                 else
                 {
-                    catalogueEntryTerrain.Add(catItem);
+                    if (catItem.CatalogueFilters.Contains(KillTeamGameManager.Instance.helpers.Barracade))
+                    {
+                        // we need 3 of them
+                        catalogueEntryBaracade.Add(catItem);
+                        catalogueEntryBaracade.Add(catItem);
+                        catalogueEntryBaracade.Add(catItem);
+                    }
+                    else
+                    {
+                        catalogueEntryTerrain.Add(catItem);
+                    }
                 }
-                totalCount++;
             }
-
+                totalCount++;          
         }
 
         Core.AssetBundlesRef.Texture2DAssetBundleRef.GetItem(Core.Mono, "Next", (texture) =>
@@ -101,7 +107,7 @@ public class AssetHolder : MonoBehaviour
         TaskAction task = new TaskAction(catalogueEntryTerrain.Count * muliplier, () =>
         {
             PrefabRowSpawner spawnerAssets = this.AddComponent<PrefabRowSpawner>();
-            spawnerAssets.Spawn(KillTeamGameManager.Instance.StartTable, terrainGameObjects);
+            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.StartTable, terrainGameObjects);
             DestroyImmediate(spawnerAssets);
         });
 
@@ -133,7 +139,7 @@ public class AssetHolder : MonoBehaviour
         TaskAction task = new TaskAction(catalogueEntryBaracade.Count, () =>
         {
             PrefabRowSpawner spawnerAssets = this.AddComponent < PrefabRowSpawner>();
-            spawnerAssets.Spawn(KillTeamGameManager.Instance.StartTable, barracadeGameObjects);
+            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.StartTable, barracadeGameObjects);
             DestroyImmediate(spawnerAssets);
         });
 
@@ -165,7 +171,7 @@ public class AssetHolder : MonoBehaviour
         {
             PrefabRowSpawner spawnerAssets = this.AddComponent<PrefabRowSpawner>();
             spawnerAssets.Spawn(
-                KillTeamGameManager.Instance.StartTable,
+                KillTeamGameManager.Instance.helpers.StartTable,
                 playerGameObjects
             );
             DestroyImmediate(spawnerAssets);
