@@ -110,7 +110,7 @@ public class KillTeamGameManager : MonoBehaviour
     {
         public string Barracade => "KillTeam/Barracade";
         public string Ignore => "KillTeam/Ignore";
-        public Vector3 StartTable => new Vector3(0.369f, 0.332f, 0.462f);
+        public Vector3 StartTable => new Vector3(0.3479143f, 0.4992428f, 0.4959428f);
 
 
 
