@@ -99,7 +99,7 @@ public class AssetHolder : MonoBehaviour
         TaskAction task = new TaskAction(catalogueEntryTerrain.Count, () =>
         {
             PrefabRowSpawner spawnerAssets = this.AddComponent<PrefabRowSpawner>();
-            spawner.Spawn(KillTeamGameManager.Instance.StartTable, terrainGameObjects);
+            spawnerAssets.Spawn(KillTeamGameManager.Instance.StartTable, terrainGameObjects);
             DestroyImmediate(spawnerAssets);
         });
         foreach (CatalogueEntry catItem in catalogueEntryTerrain)
