@@ -99,7 +99,7 @@ public class AssetHolder : MonoBehaviour
 
     }
 
-    public void SpawnTerrain()
+    public void SpawnTerrain(Action callback)
     {
 
         int muliplier = 2;
@@ -109,6 +109,7 @@ public class AssetHolder : MonoBehaviour
             PrefabRowSpawner spawnerAssets = this.AddComponent<PrefabRowSpawner>();
             spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.StartTable, terrainGameObjects);
             DestroyImmediate(spawnerAssets);
+            callback();
         });
 
         for (int i = 0; i < muliplier; i++)
@@ -133,7 +134,7 @@ public class AssetHolder : MonoBehaviour
     }
     }
 
-    public void SpawnBarracades()
+    public void SpawnBarracades(Action callback)
     {
         List<GameObject> barracadeGameObjects = new List<GameObject>();
         TaskAction task = new TaskAction(catalogueEntryBaracade.Count, () =>
@@ -141,6 +142,7 @@ public class AssetHolder : MonoBehaviour
             PrefabRowSpawner spawnerAssets = this.AddComponent < PrefabRowSpawner>();
             spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.StartTable, barracadeGameObjects);
             DestroyImmediate(spawnerAssets);
+            callback();
         });
 
         foreach (CatalogueEntry catItem in catalogueEntryBaracade)
@@ -161,7 +163,7 @@ public class AssetHolder : MonoBehaviour
         }
     }
 
-    public void SpawnPlayers(ContentKillTeamMetaData.TeamType teamType)
+    public void SpawnPlayers(ContentKillTeamMetaData.TeamType teamType, Action callback)
     {
         List<GameObject> playerGameObjects = new List<GameObject>();
 
@@ -175,6 +177,7 @@ public class AssetHolder : MonoBehaviour
                 playerGameObjects
             );
             DestroyImmediate(spawnerAssets);
+            callback();
         });
 
         foreach (CatalogueEntry catItem in all)

@@ -36,11 +36,14 @@ public class KillTeamGameManager : MonoBehaviour
     {
         WaitingForPlayers,
         BoardSetup,
-        TerrainSetup,
-        BarracadeSetup,
+        TerrainAssetCreation,
+        TerrainPlacement,
+        BarracadeAssetCreation,
+        BarracadePlacement,
         MissionSetup,
         TeamSelection,
-        SetCharacterToStartPosition,
+        TeamsAssetCreation,
+        SetCharacterToStartPlacement,
         ReadyToStart,
         Playing,
         Finished
@@ -180,6 +183,8 @@ public class KillTeamGameManager : MonoBehaviour
             AssetHolder.transform.SetParent(null);
         };
 
+        m_currentScene = this.gameObject.scene;
+
         this.OnStateChanged  += KillTeamGameManager_OnStateChanged; ;
     }
 
@@ -192,16 +197,16 @@ public class KillTeamGameManager : MonoBehaviour
                 break;
             case KillTeamGameManager.GameState.BoardSetup:
                 break;
-            case KillTeamGameManager.GameState.TerrainSetup:
+            case KillTeamGameManager.GameState.TerrainPlacement:
                 break;
-            case KillTeamGameManager.GameState.BarracadeSetup:
+            case KillTeamGameManager.GameState.BarracadePlacement:
                 playerSetupStrip.SetActive(true);
                 break;
             case KillTeamGameManager.GameState.MissionSetup:
                 break;
             case KillTeamGameManager.GameState.TeamSelection:
                 break;
-            case KillTeamGameManager.GameState.SetCharacterToStartPosition:
+            case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
                 playerSetupStrip.SetActive(true);
                 break;
             case KillTeamGameManager.GameState.ReadyToStart:
@@ -426,7 +431,7 @@ public class KillTeamGameManager : MonoBehaviour
         if (currentState != GameState.BoardSetup)
             return false;
 
-        SetState(GameState.TerrainSetup);
+        SetState(GameState.TerrainPlacement);
 
         return true;
     }
@@ -436,7 +441,7 @@ public class KillTeamGameManager : MonoBehaviour
         if (!IsHost(playerId))
             return false;
 
-        if (currentState != GameState.TerrainSetup)
+        if (currentState != GameState.TerrainPlacement)
             return false;
 
         SetState(GameState.MissionSetup);
@@ -478,7 +483,7 @@ public class KillTeamGameManager : MonoBehaviour
         OnTeamSelected?.Invoke(player);
 
         if (AllTeamsSelected())
-            SetState(GameState.SetCharacterToStartPosition);
+            SetState(GameState.SetCharacterToStartPlacement);
 
         return true;
     }
@@ -523,7 +528,7 @@ public class KillTeamGameManager : MonoBehaviour
         int playerId,
         GameObject operative)
     {
-        if (currentState != GameState.SetCharacterToStartPosition)
+        if (currentState != GameState.SetCharacterToStartPlacement)
             return false;
 
         PlayerData player = GetPlayer(playerId);
@@ -551,7 +556,7 @@ public class KillTeamGameManager : MonoBehaviour
         if (player == null || operative == null)
             return false;
 
-        if (currentState != GameState.SetCharacterToStartPosition ||
+        if (currentState != GameState.SetCharacterToStartPlacement ||
             player.deploymentComplete)
             return false;
 
@@ -564,7 +569,7 @@ public class KillTeamGameManager : MonoBehaviour
 
     public bool CompleteDeployment(int playerId)
     {
-        if (currentState != GameState.SetCharacterToStartPosition)
+        if (currentState != GameState.SetCharacterToStartPlacement)
             return false;
 
         PlayerData player = GetPlayer(playerId);

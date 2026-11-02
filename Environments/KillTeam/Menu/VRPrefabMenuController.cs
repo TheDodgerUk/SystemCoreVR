@@ -52,10 +52,10 @@ public class VRPrefabMenuController : MonoBehaviour
     //            break;
     //    }
     }
-
+    int item;
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
-        RemoveNonPLacedTerrain();
+       
         m_menu.SetBackgroundColor(Color.grey);
         m_menu.transform.position = KillTeamGameManager.Instance.helpers.menuPoint.transform.position;
         switch (state)
@@ -64,19 +64,31 @@ public class VRPrefabMenuController : MonoBehaviour
                 break;
             case KillTeamGameManager.GameState.BoardSetup:
                 break;
-            case KillTeamGameManager.GameState.TerrainSetup:
-                KillTeamGameManager.Instance.AssetHolder.SpawnTerrain();
-                m_menu.SetEntries(new List<CatalogueEntry>());
-                m_menu.AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
+            case KillTeamGameManager.GameState.TerrainAssetCreation:
+                KillTeamGameManager.Instance.AssetHolder.SpawnTerrain(() =>
                 {
-                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.BarracadeSetup);                   
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TerrainPlacement);
                 });
                 break;
-            case KillTeamGameManager.GameState.BarracadeSetup:
-                KillTeamGameManager.Instance.AssetHolder.SpawnBarracades();
+            case KillTeamGameManager.GameState.TerrainPlacement:
                 m_menu.SetEntries(new List<CatalogueEntry>());
                 m_menu.AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
                 {
+                    RemoveNonPlacedTerrain();
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.BarracadeAssetCreation);                   
+                });
+                break;
+            case KillTeamGameManager.GameState.BarracadeAssetCreation:
+                KillTeamGameManager.Instance.AssetHolder.SpawnBarracades(() =>
+                {
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.BarracadePlacement);
+                });
+                break;
+            case KillTeamGameManager.GameState.BarracadePlacement:
+                m_menu.SetEntries(new List<CatalogueEntry>());
+                m_menu.AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
+                {
+                    RemoveNonPlacedTerrain();
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamSelection);
                 });
                 break;
@@ -85,12 +97,16 @@ public class VRPrefabMenuController : MonoBehaviour
             case KillTeamGameManager.GameState.TeamSelection:
                 m_menu.SetEntries(KillTeamGameManager.Instance.AssetHolder.teamIcons, (item, other) =>
                 {
-                    m_menu.SetEntries(KillTeamGameManager.Instance.AssetHolder.catalogueEntryPlayer[(ContentKillTeamMetaData.TeamType)(item)]);
-                    KillTeamGameManager.Instance.AssetHolder.SpawnPlayers((ContentKillTeamMetaData.TeamType)(item));
-                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.SetCharacterToStartPosition);
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamsAssetCreation);
                 });
                 break;
-            case KillTeamGameManager.GameState.SetCharacterToStartPosition:
+            case KillTeamGameManager.GameState.TeamsAssetCreation:
+                KillTeamGameManager.Instance.AssetHolder.SpawnPlayers((ContentKillTeamMetaData.TeamType)(item), ()=>
+                {
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.SetCharacterToStartPlacement);
+                });
+                break;
+            case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
                 m_menu.SetEntries(new List<CatalogueEntry>());
                 m_menu.AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
                 {
@@ -109,7 +125,7 @@ public class VRPrefabMenuController : MonoBehaviour
 
     }
 
-    private void RemoveNonPLacedTerrain()
+    private void RemoveNonPlacedTerrain()
     {
         List<VrInteraction> nonValid = new List<VrInteraction>();
         var all = Core.Scene.GetAllSpawnedVrInteraction();

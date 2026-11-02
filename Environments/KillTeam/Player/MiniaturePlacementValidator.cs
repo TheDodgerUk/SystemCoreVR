@@ -60,15 +60,15 @@ public class MiniaturePlacementValidator : MonoBehaviour
                 break;
             case KillTeamGameManager.GameState.BoardSetup:
                 break;
-            case KillTeamGameManager.GameState.TerrainSetup:
+            case KillTeamGameManager.GameState.TerrainPlacement:
                 break;
-            case KillTeamGameManager.GameState.BarracadeSetup:
+            case KillTeamGameManager.GameState.BarracadePlacement:
                 break;
             case KillTeamGameManager.GameState.MissionSetup:
                 break;
             case KillTeamGameManager.GameState.TeamSelection:
                 break;
-            case KillTeamGameManager.GameState.SetCharacterToStartPosition:
+            case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
                 SetLayerMode(true);
                 break;
             case KillTeamGameManager.GameState.ReadyToStart:

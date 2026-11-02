@@ -64,7 +64,7 @@ public class MiniatureMovement : MonoBehaviour
         if (!isMoving)
             return;
 
-        if(KillTeamGameManager.Instance.CurrentState == KillTeamGameManager.GameState.SetCharacterToStartPosition)
+        if(KillTeamGameManager.Instance.CurrentState == KillTeamGameManager.GameState.SetCharacterToStartPlacement)
         {
             if (miniaturePlacementValidator.IsValidPlacement() == false)
             {

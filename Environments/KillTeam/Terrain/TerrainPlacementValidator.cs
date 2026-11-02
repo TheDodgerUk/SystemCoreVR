@@ -68,7 +68,7 @@ public class TerrainPlacementValidator : MonoBehaviour
                 break;
             case KillTeamGameManager.GameState.BoardSetup:
                 break;
-            case KillTeamGameManager.GameState.TerrainSetup:
+            case KillTeamGameManager.GameState.TerrainPlacement:
                 if (mLayer == KillTeamGameManager.LayerType.Terrain)
                 {
                     grab.enabled = true;
@@ -78,13 +78,13 @@ public class TerrainPlacementValidator : MonoBehaviour
                     grab.enabled = true;
                 }
                 break;
-            case KillTeamGameManager.GameState.BarracadeSetup:
+            case KillTeamGameManager.GameState.BarracadePlacement:
                 break;
             case KillTeamGameManager.GameState.MissionSetup:
                 break;
             case KillTeamGameManager.GameState.TeamSelection:
                 break;
-            case KillTeamGameManager.GameState.SetCharacterToStartPosition:
+            case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
                 break;
             case KillTeamGameManager.GameState.ReadyToStart:
                 break;
