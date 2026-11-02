@@ -187,8 +187,6 @@ public class PrefabRowSpawner : MonoBehaviour
             position.x += correction.x;
             position.y = centrePoint.y;
             position.z += correction.z;
-            Debug.Log($"{obj.gameObject.name}: Correction: {correction}, Position: {position}, CentrePoint: {centrePoint}, CombinedBoundsCenter: {combinedBounds.center} . new y {position.y += axis0}");
-            position.y += axis0;
 
             obj.transform.position = position;
 
@@ -215,15 +213,6 @@ public class PrefabRowSpawner : MonoBehaviour
 
             BoxCollider collider =
                 collisionTransform.GetComponentInChildren<BoxCollider>(true);
-
-            if (collisionTransform.rotation != Quaternion.identity)
-            {
-                offset -= collider.size.z / 2;
-            }
-            else
-            {
-                offset -= collider.size.y / 2;
-            }
 
 
             if (collider != null)

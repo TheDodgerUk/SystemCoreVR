@@ -33,6 +33,7 @@ public class TerrainPlacementValidator : MonoBehaviour
     public bool canPlace;
     private Vector3 placementPosition;
     private Vector3 startPosition;
+    private Quaternion startPositionRotation;
 
     private LineRenderer line;
     KillTeamGameManager.LayerType mLayer;
@@ -112,6 +113,7 @@ public class TerrainPlacementValidator : MonoBehaviour
     private void OnGrab(Hand hand, Grabbable grabbable)
     {
         startPosition = this.transform.position;
+        startPositionRotation = this.transform.rotation;
         isGrabbed = true;
     }
 
@@ -146,7 +148,8 @@ public class TerrainPlacementValidator : MonoBehaviour
         }
         else
         {
-            startPosition = transform.position;
+            transform.position = startPosition;
+            transform.rotation = startPositionRotation;
         }
     }
 
@@ -371,6 +374,11 @@ public class TerrainPlacementValidator : MonoBehaviour
 #endif
 
         return hasHit;
+    }
+
+    private void OnDestroy()
+    {
+        KillTeamGameManager.Instance.OnStateChanged -= KillTeamGameManager_OnStateChanged;
     }
 
 }
