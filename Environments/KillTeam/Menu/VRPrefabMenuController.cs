@@ -87,10 +87,10 @@ public class VRPrefabMenuController : MonoBehaviour
                 {
                     m_menu.SetEntries(KillTeamGameManager.Instance.AssetHolder.catalogueEntryPlayer[(ContentKillTeamMetaData.TeamType)(item)]);
                     KillTeamGameManager.Instance.AssetHolder.SpawnPlayers((ContentKillTeamMetaData.TeamType)(item));
-                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.Deployment);
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.SetCharacterToStartPosition);
                 });
                 break;
-            case KillTeamGameManager.GameState.Deployment:
+            case KillTeamGameManager.GameState.SetCharacterToStartPosition:
                 m_menu.SetEntries(new List<CatalogueEntry>());
                 m_menu.AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
                 {

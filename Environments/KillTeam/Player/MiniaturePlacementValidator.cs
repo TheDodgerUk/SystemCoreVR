@@ -29,9 +29,9 @@ public class MiniaturePlacementValidator : MonoBehaviour
     private Vector3 placementPosition;
 
 
-    public void SetLayerMode(bool setup)
+    public void SetLayerMode(bool SetCharacterToStartPosition)
     {
-        if (setup)
+        if (SetCharacterToStartPosition)
         {
             placementLayers = (1 << (int)KillTeamGameManager.LayerType.PlayerSetupStrip);
         }
@@ -46,8 +46,14 @@ public class MiniaturePlacementValidator : MonoBehaviour
         capsule = GetComponent<CapsuleCollider>();
         KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;      
     }
+
+    private void OnDestroy()
+    {
+        KillTeamGameManager.Instance.OnStateChanged -= KillTeamGameManager_OnStateChanged;
+    }
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
+        SetLayerMode(false);
         switch (state)
         {
             case KillTeamGameManager.GameState.WaitingForPlayers:
@@ -62,7 +68,8 @@ public class MiniaturePlacementValidator : MonoBehaviour
                 break;
             case KillTeamGameManager.GameState.TeamSelection:
                 break;
-            case KillTeamGameManager.GameState.Deployment:
+            case KillTeamGameManager.GameState.SetCharacterToStartPosition:
+                SetLayerMode(true);
                 break;
             case KillTeamGameManager.GameState.ReadyToStart:
                 break;
@@ -204,19 +211,79 @@ public class MiniaturePlacementValidator : MonoBehaviour
     }
 #endif
 
-    private bool CastDown(
-        Vector3 position,
-        out RaycastHit hit)
+    private bool CastDown(Vector3 position, out RaycastHit hit)
     {
+        hit = default(RaycastHit);
+
         Vector3 origin =
             position + Vector3.up * rayStartHeight;
 
-        return Physics.Raycast(
+        RaycastHit[] hits = Physics.RaycastAll(
             origin,
             Vector3.down,
-            out hit,
             rayDistance,
             placementLayers,
-            QueryTriggerInteraction.Ignore);
+            QueryTriggerInteraction.Ignore
+        );
+
+        float closestDistance = float.MaxValue;
+        bool hasHit = false;
+
+        foreach (RaycastHit h in hits)
+        {
+            if (h.collider == null)
+                continue;
+
+            // Ignore this GameObject and all child colliders
+            if (h.collider.transform == transform ||
+                h.collider.transform.IsChildOf(transform))
+            {
+                continue;
+            }
+
+            // Only accept the required placement layer
+            if (placementLayers < 0 ||
+                h.collider.gameObject.layer != placementLayers)
+            {
+                continue;
+            }
+
+            // Find closest valid surface
+            if (h.distance < closestDistance)
+            {
+                closestDistance = h.distance;
+                hit = h;
+                hasHit = true;
+            }
+        }
+
+#if UNITY_EDITOR
+    Debug.DrawRay(
+        origin,
+        Vector3.down * (hasHit ? hit.distance : rayDistance),
+        hasHit ? Color.green : Color.red
+    );
+
+    if (hasHit)
+    {
+        Debug.Log(
+            $"VALID HIT: {hit.collider.name} | " +
+            $"Position: {hit.point} | " +
+            $"Layer: {LayerMask.LayerToName(hit.collider.gameObject.layer)} | " +
+            $"Distance: {hit.distance:F3}"
+        );
+    }
+    else
+    {
+        Debug.LogWarning(
+            $"NO VALID HIT | " +
+            $"Origin: {origin} | " +
+            $"Required Layer: {placementLayers} | " +
+            $"Ray Distance: {rayDistance}"
+        );
+    }
+#endif
+
+        return hasHit;
     }
 }

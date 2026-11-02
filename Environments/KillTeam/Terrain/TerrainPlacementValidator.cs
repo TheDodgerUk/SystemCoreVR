@@ -84,7 +84,7 @@ public class TerrainPlacementValidator : MonoBehaviour
                 break;
             case KillTeamGameManager.GameState.TeamSelection:
                 break;
-            case KillTeamGameManager.GameState.Deployment:
+            case KillTeamGameManager.GameState.SetCharacterToStartPosition:
                 break;
             case KillTeamGameManager.GameState.ReadyToStart:
                 break;

@@ -64,7 +64,14 @@ public class MiniatureMovement : MonoBehaviour
         if (!isMoving)
             return;
 
-        if(miniatureMovementLine.IsValidPosition() == false || miniaturePlacementValidator.IsValidPlacement() == false)
+        if(KillTeamGameManager.Instance.CurrentState == KillTeamGameManager.GameState.SetCharacterToStartPosition)
+        {
+            if (miniaturePlacementValidator.IsValidPlacement() == false)
+            {
+                transform.position = startPosition;
+            }
+        }
+        else  if(miniatureMovementLine.IsValidPosition() == false || miniaturePlacementValidator.IsValidPlacement() == false)
         {
             Debug.Log($"miniatureMovementLine: {miniatureMovementLine.IsValidPosition()}"); ;
             Debug.Log($"miniaturePlacementValidator: {miniaturePlacementValidator.IsValidPlacement()}"); ;

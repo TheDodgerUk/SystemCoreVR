@@ -40,7 +40,7 @@ public class KillTeamGameManager : MonoBehaviour
         BarracadeSetup,
         MissionSetup,
         TeamSelection,
-        Deployment,
+        SetCharacterToStartPosition,
         ReadyToStart,
         Playing,
         Finished
@@ -83,6 +83,7 @@ public class KillTeamGameManager : MonoBehaviour
 
     public VRPrefabMenuController PrefabMenuController { get; private set; }
 
+
     public event Action<GameState> OnStateChanged;
     public event Action<PlayerData> OnPlayerJoined;
     public event Action<PlayerData> OnPlayerLeft;
@@ -106,6 +107,11 @@ public class KillTeamGameManager : MonoBehaviour
 
     private Scene m_currentScene;
     public Scene currentScene => m_currentScene;
+
+
+    [SerializeField]
+    private GameObject playerSetupStrip;
+
     public class Helpers
     {
         public string Barracade => "KillTeam/Barracade";
@@ -127,8 +133,7 @@ public class KillTeamGameManager : MonoBehaviour
         [SerializeField]
         public GameObject menuPoint;
 
-        [SerializeField]
-        public GameObject playerSetupStrip;
+
         public GameObject BoardRoot => boardRoot;
 
     }
@@ -151,9 +156,10 @@ public class KillTeamGameManager : MonoBehaviour
         helpers.menuPoint.GetComponent<MeshRenderer>().enabled = false;
 
 
-        helpers.playerSetupStrip = this.transform.FindChildRecursive(LayerType.PlayerSetupStrip.ToString()).gameObject;
-        helpers.playerSetupStrip.layer = (int)LayerType.PlayerSetupStrip;
-        helpers.playerSetupStrip.GetComponent<MeshRenderer>().enabled = false;
+        playerSetupStrip = this.transform.FindChildRecursive(LayerType.PlayerSetupStrip.ToString()).gameObject;
+        playerSetupStrip.layer = (int)LayerType.PlayerSetupStrip;
+        playerSetupStrip.SetActive(false);
+
 
         var assetHolder = new GameObject("assetHolder");
         assetHolder.transform.SetParent(transform, false);
@@ -174,8 +180,41 @@ public class KillTeamGameManager : MonoBehaviour
             AssetHolder.transform.SetParent(null);
         };
 
-        m_currentScene = gameObject.scene;
+        this.OnStateChanged  += KillTeamGameManager_OnStateChanged; ;
     }
+
+    private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
+    {
+        playerSetupStrip.SetActive(false);
+        switch (state)
+        {
+            case KillTeamGameManager.GameState.WaitingForPlayers:
+                break;
+            case KillTeamGameManager.GameState.BoardSetup:
+                break;
+            case KillTeamGameManager.GameState.TerrainSetup:
+                break;
+            case KillTeamGameManager.GameState.BarracadeSetup:
+                playerSetupStrip.SetActive(true);
+                break;
+            case KillTeamGameManager.GameState.MissionSetup:
+                break;
+            case KillTeamGameManager.GameState.TeamSelection:
+                break;
+            case KillTeamGameManager.GameState.SetCharacterToStartPosition:
+                playerSetupStrip.SetActive(true);
+                break;
+            case KillTeamGameManager.GameState.ReadyToStart:
+                break;
+            case KillTeamGameManager.GameState.Playing:
+                break;
+            case KillTeamGameManager.GameState.Finished:
+                break;
+            default:
+                break;
+        }
+    }
+
 
     public void SetUpItem(Transform trans, CatalogueEntry entry, ModuleObject item, LayerType itemType)
     {
@@ -439,7 +478,7 @@ public class KillTeamGameManager : MonoBehaviour
         OnTeamSelected?.Invoke(player);
 
         if (AllTeamsSelected())
-            SetState(GameState.Deployment);
+            SetState(GameState.SetCharacterToStartPosition);
 
         return true;
     }
@@ -484,7 +523,7 @@ public class KillTeamGameManager : MonoBehaviour
         int playerId,
         GameObject operative)
     {
-        if (currentState != GameState.Deployment)
+        if (currentState != GameState.SetCharacterToStartPosition)
             return false;
 
         PlayerData player = GetPlayer(playerId);
@@ -512,7 +551,7 @@ public class KillTeamGameManager : MonoBehaviour
         if (player == null || operative == null)
             return false;
 
-        if (currentState != GameState.Deployment ||
+        if (currentState != GameState.SetCharacterToStartPosition ||
             player.deploymentComplete)
             return false;
 
@@ -525,7 +564,7 @@ public class KillTeamGameManager : MonoBehaviour
 
     public bool CompleteDeployment(int playerId)
     {
-        if (currentState != GameState.Deployment)
+        if (currentState != GameState.SetCharacterToStartPosition)
             return false;
 
         PlayerData player = GetPlayer(playerId);

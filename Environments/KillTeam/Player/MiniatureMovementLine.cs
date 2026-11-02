@@ -28,6 +28,7 @@ public class MiniatureMovementLine : MonoBehaviour
     private Vector3 startPosition;
     private bool isMoving;
     private Color color;
+    private bool giveValidColourBack = true;
 
     private class Node
     {
@@ -57,7 +58,44 @@ public class MiniatureMovementLine : MonoBehaviour
             Shader.Find("Sprites/Default"));
 
         line.enabled = false;
+
+        KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
     }
+
+    private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
+    {
+        giveValidColourBack = true;
+        line.gameObject.SetActive(true);
+        switch (state)
+        {
+            case KillTeamGameManager.GameState.WaitingForPlayers:
+                break;
+            case KillTeamGameManager.GameState.BoardSetup:
+                break;
+            case KillTeamGameManager.GameState.TerrainSetup:
+                break;
+            case KillTeamGameManager.GameState.BarracadeSetup:
+                break;
+            case KillTeamGameManager.GameState.MissionSetup:
+                break;
+            case KillTeamGameManager.GameState.TeamSelection:
+                break;
+            case KillTeamGameManager.GameState.SetCharacterToStartPosition:
+                line.gameObject.SetActive(false);
+                giveValidColourBack = false;
+
+                break;
+            case KillTeamGameManager.GameState.ReadyToStart:
+                break;
+            case KillTeamGameManager.GameState.Playing:
+                break;
+            case KillTeamGameManager.GameState.Finished:
+                break;
+            default:
+                break;
+        }
+    }
+
 
     private void OnEnable()
     {
@@ -135,7 +173,11 @@ public class MiniatureMovementLine : MonoBehaviour
 
     public bool IsValidPosition()
     {
-        return (color == validColor);
+        if (giveValidColourBack == true)
+        {
+            return (color == validColor);
+        }
+        return true;
     }
     // Get every collider belonging to terrain objects,
     // including colliders on child GameObjects.
