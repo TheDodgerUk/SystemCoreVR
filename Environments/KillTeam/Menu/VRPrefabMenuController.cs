@@ -7,57 +7,36 @@ using UnityEngine.UI.Extensions;
 
 public class VRPrefabMenuController : MonoBehaviour
 {
-    private VRPrefabMenu m_menu;
+    private Dictionary<KillTeamGameManager.Player, VRPrefabMenu> m_menus = new Dictionary<KillTeamGameManager.Player, VRPrefabMenu>();
+
+    private Dictionary<KillTeamGameManager.Player, ContentKillTeamMetaData.TeamType> TeamSelection = new Dictionary<KillTeamGameManager.Player, ContentKillTeamMetaData.TeamType>();
     // Start is called before the first frame update
     void Start()
     {
-        m_menu = this.AddComponent<VRPrefabMenu>();
+
+        var men1 = new GameObject("VRPrefabMenu1");
+        var men2 = new GameObject("VRPrefabMenu2");
+        m_menus[KillTeamGameManager.Player.Player1] = men1.AddComponent<VRPrefabMenu>();
+        m_menus[KillTeamGameManager.Player.Player2] = men2.AddComponent<VRPrefabMenu>();
+
+
+        m_menus[KillTeamGameManager.Player.Player1].transform.position = KillTeamGameManager.Instance.helpers.menuPointTable[KillTeamGameManager.Player.Player1];
+        m_menus[KillTeamGameManager.Player.Player2].transform.position = KillTeamGameManager.Instance.helpers.menuPointTable[KillTeamGameManager.Player.Player2];
+
+        m_menus[KillTeamGameManager.Player.Player1].SetBackgroundColor(Color.grey);
+        m_menus[KillTeamGameManager.Player.Player2].SetBackgroundColor(Color.grey);
         KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
-        m_menu.SpawnedCallback += (entry, item) =>
-        {
-            Setup(entry, item);
-        };
     }
 
-    private void Setup(CatalogueEntry entry, ModuleObject obj)
-    {
-    //    this.gameObject.SetActive(false);
-    //    switch (KillTeamGameManager.Instance.CurrentState)
-    //    {
-    //        case KillTeamGameManager.GameState.WaitingForPlayers:
-    //            break;
-    //        case KillTeamGameManager.GameState.BoardSetup:
-    //            break;
-    //        case KillTeamGameManager.GameState.TerrainSetup:
-    //            this.gameObject.SetActive(false);
-    //        case KillTeamGameManager.GameState.BarracadeSetup:
-    //            this.gameObject.SetActive(false);
-    //            KillTeamGameManager.Instance.SetUpItem(null, entry, obj, KillTeamGameManager.LayerType.Barracade);
-    //            break;
-    //        case KillTeamGameManager.GameState.MissionSetup:
-    //            break;
-    //        case KillTeamGameManager.GameState.TeamSelection:
-    //            break;
-    //        case KillTeamGameManager.GameState.Deployment:
-    //            this.gameObject.SetActive(true);
-    //            KillTeamGameManager.Instance.SetUpItem(null, entry, obj, KillTeamGameManager.LayerType.Player);
-    //            break;
-    //        case KillTeamGameManager.GameState.ReadyToStart:
-    //            break;
-    //        case KillTeamGameManager.GameState.Playing:
-    //            break;
-    //        case KillTeamGameManager.GameState.Finished:
-    //            break;
-    //        default:
-    //            break;
-    //    }
-    }
     int item;
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
-       
-        m_menu.SetBackgroundColor(Color.grey);
-        m_menu.transform.position = KillTeamGameManager.Instance.helpers.menuPoint.transform.position;
+
+        TaskAction BothTeamsChoisen = new TaskAction(2, () =>
+        {
+            KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamsAssetCreation);
+        });
+
         switch (state)
         {
             case KillTeamGameManager.GameState.WaitingForPlayers:
@@ -71,8 +50,8 @@ public class VRPrefabMenuController : MonoBehaviour
                 });
                 break;
             case KillTeamGameManager.GameState.TerrainPlacement:
-                m_menu.SetEntries(new List<CatalogueEntry>());
-                m_menu.AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
+                m_menus[KillTeamGameManager.Player.Player1].SetEntries(new List<CatalogueEntry>());
+                m_menus[KillTeamGameManager.Player.Player1].AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
                 {
                     RemoveNonPlacedTerrain();
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.BarracadeAssetCreation);                   
@@ -85,8 +64,8 @@ public class VRPrefabMenuController : MonoBehaviour
                 });
                 break;
             case KillTeamGameManager.GameState.BarracadePlacement:
-                m_menu.SetEntries(new List<CatalogueEntry>());
-                m_menu.AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
+                m_menus[KillTeamGameManager.Player.Player1].SetEntries(new List<CatalogueEntry>());
+                m_menus[KillTeamGameManager.Player.Player1].AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
                 {
                     RemoveNonPlacedTerrain();
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamSelection);
@@ -95,10 +74,17 @@ public class VRPrefabMenuController : MonoBehaviour
             case KillTeamGameManager.GameState.MissionSetup:
                 break;
             case KillTeamGameManager.GameState.TeamSelection:
-                m_menu.SetEntries(KillTeamGameManager.Instance.AssetHolder.teamIcons, (item, other) =>
+                m_menus[KillTeamGameManager.Player.Player1].SetEntries(KillTeamGameManager.Instance.AssetHolder.teamIcons, (itemIndex, other) =>
                 {
-                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamsAssetCreation);
+                    TeamSelection[KillTeamGameManager.Player.Player1] = (ContentKillTeamMetaData.TeamType)itemIndex;
+                    BothTeamsChoisen.Increment();
                 });
+                m_menus[KillTeamGameManager.Player.Player2].SetEntries(KillTeamGameManager.Instance.AssetHolder.teamIcons, (itemIndex, other) =>
+                {
+                    TeamSelection[KillTeamGameManager.Player.Player2] = (ContentKillTeamMetaData.TeamType)itemIndex;
+                    BothTeamsChoisen.Increment();
+                });
+
                 break;
             case KillTeamGameManager.GameState.TeamsAssetCreation:
                 KillTeamGameManager.Instance.AssetHolder.SpawnPlayers((ContentKillTeamMetaData.TeamType)(item), ()=>
@@ -107,8 +93,8 @@ public class VRPrefabMenuController : MonoBehaviour
                 });
                 break;
             case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
-                m_menu.SetEntries(new List<CatalogueEntry>());
-                m_menu.AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
+                m_menus[KillTeamGameManager.Player.Player1].SetEntries(new List<CatalogueEntry>());
+                m_menus[KillTeamGameManager.Player.Player1].AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.ReadyToStart);
                 });

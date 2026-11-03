@@ -6,9 +6,13 @@ public class KillTeamMetaDataDisplay : MonoBehaviour
 {
     [SerializeField]
     public ContentKillTeamMetaData contentKillTeamMetaData;
+
+    [SerializeField]
+    public KillTeamGameManager.Player player;
     // Start is called before the first frame update
-    public void Initialise(ContentKillTeamMetaData data)
+    public void Initialise(ContentKillTeamMetaData data, KillTeamGameManager.Player playerNumber)
     {
         contentKillTeamMetaData = data;
+        player = playerNumber;
     }
 }

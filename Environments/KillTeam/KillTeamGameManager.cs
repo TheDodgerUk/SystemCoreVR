@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using static KillTeamGameManager;
 using static UnityEngine.UI.ContentSizeFitter;
+using System.Linq;
 
 
 public class KillTeamGameManager : MonoBehaviour
@@ -15,7 +16,7 @@ public class KillTeamGameManager : MonoBehaviour
 
     public enum Player
     {
-        Player1 = 1,
+        Player1 = 0,
         Player2
     }
     public enum LayerType
@@ -111,15 +112,20 @@ public class KillTeamGameManager : MonoBehaviour
     private Scene m_currentScene;
     public Scene currentScene => m_currentScene;
 
-
+        
     [SerializeField]
-    private GameObject playerSetupStrip;
+    private Dictionary<Player, GameObject> playerSetupStrip = new Dictionary<Player, GameObject> ();
 
     public class Helpers
     {
         public string Barracade => "KillTeam/Barracade";
         public string Ignore => "KillTeam/Ignore";
-        public Vector3 StartTable => new Vector3(0.3479143f, 0.4992428f, 0.4959428f);
+
+        public Dictionary<Player, Vector3> playerStartTable = new Dictionary<Player, Vector3>()
+        {
+            { Player.Player1, new Vector3(0.3479143f, 0.4992428f, 0.4959428f) },
+            { Player.Player2, new Vector3(-0.3479143f, 0.4992428f, -0.4959428f) }
+        };
 
 
 
@@ -135,7 +141,7 @@ public class KillTeamGameManager : MonoBehaviour
 
         [SerializeField]
         public GameObject menuPoint;
-
+        public Dictionary<Player, Vector3> menuPointTable = new Dictionary<Player, Vector3>();
 
         public GameObject BoardRoot => boardRoot;
 
@@ -150,7 +156,7 @@ public class KillTeamGameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
+        
         Instance = this;
         helpers = new Helpers();
 
@@ -158,10 +164,18 @@ public class KillTeamGameManager : MonoBehaviour
         helpers.menuPoint = this.transform.FindChildRecursive("MenuPoint").gameObject;
         helpers.menuPoint.GetComponent<MeshRenderer>().enabled = false;
 
+        helpers.menuPointTable[Player.Player1] = helpers.menuPoint.transform.position;
+        helpers.menuPointTable[Player.Player2] = new Vector3(-helpers.menuPoint.transform.position.x, helpers.menuPoint.transform.position.y, -helpers.menuPoint.transform.position.z);
 
-        playerSetupStrip = this.transform.FindChildRecursive(LayerType.PlayerSetupStrip.ToString()).gameObject;
-        playerSetupStrip.layer = (int)LayerType.PlayerSetupStrip;
-        playerSetupStrip.SetActive(false);
+
+
+        playerSetupStrip[Player.Player1] = this.transform.FindChildRecursive($"{LayerType.PlayerSetupStrip}1").gameObject;
+        playerSetupStrip[Player.Player1].layer = (int)LayerType.PlayerSetupStrip;
+        playerSetupStrip[Player.Player1].SetActive(false);
+
+        playerSetupStrip[Player.Player2] = this.transform.FindChildRecursive($"{LayerType.PlayerSetupStrip}2").gameObject;
+        playerSetupStrip[Player.Player2].layer = (int)LayerType.PlayerSetupStrip;
+        playerSetupStrip[Player.Player2].SetActive(false);
 
 
         var assetHolder = new GameObject("assetHolder");
@@ -190,7 +204,8 @@ public class KillTeamGameManager : MonoBehaviour
 
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
-        playerSetupStrip.SetActive(false);
+        playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(false));
+
         switch (state)
         {
             case KillTeamGameManager.GameState.WaitingForPlayers:
@@ -200,14 +215,14 @@ public class KillTeamGameManager : MonoBehaviour
             case KillTeamGameManager.GameState.TerrainPlacement:
                 break;
             case KillTeamGameManager.GameState.BarracadePlacement:
-                playerSetupStrip.SetActive(true);
+                playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(true));
                 break;
             case KillTeamGameManager.GameState.MissionSetup:
                 break;
             case KillTeamGameManager.GameState.TeamSelection:
                 break;
             case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
-                playerSetupStrip.SetActive(true);
+                playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(true));
                 break;
             case KillTeamGameManager.GameState.ReadyToStart:
                 break;
@@ -221,7 +236,7 @@ public class KillTeamGameManager : MonoBehaviour
     }
 
 
-    public void SetUpItem(Transform trans, CatalogueEntry entry, ModuleObject item, LayerType itemType)
+    public void SetUpItem(Transform trans, CatalogueEntry entry, ModuleObject item, LayerType itemType, KillTeamGameManager.Player playerNumber)
     {
         if (item == null)
             return;
@@ -236,10 +251,11 @@ public class KillTeamGameManager : MonoBehaviour
         switch (itemType)
         {
             case LayerType.Player:
+                // need to assign  what player index it is in here somewere
                 item.gameObject.AddComponent<InitiliseMiniture>();
                 var display = item.AddComponent<KillTeamMetaDataDisplay>();
                 var data = entry.GetMetaData<ContentKillTeamMetaData>();
-                display.Initialise(data);
+                display.Initialise(data, playerNumber);
                 break;
             case LayerType.Terrain:
                 var t = item.gameObject.AddComponent<InitiliseTerrain>();

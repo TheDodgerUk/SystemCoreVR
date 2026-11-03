@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Numerics;
 using UnityEngine;
+using static GameManagerDesertStrike;
 
 public class AssetHolder : MonoBehaviour
 {
@@ -101,109 +102,119 @@ public class AssetHolder : MonoBehaviour
 
     public void SpawnTerrain(Action callback)
     {
-
-        int muliplier = 2;
-        List<GameObject> terrainGameObjects = new List<GameObject>();
-        TaskAction task = new TaskAction(catalogueEntryTerrain.Count * muliplier, () =>
+        int parts2 = Enum.GetValues(typeof(KillTeamGameManager.Player)).Length;
+        SimpleDictionaryList<KillTeamGameManager.Player, GameObject> terrainGameObjects = new SimpleDictionaryList<KillTeamGameManager.Player, GameObject>();
+        
+        TaskAction task = new TaskAction(catalogueEntryTerrain.Count * parts2, () =>
         {
             PrefabRowSpawner spawnerAssets = this.AddComponent<PrefabRowSpawner>();
-            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.StartTable, terrainGameObjects);
+            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player1], terrainGameObjects[KillTeamGameManager.Player.Player1]);
+            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player2], terrainGameObjects[KillTeamGameManager.Player.Player2]);
             DestroyImmediate(spawnerAssets);
             callback();
         });
 
-        for (int i = 0; i < muliplier; i++)
+        foreach (KillTeamGameManager.Player player in Enum.GetValues(typeof(KillTeamGameManager.Player)))
         {
-      
-        foreach (CatalogueEntry catItem in catalogueEntryTerrain)
-        {
-            Core.Scene.SpawnObject(catItem, (item) =>
+            foreach (CatalogueEntry catItem in catalogueEntryTerrain)
             {
-                Transform assetsFolder = transform.Find(ASSETS);
-                if (assetsFolder == null)
+                Core.Scene.SpawnObject(catItem, (item) =>
                 {
-                    GameObject go = new GameObject(ASSETS);
-                    assetsFolder = go.transform;
-                    assetsFolder.SetParent(transform, false);
-                }
-                KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Terrain);
-                terrainGameObjects.Add(item.gameObject);
-                task.Increment();
-            });
+                    Transform assetsFolder = transform.Find(ASSETS);
+                    if (assetsFolder == null)
+                    {
+                        GameObject go = new GameObject(ASSETS);
+                        assetsFolder = go.transform;
+                        assetsFolder.SetParent(transform, false);
+                    }
+                    KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Terrain, KillTeamGameManager.Player.Player1 /*notused*/);
+                    terrainGameObjects.AddToList(player, item.gameObject);
+                    task.Increment();
+                });
+            }
         }
-    }
     }
 
     public void SpawnBarracades(Action callback)
     {
-        List<GameObject> barracadeGameObjects = new List<GameObject>();
-        TaskAction task = new TaskAction(catalogueEntryBaracade.Count, () =>
+        int parts2 = Enum.GetValues(typeof(KillTeamGameManager.Player)).Length;
+        SimpleDictionaryList<KillTeamGameManager.Player, GameObject> barracadeGameObjects = new SimpleDictionaryList<KillTeamGameManager.Player, GameObject>();
+        
+        TaskAction task = new TaskAction(catalogueEntryBaracade.Count * parts2, () =>
         {
             PrefabRowSpawner spawnerAssets = this.AddComponent < PrefabRowSpawner>();
-            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.StartTable, barracadeGameObjects);
+            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player1], barracadeGameObjects[KillTeamGameManager.Player.Player1]);
+            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player2], barracadeGameObjects[KillTeamGameManager.Player.Player2]);
             DestroyImmediate(spawnerAssets);
             callback();
         });
 
-        foreach (CatalogueEntry catItem in catalogueEntryBaracade)
+        foreach (KillTeamGameManager.Player player in Enum.GetValues(typeof(KillTeamGameManager.Player)))
         {
-            Core.Scene.SpawnObject(catItem, (item) =>
+            foreach (CatalogueEntry catItem in catalogueEntryBaracade)
             {
-                Transform assetsFolder = transform.Find(ASSETS);
-                if (assetsFolder == null)
+                Core.Scene.SpawnObject(catItem, (item) =>
                 {
-                    GameObject go = new GameObject(ASSETS);
-                    assetsFolder = go.transform;
-                    assetsFolder.SetParent(transform, false);
-                }
-                KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Barracade);
-                barracadeGameObjects.Add(item.gameObject);
-                task.Increment();
-            });
+                    Transform assetsFolder = transform.Find(ASSETS);
+                    if (assetsFolder == null)
+                    {
+                        GameObject go = new GameObject(ASSETS);
+                        assetsFolder = go.transform;
+                        assetsFolder.SetParent(transform, false);
+                    }
+                    KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Barracade, KillTeamGameManager.Player.Player1 /*notused*/);
+                    barracadeGameObjects.AddToList(player, item.gameObject);
+                    task.Increment();
+                });
+            }
         }
     }
 
-    public void SpawnPlayers(ContentKillTeamMetaData.TeamType teamType, Action callback)
+    public void SpawnPlayers(Dictionary<KillTeamGameManager.Player, ContentKillTeamMetaData.TeamType> teamTypes, Action callback)
     {
-        List<GameObject> playerGameObjects = new List<GameObject>();
+        SimpleDictionaryList<KillTeamGameManager.Player, GameObject> playerGameObjects = new SimpleDictionaryList<KillTeamGameManager.Player, GameObject>();
+        SimpleDictionaryList<KillTeamGameManager.Player, CatalogueEntry> all = new SimpleDictionaryList<KillTeamGameManager.Player, CatalogueEntry>();
 
-        List<CatalogueEntry> all = catalogueEntryPlayer[teamType];
 
-        TaskAction task = new TaskAction(all.Count, () =>
+        // collects it all 
+        foreach (KillTeamGameManager.Player player in Enum.GetValues(typeof(KillTeamGameManager.Player)))
+        {
+            all.AddToList(player, catalogueEntryPlayer[teamTypes[player]]);
+        }
+
+        
+        TaskAction task = new TaskAction(all.GetValuesAll().Count, () =>
         {
             PrefabRowSpawner spawnerAssets = this.AddComponent<PrefabRowSpawner>();
-            spawnerAssets.Spawn(
-                KillTeamGameManager.Instance.helpers.StartTable,
-                playerGameObjects
-            );
+            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player1], playerGameObjects[KillTeamGameManager.Player.Player1]);
+            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player2], playerGameObjects[KillTeamGameManager.Player.Player2]);
             DestroyImmediate(spawnerAssets);
             callback();
         });
 
-        foreach (CatalogueEntry catItem in all)
+
+        foreach (KillTeamGameManager.Player player in Enum.GetValues(typeof(KillTeamGameManager.Player)))
         {
-            Core.Scene.SpawnObject(catItem, (item) =>
+            foreach (CatalogueEntry catItem in all[player])
             {
-                Transform assetsFolder = transform.Find(ASSETS);
-
-                if (assetsFolder == null)
+                Core.Scene.SpawnObject(catItem, (item) =>
                 {
-                    GameObject go = new GameObject(ASSETS);
-                    assetsFolder = go.transform;
-                    assetsFolder.SetParent(transform, false);
-                }
+                    Transform assetsFolder = transform.Find(ASSETS);
 
-                KillTeamGameManager.Instance.SetUpItem(
-                    assetsFolder,
-                    catItem,
-                    item,
-                    KillTeamGameManager.LayerType.Player
-                );
+                    if (assetsFolder == null)
+                    {
+                        GameObject go = new GameObject(ASSETS);
+                        assetsFolder = go.transform;
+                        assetsFolder.SetParent(transform, false);
+                    }
 
-                playerGameObjects.Add(item.gameObject);
+                    KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Player, player);
 
-                task.Increment();
-            });
+                    playerGameObjects.AddToList(player, item.gameObject);
+
+                    task.Increment();
+                });
+            }
         }
     }
 }
