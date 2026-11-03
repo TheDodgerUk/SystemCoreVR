@@ -26,6 +26,11 @@ public class AssetHolder : MonoBehaviour
     public Material wallMaterail;
     const string ASSETS = "Assets";
 
+    [SerializeField]
+    public SimpleDictionaryList<KillTeamGameManager.Player, CatalogueEntry> PlayersTeamCatalogueEntry = new SimpleDictionaryList<KillTeamGameManager.Player, CatalogueEntry>();
+
+    [SerializeField]
+    SimpleDictionaryList<KillTeamGameManager.Player, GameObject> playerGameObjects = new SimpleDictionaryList<KillTeamGameManager.Player, GameObject>();
 
     void Awake()
     {
@@ -162,7 +167,7 @@ public class AssetHolder : MonoBehaviour
                         assetsFolder = go.transform;
                         assetsFolder.SetParent(transform, false);
                     }
-                    KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Barracade, KillTeamGameManager.Player.Player1 /*notused*/);
+                    KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Barracade, player /*notused*/);
                     barracadeGameObjects.AddToList(player, item.gameObject);
                     task.Increment();
                 });
@@ -172,18 +177,15 @@ public class AssetHolder : MonoBehaviour
 
     public void SpawnPlayers(Dictionary<KillTeamGameManager.Player, ContentKillTeamMetaData.TeamType> teamTypes, Action callback)
     {
-        SimpleDictionaryList<KillTeamGameManager.Player, GameObject> playerGameObjects = new SimpleDictionaryList<KillTeamGameManager.Player, GameObject>();
-        SimpleDictionaryList<KillTeamGameManager.Player, CatalogueEntry> all = new SimpleDictionaryList<KillTeamGameManager.Player, CatalogueEntry>();
-
 
         // collects it all 
         foreach (KillTeamGameManager.Player player in Enum.GetValues(typeof(KillTeamGameManager.Player)))
         {
-            all.AddToList(player, catalogueEntryPlayer[teamTypes[player]]);
+            PlayersTeamCatalogueEntry.AddToList(player, catalogueEntryPlayer[teamTypes[player]]);
         }
 
         
-        TaskAction task = new TaskAction(all.GetValuesAll().Count, () =>
+        TaskAction task = new TaskAction(PlayersTeamCatalogueEntry.GetValuesAll().Count, () =>
         {
             PrefabRowSpawner spawnerAssets = this.AddComponent<PrefabRowSpawner>();
             spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player1], playerGameObjects[KillTeamGameManager.Player.Player1]);
@@ -195,7 +197,7 @@ public class AssetHolder : MonoBehaviour
 
         foreach (KillTeamGameManager.Player player in Enum.GetValues(typeof(KillTeamGameManager.Player)))
         {
-            foreach (CatalogueEntry catItem in all[player])
+            foreach (CatalogueEntry catItem in PlayersTeamCatalogueEntry[player])
             {
                 Core.Scene.SpawnObject(catItem, (item) =>
                 {
