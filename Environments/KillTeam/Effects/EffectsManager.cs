@@ -7,7 +7,7 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEngine.SceneManagement;
+using UnityEditor.Experimental.SceneManagement;
 #endif
 
 public class EffectsManager : MonoBehaviour
@@ -70,6 +70,7 @@ public class EffectsManager : MonoBehaviour
 
 #if UNITY_EDITOR
     private ParticleSystem m_PreviewParticle;
+    private Vector3 m_PreviewOriginalPosition;
     private double m_PreviewStartTime;
     private float m_PreviewDuration;
     private bool m_IsPreviewing;
@@ -106,8 +107,8 @@ public class EffectsManager : MonoBehaviour
         foreach (Transform child in transform)
         {
             if (!Enum.TryParse(
-                child.name,
-                out EffectType effect))
+                    child.name,
+                    out EffectType effect))
                 continue;
 
             if (!Enum.IsDefined(typeof(EffectType), effect))
@@ -129,6 +130,8 @@ public class EffectsManager : MonoBehaviour
         }
     }
 
+    // Applies scale ONLY to direct children.
+    // Applies particle settings to all nested ParticleSystems.
     public void ApplyEffectSettings()
     {
         foreach (Transform child in transform)
@@ -181,6 +184,11 @@ public class EffectsManager : MonoBehaviour
 #endif
 
         InitializeEffects();
+
+        Debug.Log(
+            "Effects updated: direct children scaled, looping disabled.",
+            this
+        );
     }
 
     public void StopAllEffects()
@@ -208,10 +216,6 @@ public class EffectsManager : MonoBehaviour
         }
     }
 
-    public void PlayEffect(EffectType effect, Vector3 position)
-    {
-        PlayEffect(effect, position, -1f);
-    }
 
     public void PlayEffect(
         EffectType effect,
@@ -222,8 +226,8 @@ public class EffectsManager : MonoBehaviour
             InitializeEffects();
 
         if (!effectDictionary.TryGetValue(
-            effect,
-            out ParticleSystem particleSystem))
+                effect,
+                out ParticleSystem particleSystem))
         {
             Debug.LogWarning(
                 $"Effect not found: {effect}",
@@ -232,10 +236,9 @@ public class EffectsManager : MonoBehaviour
             return;
         }
 
-        // Cancel a previous stop timer for this effect.
         if (stopCoroutines.TryGetValue(
-            particleSystem,
-            out Coroutine existingRoutine))
+                particleSystem,
+                out Coroutine existingRoutine))
         {
             if (existingRoutine != null)
                 StopCoroutine(existingRoutine);
@@ -245,7 +248,6 @@ public class EffectsManager : MonoBehaviour
 
         particleSystem.transform.position = position;
 
-        // Restart only the selected effect.
         particleSystem.Stop(
             true,
             ParticleSystemStopBehavior.StopEmittingAndClear
@@ -302,12 +304,11 @@ public class EffectsManager : MonoBehaviour
     private void StartEditorPreview()
     {
         StopEditorPreview();
-
         InitializeEffects();
 
         if (!effectDictionary.TryGetValue(
-            m_EffectType,
-            out ParticleSystem particleSystem))
+                m_EffectType,
+                out ParticleSystem particleSystem))
         {
             Debug.LogWarning(
                 $"Effect not found: {m_EffectType}",
@@ -317,6 +318,12 @@ public class EffectsManager : MonoBehaviour
         }
 
         m_PreviewParticle = particleSystem;
+
+        // Remember the original position so the editor
+        // preview doesn't permanently move the effect.
+        m_PreviewOriginalPosition =
+            m_PreviewParticle.transform.position;
+
         m_PreviewParticle.transform.position = m_TestPosition;
 
         m_PreviewParticle.Stop(
@@ -381,6 +388,9 @@ public class EffectsManager : MonoBehaviour
                 true,
                 ParticleSystemStopBehavior.StopEmittingAndClear
             );
+
+            m_PreviewParticle.transform.position =
+                m_PreviewOriginalPosition;
         }
 
         m_PreviewParticle = null;
@@ -400,30 +410,26 @@ public class EffectsManager : MonoBehaviour
 
     private void SaveEditorChanges()
     {
-        // Editing a prefab directly in Prefab Mode.
-        if (PrefabStageUtility.GetCurrentPrefabStage() != null)
+        // Prefab Mode
+        var stage = PrefabStageUtility.GetCurrentPrefabStage();
+
+        if (stage != null && gameObject.scene == stage.scene)
         {
-            PrefabStage stage =
-                PrefabStageUtility.GetCurrentPrefabStage();
-
-            if (gameObject.scene == stage.scene)
-            {
-                EditorSceneManager.MarkSceneDirty(stage.scene);
-                EditorSceneManager.SaveScene(stage.scene);
-                return;
-            }
-        }
-
-        // Editing a prefab asset directly.
-        if (PrefabUtility.IsPartOfPrefabAsset(gameObject))
-        {
-            GameObject root = transform.root.gameObject;
-
-            PrefabUtility.SavePrefabAsset(root);
+            EditorSceneManager.MarkSceneDirty(stage.scene);
+            EditorSceneManager.SaveScene(stage.scene);
             return;
         }
 
-        // Editing an object in a normal scene.
+        // Prefab asset
+        if (PrefabUtility.IsPartOfPrefabAsset(gameObject))
+        {
+            PrefabUtility.SavePrefabAsset(
+                transform.root.gameObject
+            );
+            return;
+        }
+
+        // Normal scene or prefab instance in a scene
         if (gameObject.scene.IsValid() &&
             gameObject.scene.isLoaded)
         {
@@ -451,19 +457,16 @@ public class EffectsManagerEditor : Editor
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
-
         DrawDefaultInspector();
-
         serializedObject.ApplyModifiedProperties();
 
-        EffectsManager manager =
-            (EffectsManager)target;
+        EffectsManager manager = (EffectsManager)target;
 
         EditorGUILayout.Space(10);
 
         if (GUILayout.Button(
-            "Apply Settings To All Effects",
-            GUILayout.Height(35)))
+                "Apply Settings To All Effects",
+                GUILayout.Height(35)))
         {
             manager.ApplyEffectSettings();
         }
@@ -471,15 +474,15 @@ public class EffectsManagerEditor : Editor
         EditorGUILayout.Space(5);
 
         if (GUILayout.Button(
-            "Test Effect",
-            GUILayout.Height(35)))
+                "Test Effect",
+                GUILayout.Height(35)))
         {
             manager.TestEffect();
         }
 
         if (GUILayout.Button(
-            "Stop Effect",
-            GUILayout.Height(25)))
+                "Stop Effect",
+                GUILayout.Height(25)))
         {
             if (Application.isPlaying)
                 manager.StopAllEffects();
@@ -492,16 +495,14 @@ public class EffectsManagerEditor : Editor
     {
         serializedObject.Update();
 
-        Vector3 position =
-            testPosition.vector3Value;
+        Vector3 position = testPosition.vector3Value;
 
         EditorGUI.BeginChangeCheck();
 
-        Vector3 newPosition =
-            Handles.PositionHandle(
-                position,
-                Quaternion.identity
-            );
+        Vector3 newPosition = Handles.PositionHandle(
+            position,
+            Quaternion.identity
+        );
 
         if (EditorGUI.EndChangeCheck())
         {
@@ -531,9 +532,7 @@ public class EffectsManagerEditor : Editor
     {
         if (target != null && !Application.isPlaying)
         {
-            EffectsManager manager =
-                (EffectsManager)target;
-
+            EffectsManager manager = (EffectsManager)target;
             manager.StopEditorPreview();
         }
     }

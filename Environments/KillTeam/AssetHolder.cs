@@ -98,7 +98,7 @@ public class AssetHolder : MonoBehaviour
                 teamIcons.Add(texture);
                 if (texture == null)
                 {
-                    Debug.LogError($"Team icon not found for {team}");
+                    Debug.Log($"Team icon not found for {team}");
                 }
             });
         }

@@ -96,7 +96,7 @@ public class KillTeamGameManager : MonoBehaviour
 
     public AssetHolder AssetHolder { get; private set; }
 
-    public VRPrefabMenuController PrefabMenuController { get; private set; }
+    public GenericStateMachine GenericStateMachine { get; private set; }
 
 
 
@@ -155,7 +155,10 @@ public class KillTeamGameManager : MonoBehaviour
 
         [SerializeField]
         public GameObject menuPoint;
-        public Dictionary<Player, Vector3> menuPointTable = new Dictionary<Player, Vector3>();
+        public Dictionary<Player, Vector3> DynamicImagePlanePoint = new Dictionary<Player, Vector3>()        {
+            { Player.Player1, new Vector3(0.4243714f, 0.4678285f + 0.1f, 0f) },
+            { Player.Player2, new Vector3(-0.4243714f, 0.4678285f + 0.1f, 0f) }
+        };
 
         public GameObject BoardRoot => boardRoot;
 
@@ -177,12 +180,6 @@ public class KillTeamGameManager : MonoBehaviour
         helpers = new Helpers();
 
         lastAppliedState = currentState;
-        helpers.menuPoint = this.transform.FindChildRecursive("MenuPoint").gameObject;
-        helpers.menuPoint.GetComponent<MeshRenderer>().enabled = false;
-
-        helpers.menuPointTable[Player.Player1] = helpers.menuPoint.transform.position;
-        helpers.menuPointTable[Player.Player2] = new Vector3(-helpers.menuPoint.transform.position.x, helpers.menuPoint.transform.position.y, -helpers.menuPoint.transform.position.z);
-
 
 
         playerSetupStrip[Player.Player1] = this.transform.FindChildRecursive($"{LayerType.PlayerSetupStrip}1").gameObject;
@@ -200,9 +197,9 @@ public class KillTeamGameManager : MonoBehaviour
 
 
 
-        var vRPrefabMenu = new GameObject("VRPrefabMenuController");
+        var vRPrefabMenu = new GameObject("GenericStateMachine");
         vRPrefabMenu.transform.SetParent(transform, false);
-        PrefabMenuController = vRPrefabMenu.AddComponent<VRPrefabMenuController>();
+        GenericStateMachine = vRPrefabMenu.AddComponent<GenericStateMachine>();
 
         helpers.boardRoot = this.transform.FindChildRecursive(LayerType.TableBoard.ToString()).gameObject;
         helpers.boardRoot.layer = (int)LayerType.TableBoard;
@@ -219,7 +216,7 @@ public class KillTeamGameManager : MonoBehaviour
 
     private void InitiliseAll()
     {
-        PrefabMenuController.transform.SetParent(null);
+        GenericStateMachine.transform.SetParent(null);
         AssetHolder.transform.SetParent(null);
     }
 

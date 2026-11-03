@@ -145,11 +145,13 @@ public class TerrainPlacementValidator : MonoBehaviour
         if (canPlace)
         {
             transform.position = placementPosition;
+            GenericSoundPlayer.Instance.PlaySound(GenericSoundPlayer.SoundType.PassSound, transform.position);
         }
         else
         {
             transform.position = startPosition;
             transform.rotation = startPositionRotation;
+            GenericSoundPlayer.Instance.PlaySound(GenericSoundPlayer.SoundType.FailSound, transform.position);
         }
     }
 
