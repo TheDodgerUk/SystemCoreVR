@@ -28,9 +28,22 @@ public class VRPrefabMenuController : MonoBehaviour
         KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
     }
 
+
+
+
+    private List<KillTeamGameManager.Player> taskActionList = new List<KillTeamGameManager.Player>();
+    private void TaskActionTest(TaskAction task, KillTeamGameManager.Player player)
+    {
+        if(taskActionList.Contains(player) == false)
+        {
+            taskActionList.Add(player);
+            task.Increment();
+        }
+    }
+
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
-
+        taskActionList.Clear();
         int NumberOfPlayers = KillTeamGameManager.Instance.IsSinglePlayer ? 1 : 2;
 
         switch (state)
@@ -55,12 +68,12 @@ public class VRPrefabMenuController : MonoBehaviour
 
 
                 // buttons for player 1 and 2 to move to next state
-                KillTeamGameManager.Instance.OnButttonPressed(KillTeamGameManager.Player.Player1, () =>
+                PhysicalButtons.Instance.OnButtonPressed(KillTeamGameManager.Player.Player1, PhysicalButtons.ButtonType.Next, () =>
                 {
                     RemoveNonPlacedTerrain();
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.BarracadeAssetCreation);
                 });
-                KillTeamGameManager.Instance.OnButttonPressed(KillTeamGameManager.Player.Player2, () =>
+                PhysicalButtons.Instance.OnButtonPressed(KillTeamGameManager.Player.Player2, PhysicalButtons.ButtonType.Next,() =>
                 {
                     RemoveNonPlacedTerrain();
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.BarracadeAssetCreation);
@@ -75,21 +88,20 @@ public class VRPrefabMenuController : MonoBehaviour
                 });
                 break;
             case KillTeamGameManager.GameState.BarracadePlacement:
-                m_menus[KillTeamGameManager.Player.Player1].SetEntries(new List<CatalogueEntry>());
-                m_menus[KillTeamGameManager.Player.Player1].AddButton(KillTeamGameManager.Instance.AssetHolder.nextIcon, () =>
+
+                TaskAction BothPlayersPlacedBarricades = new TaskAction(NumberOfPlayers, () =>
                 {
-                    RemoveNonPlacedTerrain();
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamSelection);
                 });
-                KillTeamGameManager.Instance.OnButttonPressed(KillTeamGameManager.Player.Player1, () =>
+                PhysicalButtons.Instance.OnButtonPressed(KillTeamGameManager.Player.Player1, PhysicalButtons.ButtonType.Next, () =>
                 {
                     RemoveNonPlacedTerrain();
-                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamSelection);
+                    TaskActionTest(BothPlayersPlacedBarricades, KillTeamGameManager.Player.Player1);
                 });
-                KillTeamGameManager.Instance.OnButttonPressed(KillTeamGameManager.Player.Player2, () =>
+                PhysicalButtons.Instance.OnButtonPressed(KillTeamGameManager.Player.Player2, PhysicalButtons.ButtonType.Next, () =>
                 {
                     RemoveNonPlacedTerrain();
-                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamSelection);
+                    TaskActionTest(BothPlayersPlacedBarricades, KillTeamGameManager.Player.Player2);
                 });
 
 
@@ -98,7 +110,7 @@ public class VRPrefabMenuController : MonoBehaviour
                 break;
             case KillTeamGameManager.GameState.TeamSelection:
 
-                TaskAction BothTeamsChoisen = new TaskAction(2, () =>
+                TaskAction BothTeamsChoisen = new TaskAction(NumberOfPlayers, () =>
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamsAssetCreation);
                 });
@@ -120,11 +132,11 @@ public class VRPrefabMenuController : MonoBehaviour
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.SetCharacterToStartPlacement);
                 });
-                KillTeamGameManager.Instance.OnButttonPressed(KillTeamGameManager.Player.Player1, () =>
+                PhysicalButtons.Instance.OnButtonPressed(KillTeamGameManager.Player.Player1, PhysicalButtons.ButtonType.Next, () =>
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.SetCharacterToStartPlacement);
                 });
-                KillTeamGameManager.Instance.OnButttonPressed(KillTeamGameManager.Player.Player2, () =>
+                PhysicalButtons.Instance.OnButtonPressed(KillTeamGameManager.Player.Player2, PhysicalButtons.ButtonType.Next, () =>
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.SetCharacterToStartPlacement);
                 });

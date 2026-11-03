@@ -2,11 +2,12 @@
 using Org.BouncyCastle.Asn1.Mozilla;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static KillTeamGameManager;
+using static ObjectInteraction;
 using static UnityEngine.UI.ContentSizeFitter;
-using System.Linq;
 
 
 public class KillTeamGameManager : MonoBehaviour
@@ -27,6 +28,16 @@ public class KillTeamGameManager : MonoBehaviour
         PlayerSetupStrip,
         TableBoard
     }
+
+    public enum LayerInteractionType
+    {
+        Player1Hands = 22,
+        Player2Hands,
+        Player1Interaction,
+        Player2Interaction
+    }
+
+
     public enum GameMode
     {
         SinglePlayer,
@@ -88,30 +99,6 @@ public class KillTeamGameManager : MonoBehaviour
     public VRPrefabMenuController PrefabMenuController { get; private set; }
 
 
-
-    /// <summary>
-    ///  buttons
-    /// </summary>
-    private readonly Dictionary<Player, Action> buttonCallbacks =
-        new Dictionary<Player, Action>();
-
-    public void OnButttonPressed(Player player, Action callback)
-    {
-        buttonCallbacks[player] = callback;
-    }
-
-    public void ClearButtonPressed()
-    {
-        buttonCallbacks.Clear();
-    }
-
-    private void InvokeButtonPressed(Player player)
-    {
-        if (buttonCallbacks.TryGetValue(player, out Action callback))
-        {
-            callback?.Invoke();
-        }
-    }
 
 
 
@@ -234,50 +221,6 @@ public class KillTeamGameManager : MonoBehaviour
     {
         PrefabMenuController.transform.SetParent(null);
         AssetHolder.transform.SetParent(null);
-
-
-        ////{
-        ////    var p = this.transform.FindChildRecursive("ButtonBase1_Prefab");
-        ////    var vp = p.GetComponent<VrInteraction>();
-        ////    helpers.Button = vp.GetVrInteractionFromRoot(MetaDataType.ContentButton, "Button_Off");
-        ////    if (helpers.Button != null)
-        ////    {
-        ////        ((VrInteractionBaseButton)helpers.Button).ClearAddCallback((pressed) =>
-        ////        {
-        ////            if (pressed == VrInteractionBaseButton.ButtonStateEnum.Down)
-        ////            {
-        ////                Debug.LogError("ButtonBase1_Prefab pressed");
-        ////                InvokeButtonPressed(Player.Player1);
-        ////            }
-        ////        });
-        ////    }
-        ////    else
-        ////    {
-        ////        Debug.LogError("ButtonBase1_Prefab not found");
-        ////    }
-        ////}
-
-
-        ////{
-        ////    var p = this.transform.FindChildRecursive("ButtonBase2_Prefab");
-        ////    var vp = p.GetComponent<VrInteraction>();
-        ////    helpers.Button = vp.GetVrInteractionFromRoot(MetaDataType.ContentButton, "Button_Off");
-        ////    if (helpers.Button != null)
-        ////    {
-        ////        ((VrInteractionBaseButton)helpers.Button).ClearAddCallback((pressed) =>
-        ////        {
-        ////            if (pressed == VrInteractionBaseButton.ButtonStateEnum.Down)
-        ////            {
-        ////                Debug.LogError("ButtonBase2_Prefab pressed");
-        ////                InvokeButtonPressed(Player.Player2);
-        ////            }
-        ////        });
-        ////    }
-        ////    else
-        ////    {
-        ////        Debug.LogError("ButtonBase2_Prefab not found");
-        ////    }
-        ////}
     }
 
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
@@ -326,20 +269,33 @@ public class KillTeamGameManager : MonoBehaviour
             m_currentScene
         );
 
+        ObjectInteraction interaction = item.gameObject.ForceComponent<ObjectInteraction>();
+        if (playerNumber == Player.Player1)
+        {
+            interaction.InitiliseState(InteractionState.Player1Interaction);
+        }
+        else
+        {
+            interaction.InitiliseState(InteractionState.Player2Interaction);
+        }
         switch (itemType)
         {
             case LayerType.Player:
                 // need to assign  what player index it is in here somewere
+
+                
                 item.gameObject.AddComponent<InitiliseMiniture>();
                 var display = item.AddComponent<KillTeamMetaDataDisplay>();
                 var data = entry.GetMetaData<ContentKillTeamMetaData>();
                 display.Initialise(data, playerNumber);
                 break;
             case LayerType.Terrain:
+                item.gameObject.ForceComponent<ObjectInteraction>();
                 var t = item.gameObject.AddComponent<InitiliseTerrain>();
                 t.SetMode(LayerType.Terrain);
                 break;
             case LayerType.Barracade:
+                item.gameObject.ForceComponent<ObjectInteraction>();
                 var i = item.gameObject.AddComponent<InitiliseTerrain>();
                 i.SetMode(LayerType.Barracade);
                 break;
