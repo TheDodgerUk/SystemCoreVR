@@ -28,11 +28,10 @@ public class VRPrefabMenuController : MonoBehaviour
         KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
     }
 
-    int item;
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
 
-
+        int NumberOfPlayers = KillTeamGameManager.Instance.IsSinglePlayer ? 1 : 2;
 
         switch (state)
         {
@@ -53,6 +52,21 @@ public class VRPrefabMenuController : MonoBehaviour
                     RemoveNonPlacedTerrain();
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.BarracadeAssetCreation);                   
                 });
+
+
+                // buttons for player 1 and 2 to move to next state
+                KillTeamGameManager.Instance.OnButttonPressed(KillTeamGameManager.Player.Player1, () =>
+                {
+                    RemoveNonPlacedTerrain();
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.BarracadeAssetCreation);
+                });
+                KillTeamGameManager.Instance.OnButttonPressed(KillTeamGameManager.Player.Player2, () =>
+                {
+                    RemoveNonPlacedTerrain();
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.BarracadeAssetCreation);
+                });
+
+
                 break;
             case KillTeamGameManager.GameState.BarracadeAssetCreation:
                 KillTeamGameManager.Instance.AssetHolder.SpawnBarracades(() =>
@@ -67,6 +81,18 @@ public class VRPrefabMenuController : MonoBehaviour
                     RemoveNonPlacedTerrain();
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamSelection);
                 });
+                KillTeamGameManager.Instance.OnButttonPressed(KillTeamGameManager.Player.Player1, () =>
+                {
+                    RemoveNonPlacedTerrain();
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamSelection);
+                });
+                KillTeamGameManager.Instance.OnButttonPressed(KillTeamGameManager.Player.Player2, () =>
+                {
+                    RemoveNonPlacedTerrain();
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamSelection);
+                });
+
+
                 break;
             case KillTeamGameManager.GameState.MissionSetup:
                 break;
@@ -94,6 +120,15 @@ public class VRPrefabMenuController : MonoBehaviour
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.SetCharacterToStartPlacement);
                 });
+                KillTeamGameManager.Instance.OnButttonPressed(KillTeamGameManager.Player.Player1, () =>
+                {
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.SetCharacterToStartPlacement);
+                });
+                KillTeamGameManager.Instance.OnButttonPressed(KillTeamGameManager.Player.Player2, () =>
+                {
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.SetCharacterToStartPlacement);
+                });
+
                 break;
             case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
                 m_menus[KillTeamGameManager.Player.Player1].SetEntries(new List<CatalogueEntry>());
@@ -112,6 +147,11 @@ public class VRPrefabMenuController : MonoBehaviour
                 break;
         }
 
+    }
+
+    private void Instance_OnButttonPressed()
+    {
+        throw new NotImplementedException();
     }
 
     private void RemoveNonPlacedTerrain()

@@ -88,6 +88,33 @@ public class KillTeamGameManager : MonoBehaviour
     public VRPrefabMenuController PrefabMenuController { get; private set; }
 
 
+
+    /// <summary>
+    ///  buttons
+    /// </summary>
+    private readonly Dictionary<Player, Action> buttonCallbacks =
+        new Dictionary<Player, Action>();
+
+    public void OnButttonPressed(Player player, Action callback)
+    {
+        buttonCallbacks[player] = callback;
+    }
+
+    public void ClearButtonPressed()
+    {
+        buttonCallbacks.Clear();
+    }
+
+    private void InvokeButtonPressed(Player player)
+    {
+        if (buttonCallbacks.TryGetValue(player, out Action callback))
+        {
+            callback?.Invoke();
+        }
+    }
+
+
+
     public event Action<GameState> OnStateChanged;
     public event Action<PlayerData> OnPlayerJoined;
     public event Action<PlayerData> OnPlayerLeft;
@@ -145,9 +172,11 @@ public class KillTeamGameManager : MonoBehaviour
 
         public GameObject BoardRoot => boardRoot;
 
+        public VrInteraction Button;
     }
 
     public Helpers helpers;
+
 
     private void Awake()
     {
@@ -191,15 +220,64 @@ public class KillTeamGameManager : MonoBehaviour
         helpers.boardRoot = this.transform.FindChildRecursive(LayerType.TableBoard.ToString()).gameObject;
         helpers.boardRoot.layer = (int)LayerType.TableBoard;
 
-        Core.Environment.OnEnvironmentLoadingComplete += () =>
-        {
-            PrefabMenuController.transform.SetParent(null);
-            AssetHolder.transform.SetParent(null);
-        };
-
         m_currentScene = this.gameObject.scene;
 
+        Core.Environment.OnEnvironmentLoadingComplete += () =>
+        {
+            InitiliseAll();
+        };
+
         this.OnStateChanged  += KillTeamGameManager_OnStateChanged; ;
+    }
+
+    private void InitiliseAll()
+    {
+        PrefabMenuController.transform.SetParent(null);
+        AssetHolder.transform.SetParent(null);
+
+
+        ////{
+        ////    var p = this.transform.FindChildRecursive("ButtonBase1_Prefab");
+        ////    var vp = p.GetComponent<VrInteraction>();
+        ////    helpers.Button = vp.GetVrInteractionFromRoot(MetaDataType.ContentButton, "Button_Off");
+        ////    if (helpers.Button != null)
+        ////    {
+        ////        ((VrInteractionBaseButton)helpers.Button).ClearAddCallback((pressed) =>
+        ////        {
+        ////            if (pressed == VrInteractionBaseButton.ButtonStateEnum.Down)
+        ////            {
+        ////                Debug.LogError("ButtonBase1_Prefab pressed");
+        ////                InvokeButtonPressed(Player.Player1);
+        ////            }
+        ////        });
+        ////    }
+        ////    else
+        ////    {
+        ////        Debug.LogError("ButtonBase1_Prefab not found");
+        ////    }
+        ////}
+
+
+        ////{
+        ////    var p = this.transform.FindChildRecursive("ButtonBase2_Prefab");
+        ////    var vp = p.GetComponent<VrInteraction>();
+        ////    helpers.Button = vp.GetVrInteractionFromRoot(MetaDataType.ContentButton, "Button_Off");
+        ////    if (helpers.Button != null)
+        ////    {
+        ////        ((VrInteractionBaseButton)helpers.Button).ClearAddCallback((pressed) =>
+        ////        {
+        ////            if (pressed == VrInteractionBaseButton.ButtonStateEnum.Down)
+        ////            {
+        ////                Debug.LogError("ButtonBase2_Prefab pressed");
+        ////                InvokeButtonPressed(Player.Player2);
+        ////            }
+        ////        });
+        ////    }
+        ////    else
+        ////    {
+        ////        Debug.LogError("ButtonBase2_Prefab not found");
+        ////    }
+        ////}
     }
 
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
