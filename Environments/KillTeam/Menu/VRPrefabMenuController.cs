@@ -32,10 +32,7 @@ public class VRPrefabMenuController : MonoBehaviour
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
 
-        TaskAction BothTeamsChoisen = new TaskAction(2, () =>
-        {
-            KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamsAssetCreation);
-        });
+
 
         switch (state)
         {
@@ -74,6 +71,12 @@ public class VRPrefabMenuController : MonoBehaviour
             case KillTeamGameManager.GameState.MissionSetup:
                 break;
             case KillTeamGameManager.GameState.TeamSelection:
+
+                TaskAction BothTeamsChoisen = new TaskAction(2, () =>
+                {
+                    KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamsAssetCreation);
+                });
+
                 m_menus[KillTeamGameManager.Player.Player1].SetEntries(KillTeamGameManager.Instance.AssetHolder.teamIcons, (itemIndex, other) =>
                 {
                     TeamSelection[KillTeamGameManager.Player.Player1] = (ContentKillTeamMetaData.TeamType)itemIndex;
@@ -87,7 +90,7 @@ public class VRPrefabMenuController : MonoBehaviour
 
                 break;
             case KillTeamGameManager.GameState.TeamsAssetCreation:
-                KillTeamGameManager.Instance.AssetHolder.SpawnPlayers((ContentKillTeamMetaData.TeamType)(item), ()=>
+                KillTeamGameManager.Instance.AssetHolder.SpawnPlayers(TeamSelection, ()=>
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.SetCharacterToStartPlacement);
                 });
