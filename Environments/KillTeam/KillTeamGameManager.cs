@@ -223,7 +223,6 @@ public class KillTeamGameManager : MonoBehaviour
             InitiliseAll();
         };
 
-        this.OnStateChanged  += KillTeamGameManager_OnStateChanged; ;
     }
 
     private void InitiliseAll()
@@ -233,39 +232,6 @@ public class KillTeamGameManager : MonoBehaviour
         AssetHolder.transform.SetParent(null);
         AssetHolder.transform.localScale = Vector3.one;
         AssetHolder.Initilise();
-    }
-
-    private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
-    {
-        playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(false));
-
-        switch (state)
-        {
-            case KillTeamGameManager.GameState.WaitingForPlayers:
-                break;
-            case KillTeamGameManager.GameState.BoardSetup:
-                break;
-            case KillTeamGameManager.GameState.TerrainPlacement:
-                break;
-            case KillTeamGameManager.GameState.BarracadePlacement:
-                playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(true));
-                break;
-            case KillTeamGameManager.GameState.MissionSetup:
-                break;
-            case KillTeamGameManager.GameState.TeamSelection:
-                break;
-            case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
-                playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(true));
-                break;
-            case KillTeamGameManager.GameState.ReadyToStart:
-                break;
-            case KillTeamGameManager.GameState.Playing:
-                break;
-            case KillTeamGameManager.GameState.Finished:
-                break;
-            default:
-                break;
-        }
     }
 
 

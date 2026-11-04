@@ -6,6 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using System.Linq;
+using static KillTeamGameManager;
 
 public class GenericStateMachine : MonoBehaviour
 {
@@ -69,6 +71,8 @@ public class GenericStateMachine : MonoBehaviour
 
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
+
+        KillTeamGameManager.Instance.helpers.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(false));
         m_menus[KillTeamGameManager.Player.Player1].SetActive(false);
         m_menus[KillTeamGameManager.Player.Player2].SetActive(false);
         PhysicalButtons.Instance.ClearAllButtonCallbacks();
@@ -109,7 +113,7 @@ public class GenericStateMachine : MonoBehaviour
                 });
                 break;
             case KillTeamGameManager.GameState.BarracadePlacement:
-
+                KillTeamGameManager.Instance.helpers.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(true));
                 TaskAction BothPlayersPlacedBarricades = new TaskAction(NumberOfPlayers, () =>
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamSelection);
@@ -148,6 +152,7 @@ public class GenericStateMachine : MonoBehaviour
 
                 break;
             case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
+                KillTeamGameManager.Instance.helpers.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(true));
                 TaskAction BothTeamsChoisen1 = new TaskAction(NumberOfPlayers, () =>
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.ReadyToStart);
@@ -367,7 +372,7 @@ public class GenericStateMachine : MonoBehaviour
                 var mesh = KillTeamGameManager.Instance.helpers.playerSetupStrip[p].GetComponent<BoxCollider>();
                 foreach (var obj in player1Items)
                 {
-                    obj.gameObject.transform.position = GetRandomPointOnBox(mesh, 0.01f);
+                    obj.gameObject.transform.position = GetRandomPointOnBox(mesh, 0.001f);
                     obj.gameObject.transform.position = new Vector3(obj.gameObject.transform.position.x, 0.5f, obj.gameObject.transform.position.z);
 
                     Grabbable grabbable = obj.GetComponent<Grabbable>();
@@ -397,12 +402,6 @@ public class GenericStateMachine : MonoBehaviour
         // Allow physics to update after moving the object
         yield return new WaitForFixedUpdate();
 
-        // Grab and release using an Auto Hand
-        Hand hand = FindObjectOfType<Hand>();
-
-        if (hand == null)
-            yield break;
-
         grabbable.OnGrabEvent?.Invoke(null, grabbable);
 
         yield return new WaitForSeconds(waitTime);
@@ -417,7 +416,7 @@ public class GenericStateMachine : MonoBehaviour
 
     public static Vector3 GetRandomPointOnBox(
         BoxCollider box,
-        float edgePadding = 0.04f)
+        float edgePadding = 0f)
     {
         Vector3 size = box.size;
         Vector3 scale = box.transform.lossyScale;
