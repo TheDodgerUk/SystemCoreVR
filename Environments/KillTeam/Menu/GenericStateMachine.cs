@@ -242,13 +242,13 @@ public class GenericStateMachine : MonoBehaviour
         foreach (var item in all)
         {
             var val = item.gameObject.GetComponent<TerrainPlacementValidator>();
-            if (val != null && val.canPlace == false)
+            if (val != null && val.IsValidPlacement() == false)
             {
                 nonValid.Add(item);
             }
 
             var val1 = item.gameObject.GetComponent<BarracadePlacementValidator>();
-            if (val1 != null && val.canPlace == false)
+            if (val1 != null && val.IsValidPlacement() == false)
             {
                 nonValid.Add(item);
             }
