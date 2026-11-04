@@ -5,6 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEditor.IMGUI.Controls;
+#endif
 using static KillTeamGameManager;
 using static ObjectInteraction;
 using static UnityEngine.UI.ContentSizeFitter;
@@ -44,6 +48,7 @@ public class KillTeamGameManager : MonoBehaviour
         Multiplayer
     }
 
+
     public enum GameState
     {
         WaitingForPlayers,
@@ -69,7 +74,7 @@ public class KillTeamGameManager : MonoBehaviour
         DEBUG_SlowPlayerCreation,
         DEBUG_VerySloPlayerCreation,
 
-        DEBUG_StartStripTesting,
+        UnitTest_StartStripTesting
     }
 
     [Serializable]
@@ -182,7 +187,7 @@ public class KillTeamGameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        
+
         Instance = this;
         helpers = new Helpers();
 
@@ -290,7 +295,7 @@ public class KillTeamGameManager : MonoBehaviour
             case LayerType.Player:
                 // need to assign  what player index it is in here somewere
 
-                
+
                 item.gameObject.AddComponent<InitiliseMiniture>();
                 var display = item.AddComponent<KillTeamMetaDataDisplay>();
                 var data = entry.GetMetaData<ContentKillTeamMetaData>();
@@ -701,3 +706,100 @@ public class KillTeamGameManager : MonoBehaviour
             SetupMultiplayer();
     }
 }
+
+#if UNITY_EDITOR
+
+[CustomEditor(typeof(KillTeamGameManager))]
+public class KillTeamGameManagerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        serializedObject.Update();
+        SerializedProperty property = serializedObject.GetIterator();
+        bool enterChildren = true;
+
+        while (property.NextVisible(enterChildren))
+        {
+            enterChildren = false;
+            if (property.name == "m_Script")
+            {
+                using (new EditorGUI.DisabledScope(true))
+                    EditorGUILayout.PropertyField(property, true);
+            }
+            else if (property.name == "currentState")
+            {
+                DrawGameState(property);
+            }
+            else
+            {
+                EditorGUILayout.PropertyField(property, true);
+            }
+        }
+        serializedObject.ApplyModifiedProperties();
+    }
+
+    private void DrawGameState(SerializedProperty property)
+    {
+        Rect rect = EditorGUILayout.GetControlRect();
+        Rect buttonRect = EditorGUI.PrefixLabel(rect, new GUIContent(property.displayName));
+        int currentValue = property.intValue;
+        string label = Enum.IsDefined(typeof(KillTeamGameManager.GameState), currentValue)
+            ? ((KillTeamGameManager.GameState)currentValue).ToString()
+            : "Unknown (" + currentValue + ")";
+
+        if (GUI.Button(buttonRect, label, EditorStyles.popup))
+        {
+            var dropdown = new GameStateDropdown(new AdvancedDropdownState(), selected =>
+            {
+                if (target == null) return;
+                serializedObject.Update();
+                SerializedProperty state = serializedObject.FindProperty("currentState");
+                if (state != null)
+                {
+                    state.intValue = selected;
+                    serializedObject.ApplyModifiedProperties();
+                }
+            });
+            dropdown.Show(buttonRect);
+        }
+    }
+
+    private sealed class GameStateDropdown : AdvancedDropdown
+    {
+        private readonly Action<int> onSelected;
+
+        public GameStateDropdown(AdvancedDropdownState state, Action<int> onSelected)
+            : base(state)
+        {
+            this.onSelected = onSelected;
+            minimumSize = new Vector2(300f, 320f);
+        }
+
+        protected override AdvancedDropdownItem BuildRoot()
+        {
+            var root = new AdvancedDropdownItem("Game States");
+            foreach (KillTeamGameManager.GameState state in
+                Enum.GetValues(typeof(KillTeamGameManager.GameState)))
+            {
+                root.AddChild(new StateItem(state.ToString(), (int)state));
+            }
+            return root;
+        }
+
+        protected override void ItemSelected(AdvancedDropdownItem item)
+        {
+            if (item is StateItem stateItem)
+                onSelected?.Invoke(stateItem.Value);
+        }
+
+        private sealed class StateItem : AdvancedDropdownItem
+        {
+            public readonly int Value;
+            public StateItem(string name, int value) : base(name)
+            {
+                Value = value;
+            }
+        }
+    }
+}
+#endif
