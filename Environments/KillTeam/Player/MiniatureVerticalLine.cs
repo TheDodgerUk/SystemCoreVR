@@ -2,9 +2,6 @@
 using UnityEngine;
 using Autohand;
 
-[RequireComponent(typeof(Grabbable))]
-[RequireComponent(typeof(CapsuleCollider))]
-[DisallowMultipleComponent]
 public class MiniatureVerticalLine : MonoBehaviour
 {
     [Header("Line Settings")]

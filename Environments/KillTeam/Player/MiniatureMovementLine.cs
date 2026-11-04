@@ -80,42 +80,9 @@ public class MiniatureMovementLine : MonoBehaviour
 
         line.enabled = false;
 
-        KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
     }
 
-    private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
-    {
-        giveValidColourBack = true;
-        line.gameObject.SetActive(true);
-        switch (state)
-        {
-            case KillTeamGameManager.GameState.WaitingForPlayers:
-                break;
-            case KillTeamGameManager.GameState.BoardSetup:
-                break;
-            case KillTeamGameManager.GameState.TerrainPlacement:
-                break;
-            case KillTeamGameManager.GameState.BarracadePlacement:
-                break;
-            case KillTeamGameManager.GameState.MissionSetup:
-                break;
-            case KillTeamGameManager.GameState.TeamSelection:
-                break;
-            case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
-                line.gameObject.SetActive(false);
-                giveValidColourBack = false;
 
-                break;
-            case KillTeamGameManager.GameState.ReadyToStart:
-                break;
-            case KillTeamGameManager.GameState.Playing:
-                break;
-            case KillTeamGameManager.GameState.Finished:
-                break;
-            default:
-                break;
-        }
-    }
 
 
     private void OnEnable()

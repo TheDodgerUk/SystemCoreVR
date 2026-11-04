@@ -1,14 +1,8 @@
 
 using Autohand;
 using UnityEngine;
+using UnityEngine.UIElements;
 
-// Rigidbody
-// Collider
-// Grabbable (AutoHand)
-// MiniatureMovementLine
-// MiniatureVerticalLine
-
-[RequireComponent(typeof(Grabbable))]
 public class MiniaturePlacementValidator : MonoBehaviour
 {
     [Header("Movement")]
@@ -42,13 +36,55 @@ public class MiniaturePlacementValidator : MonoBehaviour
         }
 
         miniatureMovementLine =
-            gameObject.ForceComponent<MiniatureMovementLine>();
+            gameObject.AddComponent<MiniatureMovementLine>();
 
         miniatureVerticalLine =
-            gameObject.ForceComponent<MiniatureVerticalLine>();
+            gameObject.AddComponent<MiniatureVerticalLine>();
 
-        miniatureStarPositionVerticalLine = gameObject.ForceComponent<MiniatureStarPositionVerticalLine>();
+        miniatureStarPositionVerticalLine = gameObject.AddComponent<MiniatureStarPositionVerticalLine>();
+        KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
     }
+
+
+    private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
+    {
+        miniatureMovementLine.SetActive(true);
+        miniatureVerticalLine.SetActive(true);
+        miniatureStarPositionVerticalLine.SetActive(false);
+        switch (state)
+        {
+            case KillTeamGameManager.GameState.WaitingForPlayers:
+                break;
+            case KillTeamGameManager.GameState.BoardSetup:
+                break;
+            case KillTeamGameManager.GameState.TerrainPlacement:
+                break;
+            case KillTeamGameManager.GameState.BarracadePlacement:
+                break;
+            case KillTeamGameManager.GameState.MissionSetup:
+                break;
+            case KillTeamGameManager.GameState.TeamSelection:
+                break;
+            case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
+                miniatureVerticalLine.SetActive(false);
+                miniatureStarPositionVerticalLine.SetActive(true);
+
+                break;
+            case KillTeamGameManager.GameState.ReadyToStart:
+                break;
+            case KillTeamGameManager.GameState.Playing:
+                break;
+            case KillTeamGameManager.GameState.Finished:
+                break;
+            default:
+                break;
+        }
+    }
+
+
+
+
+
 
     private void OnEnable()
     {
@@ -127,6 +163,13 @@ public class MiniaturePlacementValidator : MonoBehaviour
 
             GenericSoundPlayer.Instance.PlaySound(
                 GenericSoundPlayer.SoundType.FailSound,
+                transform.position);
+        }
+        else
+        {
+            transform.position =  miniatureVerticalLine.PlacementPosition;
+            GenericSoundPlayer.Instance.PlaySound(
+                GenericSoundPlayer.SoundType.PassSound,
                 transform.position);
         }
 

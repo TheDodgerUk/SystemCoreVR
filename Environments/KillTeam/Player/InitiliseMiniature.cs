@@ -9,6 +9,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(Grabbable))]
+[RequireComponent(typeof(MiniaturePlacementValidator))]
 public class InitiliseMiniture : MonoBehaviour
 {
 
