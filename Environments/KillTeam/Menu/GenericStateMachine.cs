@@ -1,5 +1,6 @@
 using Autohand;
 using ExitGames.Client.Photon.StructWrapping;
+using KillTeam;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -182,6 +183,18 @@ public class GenericStateMachine : MonoBehaviour
                 QuickSceneCreation(15f);
                 break;
 
+            case KillTeamGameManager.GameState.DEBUG_QuickPlayerCreation:
+                QuickPlayerCreation(1f);
+                break;
+
+            case KillTeamGameManager.GameState.DEBUG_SlowPlayerCreation:
+                QuickPlayerCreation(5f);
+                break;
+
+            case KillTeamGameManager.GameState.DEBUG_VerySloPlayerCreation:
+                QuickPlayerCreation(15f);
+                break;
+
 
 
             default:
@@ -322,15 +335,61 @@ public class GenericStateMachine : MonoBehaviour
                 obj.gameObject.transform.position = GetRandomPointOnBox(mesh, 0.01f);
                 obj.gameObject.transform.position = new Vector3(all[i].gameObject.transform.position.x, 0.5f, all[i].gameObject.transform.position.z);
 
-                //Grabbable grabbable = obj.GetComponent<Grabbable>();
+                Grabbable grabbable = obj.GetComponent<Grabbable>();
 
-                //if (grabbable != null)
-                //{
-                //    StartCoroutine(FakeGrabAndRelease(waitTime, grabbable, taskTerrain));
-                //}
+                if (grabbable != null)
+                {
+                    StartCoroutine(FakeGrabAndRelease(waitTime, grabbable, taskTerrain));
+                }
             }
         });
     }
+
+
+    private void QuickPlayerCreation(float waitTime)
+    {
+        int itemsToMake = 0;
+
+        itemsToMake += KillTeamGameManager.Instance.AssetHolder.playerGameObjects[KillTeamGameManager.Player.Player1].Count;
+        itemsToMake += KillTeamGameManager.Instance.AssetHolder.playerGameObjects[KillTeamGameManager.Player.Player2].Count;
+
+        TaskAction taskTerrain = new TaskAction(itemsToMake, () =>
+        {
+            RemoveNonPlacedTerrain();
+        });
+
+        KillTeamGameManager.Instance.AssetHolder.SpawnPlayers(TeamSelection , () =>
+        {
+            foreach (KillTeamGameManager.Player p in (KillTeamGameManager.Player[])Enum.GetValues(typeof(KillTeamGameManager.Player)))
+            {
+                KillTeamGameManager.Instance.helpers.playerSetupStrip[p].SetActive(true);
+                var player1Items = KillTeamGameManager.Instance.AssetHolder.playerGameObjects[p];
+                var mesh = KillTeamGameManager.Instance.helpers.playerSetupStrip[p].GetComponent<BoxCollider>();
+                foreach (var obj in player1Items)
+                {
+                    obj.gameObject.transform.position = GetRandomPointOnBox(mesh, 0.01f);
+                    obj.gameObject.transform.position = new Vector3(obj.gameObject.transform.position.x, 0.5f, obj.gameObject.transform.position.z);
+
+                    Grabbable grabbable = obj.GetComponent<Grabbable>();
+
+                    if (grabbable != null)
+                    {
+                        StartCoroutine(FakeGrabAndRelease(waitTime, grabbable, taskTerrain));
+                    }
+                }
+            }
+        });
+
+
+
+
+    }
+
+
+
+
+
+
 
 
     private IEnumerator FakeGrabAndRelease(float waitTime, Grabbable grabbable, TaskAction task)
@@ -344,11 +403,11 @@ public class GenericStateMachine : MonoBehaviour
         if (hand == null)
             yield break;
 
-        hand.TryGrab(grabbable);
+        grabbable.OnGrabEvent?.Invoke(null, grabbable);
 
         yield return new WaitForSeconds(waitTime);
 
-        hand.Release();
+        grabbable.OnReleaseEvent?.Invoke(null, grabbable);
         yield return new WaitForSeconds(1f);
         task.Increment();
     }

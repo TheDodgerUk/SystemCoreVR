@@ -63,7 +63,11 @@ public class KillTeamGameManager : MonoBehaviour
         DEBUG_QuickTeamSelect,
         DEBUG_QuickSceneCreation,
         DEBUG_SlowSceneCreation,
-        DEBUG_VerySlowSceneCreation
+        DEBUG_VerySlowSceneCreation,
+
+        DEBUG_QuickPlayerCreation,
+        DEBUG_SlowPlayerCreation,
+        DEBUG_VerySloPlayerCreation
     }
 
     [Serializable]
@@ -131,20 +135,14 @@ public class KillTeamGameManager : MonoBehaviour
     private Scene m_currentScene;
     public Scene currentScene => m_currentScene;
 
-        
-    [SerializeField]
-    private Dictionary<Player, GameObject> playerSetupStrip = new Dictionary<Player, GameObject> ();
+
 
     public class Helpers
     {
         public string Barracade => "KillTeam/Barracade";
         public string Ignore => "KillTeam/Ignore";
 
-        public Dictionary<Player, Vector3> playerStartTable = new Dictionary<Player, Vector3>()
-        {
-            { Player.Player1, new Vector3(0.3479143f, 0.4992428f, 0.4959428f) },
-            { Player.Player2, new Vector3(-0.3479143f, 0.4992428f, -0.4959428f) }
-        };
+        public Dictionary<Player, GameObject> playerStartTable = new Dictionary<Player, GameObject>();
 
 
 
@@ -167,7 +165,9 @@ public class KillTeamGameManager : MonoBehaviour
 
         public GameObject BoardRoot => boardRoot;
 
-        public VrInteraction Button;
+        [SerializeField]
+        public Dictionary<Player, GameObject> playerSetupStrip = new Dictionary<Player, GameObject>();
+
     }
 
     public Helpers helpers;
@@ -187,13 +187,13 @@ public class KillTeamGameManager : MonoBehaviour
         lastAppliedState = currentState;
 
 
-        playerSetupStrip[Player.Player1] = this.transform.FindChildRecursive($"{LayerType.PlayerSetupStrip}1").gameObject;
-        playerSetupStrip[Player.Player1].layer = (int)LayerType.PlayerSetupStrip;
-        playerSetupStrip[Player.Player1].SetActive(false);
+        helpers.playerSetupStrip[Player.Player1] = this.transform.FindChildRecursive($"{LayerType.PlayerSetupStrip}1").gameObject;
+        helpers.playerSetupStrip[Player.Player1].layer = (int)LayerType.PlayerSetupStrip;
+        helpers.playerSetupStrip[Player.Player1].SetActive(false);
 
-        playerSetupStrip[Player.Player2] = this.transform.FindChildRecursive($"{LayerType.PlayerSetupStrip}2").gameObject;
-        playerSetupStrip[Player.Player2].layer = (int)LayerType.PlayerSetupStrip;
-        playerSetupStrip[Player.Player2].SetActive(false);
+        helpers.playerSetupStrip[Player.Player2] = this.transform.FindChildRecursive($"{LayerType.PlayerSetupStrip}2").gameObject;
+        helpers.playerSetupStrip[Player.Player2].layer = (int)LayerType.PlayerSetupStrip;
+        helpers.playerSetupStrip[Player.Player2].SetActive(false);
 
 
         var assetHolder = new GameObject("assetHolder");
@@ -208,6 +208,13 @@ public class KillTeamGameManager : MonoBehaviour
 
         helpers.boardRoot = this.transform.FindChildRecursive(LayerType.TableBoard.ToString()).gameObject;
         helpers.boardRoot.layer = (int)LayerType.TableBoard;
+
+
+        helpers.playerStartTable[Player.Player1] = this.transform.FindChildRecursive("StartTableHolder1").gameObject.transform.FindChildRecursive("Image").gameObject;
+        helpers.playerStartTable[Player.Player2] = this.transform.FindChildRecursive("StartTableHolder2").gameObject.transform.FindChildRecursive("Image").gameObject;
+
+
+
 
         m_currentScene = this.gameObject.scene;
 
