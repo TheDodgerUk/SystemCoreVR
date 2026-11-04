@@ -178,7 +178,12 @@ public class GenericStateMachine : MonoBehaviour
             case KillTeamGameManager.GameState.SlowSceneCreation:
                 QuickSceneCreation(5f);
                 break;
-                
+            case KillTeamGameManager.GameState.VerySlowSceneCreation:
+                QuickSceneCreation(15f);
+                break;
+
+
+
             default:
                 break;
         }
@@ -344,7 +349,7 @@ public class GenericStateMachine : MonoBehaviour
         yield return new WaitForSeconds(waitTime);
 
         hand.Release();
-        yield return new WaitForSeconds(waitTime);
+        yield return new WaitForSeconds(1f);
         task.Increment();
     }
 
