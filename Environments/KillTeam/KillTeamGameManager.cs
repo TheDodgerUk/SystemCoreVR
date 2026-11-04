@@ -67,7 +67,9 @@ public class KillTeamGameManager : MonoBehaviour
 
         DEBUG_QuickPlayerCreation,
         DEBUG_SlowPlayerCreation,
-        DEBUG_VerySloPlayerCreation
+        DEBUG_VerySloPlayerCreation,
+
+        DEBUG_StartStripTesting,
     }
 
     [Serializable]
@@ -186,14 +188,28 @@ public class KillTeamGameManager : MonoBehaviour
 
         lastAppliedState = currentState;
 
+        try
+        {
+            helpers.playerSetupStrip[Player.Player1] = this.transform.FindChildRecursive($"{LayerType.PlayerSetupStrip}1").gameObject;
+            helpers.playerSetupStrip[Player.Player1].layer = (int)LayerType.PlayerSetupStrip;
+            helpers.playerSetupStrip[Player.Player1].SetActive(false);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to setup Player1 strip: {ex.Message}\n{ex.StackTrace}");
+        }
 
-        helpers.playerSetupStrip[Player.Player1] = this.transform.FindChildRecursive($"{LayerType.PlayerSetupStrip}1").gameObject;
-        helpers.playerSetupStrip[Player.Player1].layer = (int)LayerType.PlayerSetupStrip;
-        helpers.playerSetupStrip[Player.Player1].SetActive(false);
+        try
+        {
+            helpers.playerSetupStrip[Player.Player2] = this.transform.FindChildRecursive($"{LayerType.PlayerSetupStrip}2").gameObject;
+            helpers.playerSetupStrip[Player.Player2].layer = (int)LayerType.PlayerSetupStrip;
+            helpers.playerSetupStrip[Player.Player2].SetActive(false);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to setup Player2 strip: {ex.Message}\n{ex.StackTrace}");
+        }
 
-        helpers.playerSetupStrip[Player.Player2] = this.transform.FindChildRecursive($"{LayerType.PlayerSetupStrip}2").gameObject;
-        helpers.playerSetupStrip[Player.Player2].layer = (int)LayerType.PlayerSetupStrip;
-        helpers.playerSetupStrip[Player.Player2].SetActive(false);
 
 
         var assetHolder = new GameObject("assetHolder");
@@ -206,13 +222,26 @@ public class KillTeamGameManager : MonoBehaviour
         vRPrefabMenu.transform.SetParent(transform, false);
         GenericStateMachine = vRPrefabMenu.AddComponent<GenericStateMachine>();
 
-        helpers.boardRoot = this.transform.FindChildRecursive(LayerType.TableBoard.ToString()).gameObject;
-        helpers.boardRoot.layer = (int)LayerType.TableBoard;
 
+        try
+        {
+            helpers.boardRoot = this.transform.FindChildRecursive(LayerType.TableBoard.ToString()).gameObject;
+            helpers.boardRoot.layer = (int)LayerType.TableBoard;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"helpers.boardRoot : {ex.Message}\n{ex.StackTrace}");
+        }
 
-        helpers.playerStartTable[Player.Player1] = this.transform.FindChildRecursive("StartTableHolder1").gameObject.transform.FindChildRecursive("Image").gameObject;
-        helpers.playerStartTable[Player.Player2] = this.transform.FindChildRecursive("StartTableHolder2").gameObject.transform.FindChildRecursive("Image").gameObject;
-
+        try
+        {
+            helpers.playerStartTable[Player.Player1] = this.transform.FindChildRecursive("StartTableHolder1").gameObject.transform.FindChildRecursive("Image").gameObject;
+            helpers.playerStartTable[Player.Player2] = this.transform.FindChildRecursive("StartTableHolder2").gameObject.transform.FindChildRecursive("Image").gameObject;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"helpers.playerStartTable: {ex.Message}\n{ex.StackTrace}");
+        }
 
 
 
