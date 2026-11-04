@@ -3,6 +3,7 @@ using UnityEngine;
 using Autohand;
 
 [RequireComponent(typeof(Grabbable))]
+[DisallowMultipleComponent]
 public class BarracadePlacementValidator : TerrainPlacementValidator
 {
 

@@ -4,6 +4,7 @@ using Autohand;
 
 [RequireComponent(typeof(Grabbable))]
 [RequireComponent(typeof(TerrainVerticalLineRenderer))]
+[DisallowMultipleComponent]
 public class TerrainPlacementValidator : MonoBehaviour
 {
     protected Grabbable grab;

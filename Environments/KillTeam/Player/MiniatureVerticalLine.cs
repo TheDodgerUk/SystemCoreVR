@@ -4,6 +4,7 @@ using Autohand;
 
 [RequireComponent(typeof(Grabbable))]
 [RequireComponent(typeof(CapsuleCollider))]
+[DisallowMultipleComponent]
 public class MiniatureVerticalLine : MonoBehaviour
 {
     [Header("Line Settings")]
@@ -40,12 +41,13 @@ public class MiniatureVerticalLine : MonoBehaviour
 
     public Vector3 PlacementPosition => placementPosition;
 
+
     private void Awake()
     {
         grabbable = GetComponent<Grabbable>();
         capsule = GetComponent<CapsuleCollider>();
 
-        GameObject child = new GameObject("VerticalLine");
+        GameObject child = new GameObject(GetType().Name);
         child.transform.SetParent(transform, false);
 
         line = child.AddComponent<LineRenderer>();

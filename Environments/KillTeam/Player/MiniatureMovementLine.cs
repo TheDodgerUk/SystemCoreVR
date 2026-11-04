@@ -4,6 +4,7 @@ using Autohand;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(Grabbable))]
+[DisallowMultipleComponent]
 public class MiniatureMovementLine : MonoBehaviour
 {
     [Header("Movement")]
@@ -64,7 +65,7 @@ public class MiniatureMovementLine : MonoBehaviour
 
     private void Awake()
     {
-        GameObject child = new GameObject("MovementLine");
+        GameObject child = new GameObject(GetType().Name);
         child.transform.SetParent(transform, false);
         line = child.AddComponent<LineRenderer>();
         grab = GetComponent<Grabbable>();

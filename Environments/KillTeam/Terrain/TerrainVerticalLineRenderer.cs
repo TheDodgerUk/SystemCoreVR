@@ -1,6 +1,6 @@
 
 using UnityEngine;
-
+[DisallowMultipleComponent]
 public class TerrainVerticalLineRenderer : MonoBehaviour
 {
     [Header("Line Settings")]
@@ -35,7 +35,7 @@ public class TerrainVerticalLineRenderer : MonoBehaviour
     {
         validator = GetComponent<TerrainPlacementValidator>();
 
-        GameObject child = new GameObject("VerticalLine");
+        GameObject child = new GameObject(GetType().Name);
         child.transform.SetParent(transform, false);
 
         line = child.AddComponent<LineRenderer>();

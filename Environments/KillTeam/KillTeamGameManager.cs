@@ -58,7 +58,9 @@ public class KillTeamGameManager : MonoBehaviour
         SetCharacterToStartPlacement,
         ReadyToStart,
         Playing,
-        Finished
+        Finished,
+
+        QuickTeamSelect,
     }
 
     [Serializable]
@@ -217,7 +219,10 @@ public class KillTeamGameManager : MonoBehaviour
     private void InitiliseAll()
     {
         GenericStateMachine.transform.SetParent(null);
+        GenericStateMachine.transform.localScale = Vector3.one;
         AssetHolder.transform.SetParent(null);
+        AssetHolder.transform.localScale = Vector3.one;
+        AssetHolder.Initilise();
     }
 
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)

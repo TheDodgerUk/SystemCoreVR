@@ -45,6 +45,10 @@ public class GenericStateMachine : MonoBehaviour
             playerTeamIndex[KillTeamGameManager.Player.Player1] = 0;
             playerTeamIndex[KillTeamGameManager.Player.Player2] = 0;
 
+            TeamSelection.Clear();
+            TeamSelection.Add(KillTeamGameManager.Player.Player1, ContentKillTeamMetaData.TeamType.Kommandos);
+            TeamSelection.Add(KillTeamGameManager.Player.Player2, ContentKillTeamMetaData.TeamType.AngelsOfDeath);
+
 
             KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
         };
@@ -160,6 +164,9 @@ public class GenericStateMachine : MonoBehaviour
             case KillTeamGameManager.GameState.Playing:
                 break;
             case KillTeamGameManager.GameState.Finished:
+                break;
+            case KillTeamGameManager.GameState.QuickTeamSelect:
+                KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamsAssetCreation);
                 break;
             default:
                 break;

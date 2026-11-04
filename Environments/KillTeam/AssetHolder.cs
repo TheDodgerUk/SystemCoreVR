@@ -32,7 +32,7 @@ public class AssetHolder : MonoBehaviour
     [SerializeField]
     SimpleDictionaryList<KillTeamGameManager.Player, GameObject> playerGameObjects = new SimpleDictionaryList<KillTeamGameManager.Player, GameObject>();
 
-    void Awake()
+    public void Initilise()
     {
         int totalCount = 0;
         foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)
