@@ -246,6 +246,12 @@ public class GenericStateMachine : MonoBehaviour
             {
                 nonValid.Add(item);
             }
+
+            var val1 = item.gameObject.GetComponent<BarracadePlacementValidator>();
+            if (val1 != null && val.canPlace == false)
+            {
+                nonValid.Add(item);
+            }
         }
         foreach (var item in nonValid)
         {

@@ -7,20 +7,20 @@ using System.Collections.Generic;
 public class MiniatureMovementLine : MonoBehaviour
 {
     [Header("Movement")]
-    public float maxMovement = 6f * 0.0254f;
-    public float lineWidth = 0.005f;
-    public float lineHeight = 0.01f;
-    public float distance = 0.01f;
+    private float maxMovementCm = 6f * 0.0254f;
+    private float lineWidth = 0.005f;
+    private float lineHeight = 0.01f;
+    private float distance = 0.01f;
 
     [Header("Pathfinding")]
-    public float gridSize = 0.025f;
-    public float miniatureRadius = 0.015f;
-    public float searchPadding = 0.3f;
-    public int maxGridCells = 20000;
+    private float gridSize = 0.025f;
+    private float miniatureRadius = 0.015f;
+    private float searchPadding = 0.3f;
+    private int maxGridCells = 20000;
 
     [Header("Colours")]
-    public Color validColor = Color.green;
-    public Color invalidColor = Color.red;
+    private Color validColor = Color.green;
+    private Color invalidColor = Color.red;
 
     private LineRenderer line;
     private Grabbable grab;
@@ -41,6 +41,26 @@ public class MiniatureMovementLine : MonoBehaviour
 
         public float F => g + h;
     }
+
+
+    /// <summary>
+    /// public
+    /// </summary>
+    public float SetDistance
+    {
+        set => maxMovementCm = value;
+    }
+
+    public bool IsValidDistance()
+    {
+        if (giveValidColourBack == true)
+        {
+            return (color == validColor);
+        }
+        return true;
+    }
+
+    // internal
 
     private void Awake()
     {
@@ -122,6 +142,7 @@ public class MiniatureMovementLine : MonoBehaviour
         line.enabled = false;
     }
 
+
     private void LateUpdate()
     {
         if (!isMoving)
@@ -152,7 +173,7 @@ public class MiniatureMovementLine : MonoBehaviour
                 path[i - 1], path[i]);
         }
 
-        color = distance <= maxMovement
+        color = distance <= maxMovementCm
             ? validColor
             : invalidColor;
 
@@ -171,14 +192,6 @@ public class MiniatureMovementLine : MonoBehaviour
     }
 
 
-    public bool IsValidPosition()
-    {
-        if (giveValidColourBack == true)
-        {
-            return (color == validColor);
-        }
-        return true;
-    }
     // Get every collider belonging to terrain objects,
     // including colliders on child GameObjects.
     private List<Collider> GetTerrainColliders()

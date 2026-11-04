@@ -12,8 +12,6 @@ using UnityEngine;
 public class InitiliseMiniture : MonoBehaviour
 {
 
-    private MiniatureMovement miniatureMovement;
-    private VRMiniatureGrab vRMiniatureGrab;
     private MiniatureVerticalLine miniatureVerticalLine;
     private MiniatureMovementLine miniatureMovementLine;
     private MiniaturePlacementValidator miniaturePlacementValidator;
@@ -26,9 +24,8 @@ public class InitiliseMiniture : MonoBehaviour
         CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.rotation = Quaternion.identity;
 
 
-        miniatureMovement = gameObject.AddComponent<MiniatureMovement>();
         miniaturePlacementValidator = gameObject.AddComponent<MiniaturePlacementValidator>();
-        vRMiniatureGrab = gameObject.AddComponent<VRMiniatureGrab>();
+        //vRMiniatureGrab = gameObject.AddComponent<VRMiniatureGrab>();
         miniatureVerticalLine = gameObject.AddComponent<MiniatureVerticalLine>();
         miniatureMovementLine = gameObject.AddComponent<MiniatureMovementLine>();
 
@@ -37,14 +34,8 @@ public class InitiliseMiniture : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeAll;
     }
 
-
-    public void SetGrabEnabled(bool can)
-    {
-        vRMiniatureGrab.SetGrabEnabled(can);
-    }
     public void OnDestroy()
     {
-        Destroy(GetComponent<MiniatureMovement>());
         Destroy(GetComponent<VRMiniatureGrab>());
     }
 }

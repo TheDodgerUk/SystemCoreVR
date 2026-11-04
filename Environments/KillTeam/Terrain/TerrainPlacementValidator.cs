@@ -26,7 +26,7 @@ public class TerrainPlacementValidator : MonoBehaviour
 
     public Color currentColor = Color.red;
 
-    private Grabbable grab;
+    protected Grabbable grab;
     public Color originalColor;
 
     private bool isGrabbed;
@@ -36,7 +36,7 @@ public class TerrainPlacementValidator : MonoBehaviour
     private Quaternion startPositionRotation;
 
     private LineRenderer line;
-    KillTeamGameManager.LayerType mLayer;
+    protected virtual KillTeamGameManager.LayerType mLayer => KillTeamGameManager.LayerType.Terrain;
 
     private void Awake()
     {
@@ -52,14 +52,9 @@ public class TerrainPlacementValidator : MonoBehaviour
         line.useWorldSpace = true;
         line.startWidth = lineWidth;
         line.endWidth = lineWidth;
-
-
     }
-    public void SetMode(KillTeamGameManager.LayerType layer)
-    {
-        mLayer = layer;
-    }
-    private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
+
+    protected virtual void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
         grab.enabled = false;
         switch (state)
@@ -69,14 +64,7 @@ public class TerrainPlacementValidator : MonoBehaviour
             case KillTeamGameManager.GameState.BoardSetup:
                 break;
             case KillTeamGameManager.GameState.TerrainPlacement:
-                if (mLayer == KillTeamGameManager.LayerType.Terrain)
-                {
-                    grab.enabled = true;
-                }
-                if (mLayer == KillTeamGameManager.LayerType.Barracade)
-                {
-                    grab.enabled = true;
-                }
+                grab.enabled = true;
                 break;
             case KillTeamGameManager.GameState.BarracadePlacement:
                 break;

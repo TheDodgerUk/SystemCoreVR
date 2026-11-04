@@ -289,12 +289,10 @@ public class KillTeamGameManager : MonoBehaviour
             case LayerType.Terrain:
                 item.gameObject.ForceComponent<ObjectInteraction>();
                 var t = item.gameObject.AddComponent<InitiliseTerrain>();
-                t.SetMode(LayerType.Terrain);
                 break;
             case LayerType.Barracade:
                 item.gameObject.ForceComponent<ObjectInteraction>();
-                var i = item.gameObject.AddComponent<InitiliseTerrain>();
-                i.SetMode(LayerType.Barracade);
+                var i = item.gameObject.AddComponent<InitiliseBarracade>();
                 break;
             default:
                 break;

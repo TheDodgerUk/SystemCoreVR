@@ -69,13 +69,15 @@ public class MiniatureMovement : MonoBehaviour
             if (miniaturePlacementValidator.IsValidPlacement() == false)
             {
                 transform.position = startPosition;
+                GenericSoundPlayer.Instance.PlaySound(GenericSoundPlayer.SoundType.FailSound, transform.position);
             }
         }
-        else  if(miniatureMovementLine.IsValidPosition() == false || miniaturePlacementValidator.IsValidPlacement() == false)
+        else  if(miniatureMovementLine.IsValidDistance() == false || miniaturePlacementValidator.IsValidPlacement() == false)
         {
-            Debug.Log($"miniatureMovementLine: {miniatureMovementLine.IsValidPosition()}"); ;
+            Debug.Log($"miniatureMovementLine: {miniatureMovementLine.IsValidDistance()}"); ;
             Debug.Log($"miniaturePlacementValidator: {miniaturePlacementValidator.IsValidPlacement()}"); ;
             transform.position = startPosition;
+            GenericSoundPlayer.Instance.PlaySound(GenericSoundPlayer.SoundType.FailSound, transform.position);
         }
 
         isMoving = false;

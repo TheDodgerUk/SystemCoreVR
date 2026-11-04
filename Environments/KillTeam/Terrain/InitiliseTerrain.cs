@@ -28,11 +28,6 @@ public class InitiliseTerrain : MonoBehaviour
         this.gameObject.layer = (int)KillTeamGameManager.LayerType.Terrain;
     }
 
-    public void SetMode(KillTeamGameManager.LayerType layer)
-    {
-        terrainPlacementValidator.SetMode(layer);
-    }
-
 
     public void OnDestroy()
     {
