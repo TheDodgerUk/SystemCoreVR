@@ -61,6 +61,7 @@ public class KillTeamGameManager : MonoBehaviour
         Finished,
 
         QuickTeamSelect,
+        QuickSceneCreation,
     }
 
     [Serializable]

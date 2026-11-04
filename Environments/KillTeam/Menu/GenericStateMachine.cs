@@ -1,8 +1,10 @@
+using Autohand;
 using ExitGames.Client.Photon.StructWrapping;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class GenericStateMachine : MonoBehaviour
 {
@@ -168,6 +170,10 @@ public class GenericStateMachine : MonoBehaviour
             case KillTeamGameManager.GameState.QuickTeamSelect:
                 KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamsAssetCreation);
                 break;
+
+            case KillTeamGameManager.GameState.QuickSceneCreation:
+                QuickSceneCreation();
+                break;
             default:
                 break;
         }
@@ -280,15 +286,143 @@ public class GenericStateMachine : MonoBehaviour
         {
             TaskActionTest(BothTeamsChoisen, KillTeamGameManager.Player.Player2);
         });
-
-
-
     }
 
-    private void Instance_OnButttonPressed()
+
+
+
+
+    private void QuickSceneCreation()
     {
-        throw new NotImplementedException();
+        int itemsToMake = 3;
+        TaskAction taskTerrain = new TaskAction(itemsToMake, () =>
+        {
+            RemoveNonPlacedTerrain();
+        });
+
+
+
+        KillTeamGameManager.Instance.AssetHolder.SpawnTerrain(() =>
+        {
+            var mesh = KillTeamGameManager.Instance.helpers.BoardRoot.GetComponent<MeshCollider>();
+            var all = Core.Scene.GetAllSpawnedVrInteraction();
+            for(int i = 0; i < itemsToMake; i++)
+            {
+                GameObject obj = all[i].gameObject;
+                obj.gameObject.transform.position = GetRandomPointOnQuad(mesh, 0.3f);
+                obj.gameObject.transform.position = new Vector3(all[i].gameObject.transform.position.x, 1, all[i].gameObject.transform.position.z);
+
+                Grabbable grabbable = obj.GetComponent<Grabbable>();
+
+                if (grabbable != null)
+                {
+                    StartCoroutine(FakeGrabAndRelease(grabbable, taskTerrain));
+                }
+            }
+        });
     }
+
+
+    private IEnumerator FakeGrabAndRelease(Grabbable grabbable, TaskAction task)
+    {
+        // Allow physics to update after moving the object
+        yield return new WaitForFixedUpdate();
+
+        // Grab and release using an Auto Hand
+        Hand hand = FindObjectOfType<Hand>();
+
+        if (hand == null)
+            yield break;
+
+        hand.TryGrab(grabbable);
+
+        yield return new WaitForSeconds(1f);
+
+        hand.Release();
+        yield return new WaitForSeconds(1f);
+        task.Increment();
+    }
+
+
+
+
+    public static Vector3 GetRandomPointOnQuad(
+        MeshCollider meshCollider,
+        float edgePadding = 0.04f)
+    {
+        if (meshCollider == null || meshCollider.sharedMesh == null)
+            return Vector3.zero;
+
+        Vector3[] vertices = meshCollider.sharedMesh.vertices;
+
+        if (vertices.Length != 4)
+            return Vector3.zero;
+
+        Transform t = meshCollider.transform;
+
+        Vector3 a = t.TransformPoint(vertices[0]);
+
+        // Find opposite corner
+        int opposite = 1;
+        float maxDistance = 0f;
+
+        for (int i = 1; i < 4; i++)
+        {
+            float distance = (vertices[0] - vertices[i]).sqrMagnitude;
+
+            if (distance > maxDistance)
+            {
+                maxDistance = distance;
+                opposite = i;
+            }
+        }
+
+        Vector3 edge1 = Vector3.zero;
+        Vector3 edge2 = Vector3.zero;
+
+        int count = 0;
+
+        for (int i = 1; i < 4; i++)
+        {
+            if (i == opposite)
+                continue;
+
+            if (count++ == 0)
+                edge1 = t.TransformPoint(vertices[i]) - a;
+            else
+                edge2 = t.TransformPoint(vertices[i]) - a;
+        }
+
+        float length1 = edge1.magnitude;
+        float length2 = edge2.magnitude;
+
+        // Convert world-space padding into normalized coordinates.
+        // Account for the angle between the edges.
+        float sinAngle = Vector3.Cross(
+            edge1.normalized,
+            edge2.normalized
+        ).magnitude;
+
+        if (sinAngle < 0.0001f)
+            return a;
+
+        float padding1 = edgePadding / (length1 * sinAngle);
+        float padding2 = edgePadding / (length2 * sinAngle);
+
+        // Padding is too large for the quad.
+        if (padding1 >= 0.5f || padding2 >= 0.5f)
+        {
+            Debug.LogWarning("Edge padding is too large for this quad.");
+            return a + (edge1 + edge2) * 0.5f;
+        }
+
+        float u = UnityEngine.Random.Range(padding1, 1f - padding1);
+        float v = UnityEngine.Random.Range(padding2, 1f - padding2);
+
+        return a + edge1 * u + edge2 * v;
+    }
+
+
 
     private void RemoveNonPlacedTerrain()
     {
