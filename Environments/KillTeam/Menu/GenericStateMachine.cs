@@ -314,20 +314,20 @@ public class GenericStateMachine : MonoBehaviour
 
         KillTeamGameManager.Instance.AssetHolder.SpawnTerrain(() =>
         {
-            var mesh = KillTeamGameManager.Instance.helpers.BoardRoot.GetComponent<MeshCollider>();
+            var mesh = KillTeamGameManager.Instance.helpers.BoardRoot.GetComponent<BoxCollider>();
             var all = Core.Scene.GetAllSpawnedVrInteraction();
             for(int i = 0; i < itemsToMake; i++)
             {
                 GameObject obj = all[i].gameObject;
-                obj.gameObject.transform.position = GetRandomPointOnQuad(mesh, 0.3f);
-                obj.gameObject.transform.position = new Vector3(all[i].gameObject.transform.position.x, 1, all[i].gameObject.transform.position.z);
+                obj.gameObject.transform.position = GetRandomPointOnBox(mesh, 0.01f);
+                obj.gameObject.transform.position = new Vector3(all[i].gameObject.transform.position.x, 0.5f, all[i].gameObject.transform.position.z);
 
-                Grabbable grabbable = obj.GetComponent<Grabbable>();
+                //Grabbable grabbable = obj.GetComponent<Grabbable>();
 
-                if (grabbable != null)
-                {
-                    StartCoroutine(FakeGrabAndRelease(waitTime, grabbable, taskTerrain));
-                }
+                //if (grabbable != null)
+                //{
+                //    StartCoroutine(FakeGrabAndRelease(waitTime, grabbable, taskTerrain));
+                //}
             }
         });
     }
@@ -356,80 +356,38 @@ public class GenericStateMachine : MonoBehaviour
 
 
 
-    public static Vector3 GetRandomPointOnQuad(
-        MeshCollider meshCollider,
+    public static Vector3 GetRandomPointOnBox(
+        BoxCollider box,
         float edgePadding = 0.04f)
     {
-        if (meshCollider == null || meshCollider.sharedMesh == null)
-            return Vector3.zero;
+        Vector3 size = box.size;
+        Vector3 scale = box.transform.lossyScale;
 
-        Vector3[] vertices = meshCollider.sharedMesh.vertices;
+        float paddingX = edgePadding / Mathf.Abs(scale.x);
+        float paddingZ = edgePadding / Mathf.Abs(scale.z);
 
-        if (vertices.Length != 4)
-            return Vector3.zero;
+        float halfX = size.x * 0.5f;
+        float halfZ = size.z * 0.5f;
 
-        Transform t = meshCollider.transform;
+        float minX = -halfX + paddingX;
+        float maxX = halfX - paddingX;
 
-        Vector3 a = t.TransformPoint(vertices[0]);
+        float minZ = -halfZ + paddingZ;
+        float maxZ = halfZ - paddingZ;
 
-        // Find opposite corner
-        int opposite = 1;
-        float maxDistance = 0f;
-
-        for (int i = 1; i < 4; i++)
+        if (minX > maxX || minZ > maxZ)
         {
-            float distance = (vertices[0] - vertices[i]).sqrMagnitude;
-
-            if (distance > maxDistance)
-            {
-                maxDistance = distance;
-                opposite = i;
-            }
+            Debug.LogWarning("Edge padding is too large.");
+            return box.transform.TransformPoint(box.center);
         }
 
-        Vector3 edge1 = Vector3.zero;
-        Vector3 edge2 = Vector3.zero;
+        Vector3 localPoint = box.center + new Vector3(
+            UnityEngine.Random.Range(minX, maxX),
+            size.y * 0.5f,
+            UnityEngine.Random.Range(minZ, maxZ)
+        );
 
-        int count = 0;
-
-        for (int i = 1; i < 4; i++)
-        {
-            if (i == opposite)
-                continue;
-
-            if (count++ == 0)
-                edge1 = t.TransformPoint(vertices[i]) - a;
-            else
-                edge2 = t.TransformPoint(vertices[i]) - a;
-        }
-
-        float length1 = edge1.magnitude;
-        float length2 = edge2.magnitude;
-
-        // Convert world-space padding into normalized coordinates.
-        // Account for the angle between the edges.
-        float sinAngle = Vector3.Cross(
-            edge1.normalized,
-            edge2.normalized
-        ).magnitude;
-
-        if (sinAngle < 0.0001f)
-            return a;
-
-        float padding1 = edgePadding / (length1 * sinAngle);
-        float padding2 = edgePadding / (length2 * sinAngle);
-
-        // Padding is too large for the quad.
-        if (padding1 >= 0.5f || padding2 >= 0.5f)
-        {
-            Debug.LogWarning("Edge padding is too large for this quad.");
-            return a + (edge1 + edge2) * 0.5f;
-        }
-
-        float u = UnityEngine.Random.Range(padding1, 1f - padding1);
-        float v = UnityEngine.Random.Range(padding2, 1f - padding2);
-
-        return a + edge1 * u + edge2 * v;
+        return box.transform.TransformPoint(localPoint);
     }
 
 
