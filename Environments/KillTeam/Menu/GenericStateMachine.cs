@@ -167,18 +167,18 @@ public class GenericStateMachine : MonoBehaviour
                 break;
             case KillTeamGameManager.GameState.Finished:
                 break;
-            case KillTeamGameManager.GameState.QuickTeamSelect:
+            case KillTeamGameManager.GameState.DEBUG_QuickTeamSelect:
                 KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamsAssetCreation);
                 break;
 
-            case KillTeamGameManager.GameState.QuickSceneCreation:
+            case KillTeamGameManager.GameState.DEBUG_QuickSceneCreation:
                 QuickSceneCreation(1f);
                 break;
 
-            case KillTeamGameManager.GameState.SlowSceneCreation:
+            case KillTeamGameManager.GameState.DEBUG_SlowSceneCreation:
                 QuickSceneCreation(5f);
                 break;
-            case KillTeamGameManager.GameState.VerySlowSceneCreation:
+            case KillTeamGameManager.GameState.DEBUG_VerySlowSceneCreation:
                 QuickSceneCreation(15f);
                 break;
 

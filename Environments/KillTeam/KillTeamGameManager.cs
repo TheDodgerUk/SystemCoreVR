@@ -60,10 +60,10 @@ public class KillTeamGameManager : MonoBehaviour
         Playing,
         Finished,
 
-        QuickTeamSelect,
-        QuickSceneCreation,
-        SlowSceneCreation,
-        VerySlowSceneCreation
+        DEBUG_QuickTeamSelect,
+        DEBUG_QuickSceneCreation,
+        DEBUG_SlowSceneCreation,
+        DEBUG_VerySlowSceneCreation
     }
 
     [Serializable]
