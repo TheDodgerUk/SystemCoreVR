@@ -9,12 +9,14 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(Grabbable))]
+[RequireComponent(typeof(MiniaturePlacementValidator))]
+[RequireComponent(typeof(MiniatureVerticalLine))]
+[RequireComponent(typeof(MiniatureMovementLine))]
+[RequireComponent(typeof(MiniatureStarPositionVerticalLine))]
 public class InitiliseMiniture : MonoBehaviour
 {
 
-    private MiniatureVerticalLine miniatureVerticalLine;
-    private MiniatureMovementLine miniatureMovementLine;
-    private MiniaturePlacementValidator miniaturePlacementValidator;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -24,11 +26,6 @@ public class InitiliseMiniture : MonoBehaviour
         CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.rotation = Quaternion.identity;
 
 
-        miniaturePlacementValidator = gameObject.AddComponent<MiniaturePlacementValidator>();
-        //vRMiniatureGrab = gameObject.AddComponent<VRMiniatureGrab>();
-        miniatureVerticalLine = gameObject.AddComponent<MiniatureVerticalLine>();
-        miniatureMovementLine = gameObject.AddComponent<MiniatureMovementLine>();
-
         gameObject.AddComponent<TestAutoHand>();
         var rb = gameObject.GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeAll;
@@ -36,6 +33,5 @@ public class InitiliseMiniture : MonoBehaviour
 
     public void OnDestroy()
     {
-        Destroy(GetComponent<VRMiniatureGrab>());
     }
 }

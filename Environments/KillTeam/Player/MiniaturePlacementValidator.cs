@@ -1,289 +1,159 @@
 
-using UnityEngine;
 using Autohand;
+using UnityEngine;
+
+// Rigidbody
+// Collider
+// Grabbable (AutoHand)
+// MiniatureMovementLine
+// MiniatureVerticalLine
 
 [RequireComponent(typeof(Grabbable))]
 public class MiniaturePlacementValidator : MonoBehaviour
 {
-    [Header("Base")]
-    public int edgeSamples = 16;
+    [Header("Movement")]
+    public float movementInches = 6f;
+    public float metresPerInch = 0.0254f;
 
-    [Header("Surface")]
-    public LayerMask placementLayers = (1 << (int)KillTeamGameManager.LayerType.TableBoard) | (1 << (int)KillTeamGameManager.LayerType.Terrain);
-    public float rayStartHeight = 2f;
-    public float rayDistance = 5f;
-    public float heightTolerance = 10;
-
-    [Header("Visual")]
+    [Header("Visuals")]
+    public Renderer baseRenderer;
     public Color validColor = Color.green;
     public Color invalidColor = Color.red;
 
-    public Color currentColor = Color.red;
+    private Vector3 startPosition;
+    private bool isMoving;
 
-    private Grabbable grab;
-    private CapsuleCollider capsule;
-    public Color originalColor;
+    private Material baseMaterial;
+    private Color originalColor;
 
-    private bool isGrabbed;
-    public bool canPlace;
-    private Vector3 placementPosition;
+    private Grabbable grabbable;
+    private MiniatureMovementLine miniatureMovementLine;
+    private MiniatureVerticalLine miniatureVerticalLine;
+    protected MiniatureStarPositionVerticalLine miniatureStarPositionVerticalLine;
 
-
-    public void SetLayerMode(bool SetCharacterToStartPosition)
-    {
-        if (SetCharacterToStartPosition)
-        {
-            placementLayers = (1 << (int)KillTeamGameManager.LayerType.PlayerSetupStrip);
-        }
-        else
-        {
-            placementLayers = (1 << (int)KillTeamGameManager.LayerType.TableBoard) | (1 << (int)KillTeamGameManager.LayerType.Terrain);
-        }
-    }
     private void Awake()
     {
-        grab = GetComponent<Grabbable>();
-        capsule = GetComponent<CapsuleCollider>();
-        KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;      
-    }
+        grabbable = GetComponent<Grabbable>();
 
-    private void OnDestroy()
-    {
-        KillTeamGameManager.Instance.OnStateChanged -= KillTeamGameManager_OnStateChanged;
-    }
-    private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
-    {
-        SetLayerMode(false);
-        switch (state)
+        if (baseRenderer != null)
         {
-            case KillTeamGameManager.GameState.WaitingForPlayers:
-                break;
-            case KillTeamGameManager.GameState.BoardSetup:
-                break;
-            case KillTeamGameManager.GameState.TerrainPlacement:
-                break;
-            case KillTeamGameManager.GameState.BarracadePlacement:
-                break;
-            case KillTeamGameManager.GameState.MissionSetup:
-                break;
-            case KillTeamGameManager.GameState.TeamSelection:
-                break;
-            case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
-                SetLayerMode(true);
-                break;
-            case KillTeamGameManager.GameState.ReadyToStart:
-                break;
-            case KillTeamGameManager.GameState.Playing:
-                break;
-            case KillTeamGameManager.GameState.Finished:
-                break;
-            default:
-                break;
+            baseMaterial = baseRenderer.material;
+            originalColor = baseMaterial.color;
         }
-    }
 
+        miniatureMovementLine =
+            gameObject.ForceComponent<MiniatureMovementLine>();
+
+        miniatureVerticalLine =
+            gameObject.ForceComponent<MiniatureVerticalLine>();
+
+        miniatureStarPositionVerticalLine = gameObject.ForceComponent<MiniatureStarPositionVerticalLine>();
+    }
 
     private void OnEnable()
     {
-        grab.OnGrabEvent += OnGrab;
-        grab.OnReleaseEvent += OnRelease;
+        if (grabbable == null)
+            grabbable = GetComponent<Grabbable>();
+
+        grabbable.OnGrabEvent += OnGrab;
+        grabbable.OnReleaseEvent += OnRelease;
     }
 
     private void OnDisable()
     {
-        grab.OnGrabEvent -= OnGrab;
-        grab.OnReleaseEvent -= OnRelease;
+        if (grabbable != null)
+        {
+            grabbable.OnGrabEvent -= OnGrab;
+            grabbable.OnReleaseEvent -= OnRelease;
+        }
+
+        isMoving = false;
+
+        if (baseMaterial != null)
+            baseMaterial.color = originalColor;
     }
 
-    private void OnGrab(Hand hand, Grabbable grabbable)
+    private void OnGrab(Hand hand, Grabbable grab)
     {
-        isGrabbed = true;
-    }
-
-    public bool IsValidPlacement()
-    {
-        return canPlace;
-    }
-
-    public Color GetColour()
-    {
-        return currentColor;
-    }
-
-    private void OnRelease(Hand hand, Grabbable grabbable)
-    {
-        isGrabbed = false;
-
-        Vector3 rotation = transform.eulerAngles;
-        transform.rotation =
-            Quaternion.Euler(0f, rotation.y, 0f);
-
-        currentColor =  originalColor;
+        startPosition = transform.position;
+        isMoving = true;
     }
 
     private void LateUpdate()
     {
-        if (!isGrabbed)
+        if (!isMoving)
             return;
 
-        canPlace = CheckPlacement(
-            transform.position,
-            out placementPosition);
+        bool valid = IsValidPosition(transform.position);
 
-
-            currentColor =
-                canPlace ? validColor : invalidColor;
+        if (baseMaterial != null)
+        {
+            baseMaterial.color =
+                valid ? validColor : invalidColor;
+        }
     }
 
-    public bool CheckPlacement(
-        Vector3 position,
-        out Vector3 validPosition)
+    private void OnRelease(Hand hand, Grabbable grab)
     {
-        validPosition = position;
+        if (!isMoving)
+            return;
 
-        // CapsuleCollider radius in world space.
-        // Assumes the capsule is vertical (Direction Y).
-        Vector3 scale = capsule.transform.lossyScale;
+        bool validDistance =
+            miniatureMovementLine.IsValidDistance();
 
-        float radius = capsule.radius *
-            Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+        bool validPlacement =
+            miniatureVerticalLine.IsValidPlacement();
 
-        // Account for the collider's centre offset.
-        Vector3 centerOffset =
-            capsule.transform.TransformVector(capsule.center);
+        bool ValidStartPlace = miniatureStarPositionVerticalLine.IsValidPlacement();
 
-        Vector3 centerPosition = position + centerOffset;
+        bool isStartPlacement =
+            KillTeamGameManager.Instance.CurrentState ==
+            KillTeamGameManager.GameState.SetCharacterToStartPlacement;
 
-        // Check centre.
-        bool centerValid = CastDown(
-            centerPosition, out RaycastHit centerHit);
+        bool valid;
 
-#if UNITY_EDITOR
-        DrawCheckLine(centerPosition, centerValid);
-#endif
-
-        if (!centerValid)
-            return false;
-
-        Collider targetCollider = centerHit.collider;
-        float surfaceY = centerHit.point.y;
-
-        // Check edges around the capsule width.
-        int samples = Mathf.Max(3, edgeSamples);
-
-        for (int i = 0; i < samples; i++)
+        if (isStartPlacement)
         {
-            float angle = i * Mathf.PI * 2f / samples;
-
-            Vector3 offset = new Vector3(
-                Mathf.Cos(angle) * radius,
-                0f,
-                Mathf.Sin(angle) * radius);
-
-            Vector3 samplePosition = centerPosition + offset;
-
-            bool valid =
-                CastDown(samplePosition, out RaycastHit edgeHit) &&
-                edgeHit.collider == targetCollider &&
-                Mathf.Abs(edgeHit.point.y - surfaceY) <= heightTolerance;
-
-#if UNITY_EDITOR
-            DrawCheckLine(samplePosition, valid);
-#endif
-
-            if (!valid)
-                return false;
+            valid = ValidStartPlace;
+        }
+        else
+        {
+            valid = validDistance && validPlacement;
         }
 
-        // Preserve the original pivot-to-surface offset.
-        validPosition.y = surfaceY - centerOffset.y;
-
-        return true;
-    }
-
-#if UNITY_EDITOR
-    private void DrawCheckLine(Vector3 position, bool valid)
-    {
-        Debug.DrawLine(
-            position + Vector3.up * 0.1f,
-            position + Vector3.down * 0.5f,
-            valid ? Color.green : Color.red);
-    }
-#endif
-
-    private bool CastDown(Vector3 position, out RaycastHit hit)
-    {
-        hit = default(RaycastHit);
-
-        Vector3 origin =
-            position + Vector3.up * rayStartHeight;
-
-        RaycastHit[] hits = Physics.RaycastAll(
-            origin,
-            Vector3.down,
-            rayDistance,
-            placementLayers,
-            QueryTriggerInteraction.Ignore
-        );
-
-        float closestDistance = float.MaxValue;
-        bool hasHit = false;
-
-        foreach (RaycastHit h in hits)
+        if (!valid)
         {
-            if (h.collider == null)
-                continue;
+            transform.position = startPosition;
 
-            // Ignore this GameObject and all child colliders
-            if (h.collider.transform == transform ||
-                h.collider.transform.IsChildOf(transform))
-            {
-                continue;
-            }
-
-            // Only accept the required placement layer
-            if (placementLayers < 0 ||
-                h.collider.gameObject.layer != placementLayers)
-            {
-                continue;
-            }
-
-            // Find closest valid surface
-            if (h.distance < closestDistance)
-            {
-                closestDistance = h.distance;
-                hit = h;
-                hasHit = true;
-            }
+            GenericSoundPlayer.Instance.PlaySound(
+                GenericSoundPlayer.SoundType.FailSound,
+                transform.position);
         }
 
-#if UNITY_EDITOR
-    Debug.DrawRay(
-        origin,
-        Vector3.down * (hasHit ? hit.distance : rayDistance),
-        hasHit ? Color.green : Color.red
-    );
+        isMoving = false;
 
-    if (hasHit)
-    {
+        if (baseMaterial != null)
+            baseMaterial.color = originalColor;
+
         Debug.Log(
-            $"VALID HIT: {hit.collider.name} | " +
-            $"Position: {hit.point} | " +
-            $"Layer: {LayerMask.LayerToName(hit.collider.gameObject.layer)} | " +
-            $"Distance: {hit.distance:F3}"
-        );
-    }
-    else
-    {
-        Debug.LogWarning(
-            $"NO VALID HIT | " +
-            $"Origin: {origin} | " +
-            $"Required Layer: {placementLayers} | " +
-            $"Ray Distance: {rayDistance}"
-        );
-    }
-#endif
+            $"Miniature moved to {transform.position}. " +
+            $"Valid: {valid}");
 
-        return hasHit;
+        Debug.Log(
+            $"Distance moved: " +
+            $"{Vector3.Distance(startPosition, transform.position)} metres. " +
+            $"Max allowed: {movementInches * metresPerInch} metres.");
+    }
+
+    private bool IsValidPosition(Vector3 position)
+    {
+        float distance = Vector3.Distance(
+            startPosition,
+            position);
+
+        float maxDistance =
+            movementInches * metresPerInch;
+
+        return distance <= maxDistance;
     }
 }

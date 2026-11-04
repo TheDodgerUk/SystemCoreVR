@@ -15,7 +15,8 @@ public class PhysicalButtons : MonoBehaviour
         Right
     }
 
-    private string SOUND_NAME = "ButtonClick";
+    private const string BUTTON_NAME = "buttonDome";
+    private const string SOUND_NAME = "ButtonClick";
 
     [Header("Button Settings")]
     [SerializeField, Min(0f)]
@@ -171,17 +172,17 @@ public class PhysicalButtons : MonoBehaviour
                 );
                 continue;
             }
-
+            
             VrInteractionBaseButton button =
                 interaction.GetVrInteractionFromRoot(
                     MetaDataType.ContentButton,
-                    "Button_Off"
+                    BUTTON_NAME // gamepbject name
                 ) as VrInteractionBaseButton;
 
             if (button == null)
             {
                 Debug.LogError(
-                    $"Button_Off not found inside {child.name}",
+                    $"{BUTTON_NAME} not found inside {child.name}",
                     child
                 );
                 continue;

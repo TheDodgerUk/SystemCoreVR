@@ -13,22 +13,41 @@ public class GenericStateMachine : MonoBehaviour
 
     private List<KillTeamGameManager.Player> taskActionList = new List<KillTeamGameManager.Player>();
 
-
-    private Dictionary<KillTeamGameManager.Player, int> playerTeamIndex = new Dictionary<KillTeamGameManager.Player, int>();
+    private Dictionary<KillTeamGameManager.Player, int> playerTeamIndex = new()
+    {
+        { KillTeamGameManager.Player.Player1, 0 },
+        { KillTeamGameManager.Player.Player2, 0 }
+    };
 
 
     void Start()
     {
-        var men1 = new GameObject("DynamicImagePlane1");
-        var men2 = new GameObject("DynamicImagePlane2");
-        m_menus[KillTeamGameManager.Player.Player1] = men1.AddComponent<DynamicImagePlane>();
-        m_menus[KillTeamGameManager.Player.Player2] = men2.AddComponent<DynamicImagePlane>();
 
-        m_menus[KillTeamGameManager.Player.Player1].transform.position = KillTeamGameManager.Instance.helpers.DynamicImagePlanePoint[KillTeamGameManager.Player.Player1];
-        m_menus[KillTeamGameManager.Player.Player2].transform.position = KillTeamGameManager.Instance.helpers.DynamicImagePlanePoint[KillTeamGameManager.Player.Player2];
+        Core.Environment.OnEnvironmentLoadingComplete += () =>
+        {
+            var men1 = new GameObject("DynamicImagePlane1");
+            var men2 = new GameObject("DynamicImagePlane2");
+            m_menus[KillTeamGameManager.Player.Player1] = men1.AddComponent<DynamicImagePlane>();
+            m_menus[KillTeamGameManager.Player.Player2] = men2.AddComponent<DynamicImagePlane>();
+
+            m_menus[KillTeamGameManager.Player.Player1].transform.position = KillTeamGameManager.Instance.helpers.DynamicImagePlanePoint[KillTeamGameManager.Player.Player1];
+            m_menus[KillTeamGameManager.Player.Player2].transform.position = KillTeamGameManager.Instance.helpers.DynamicImagePlanePoint[KillTeamGameManager.Player.Player2];
+
+            m_menus[KillTeamGameManager.Player.Player1].CreatePlane(m_menus[KillTeamGameManager.Player.Player1].transform.position, new Vector3(0.1f, 0.1f, 0.1f), null);
+            m_menus[KillTeamGameManager.Player.Player2].CreatePlane(m_menus[KillTeamGameManager.Player.Player2].transform.position, new Vector3(0.1f, 0.1f, 0.1f), null);
+            m_menus[KillTeamGameManager.Player.Player1].SetActive(false);
+            m_menus[KillTeamGameManager.Player.Player2].SetActive(false);
+
+            m_menus[KillTeamGameManager.Player.Player1].SetRotation(new Vector3(0, -90f, 0f));
+            m_menus[KillTeamGameManager.Player.Player2].SetRotation(new Vector3(0, +90f, 0f));
 
 
-        KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
+            playerTeamIndex[KillTeamGameManager.Player.Player1] = 0;
+            playerTeamIndex[KillTeamGameManager.Player.Player2] = 0;
+
+
+            KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
+        };
     }
 
 
@@ -43,6 +62,8 @@ public class GenericStateMachine : MonoBehaviour
 
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
+        m_menus[KillTeamGameManager.Player.Player1].SetActive(false);
+        m_menus[KillTeamGameManager.Player.Player2].SetActive(false);
         PhysicalButtons.Instance.ClearAllButtonCallbacks();
         taskActionList.Clear();
         int NumberOfPlayers = KillTeamGameManager.Instance.IsSinglePlayer ? 1 : 2;
@@ -102,7 +123,7 @@ public class GenericStateMachine : MonoBehaviour
             case KillTeamGameManager.GameState.MissionSetup:
                 break;
             case KillTeamGameManager.GameState.TeamSelection:
-                TeamSelectionMethod(NumberOfPlayers);
+                TeamSelectionMethod(NumberOfPlayers, KillTeamGameManager.GameState.TeamsAssetCreation);
                 break;
             case KillTeamGameManager.GameState.TeamsAssetCreation:
                 KillTeamGameManager.Instance.AssetHolder.SpawnPlayers(TeamSelection, () =>
@@ -147,11 +168,24 @@ public class GenericStateMachine : MonoBehaviour
     }
 
 
-    private void TeamSelectionMethod(int numPlayers)
+    private void TeamSelectionMethod(int numPlayers, KillTeamGameManager.GameState nextstate)
     {
+        if(numPlayers == 1)
+        {
+            m_menus[KillTeamGameManager.Player.Player1].SetActive(true);
+            m_menus[KillTeamGameManager.Player.Player2].SetActive(false);
+        }
+        else
+        {
+            m_menus[KillTeamGameManager.Player.Player1].SetActive(true);
+            m_menus[KillTeamGameManager.Player.Player2].SetActive(true);
+        }
+
+
+
         TaskAction BothTeamsChoisen = new TaskAction(numPlayers, () =>
         {
-            KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamsAssetCreation);
+            KillTeamGameManager.Instance.SetState(nextstate);
         });
 
 
