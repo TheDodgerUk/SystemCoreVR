@@ -69,6 +69,10 @@ public class TerrainPlacementValidator : MonoBehaviour
 
             case KillTeamGameManager.GameState.Finished:
                 break;
+            case KillTeamGameManager.GameState.QuickSceneCreation:
+                grab.enabled = true;
+                break;
+
         }
     }
 
