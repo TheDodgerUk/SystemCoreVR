@@ -172,8 +172,13 @@ public class GenericStateMachine : MonoBehaviour
                 break;
 
             case KillTeamGameManager.GameState.QuickSceneCreation:
-                QuickSceneCreation();
+                QuickSceneCreation(1f);
                 break;
+
+            case KillTeamGameManager.GameState.SlowSceneCreation:
+                QuickSceneCreation(5f);
+                break;
+                
             default:
                 break;
         }
@@ -292,7 +297,7 @@ public class GenericStateMachine : MonoBehaviour
 
 
 
-    private void QuickSceneCreation()
+    private void QuickSceneCreation(float waitTime)
     {
         int itemsToMake = 3;
         TaskAction taskTerrain = new TaskAction(itemsToMake, () =>
@@ -316,14 +321,14 @@ public class GenericStateMachine : MonoBehaviour
 
                 if (grabbable != null)
                 {
-                    StartCoroutine(FakeGrabAndRelease(grabbable, taskTerrain));
+                    StartCoroutine(FakeGrabAndRelease(waitTime, grabbable, taskTerrain));
                 }
             }
         });
     }
 
 
-    private IEnumerator FakeGrabAndRelease(Grabbable grabbable, TaskAction task)
+    private IEnumerator FakeGrabAndRelease(float waitTime, Grabbable grabbable, TaskAction task)
     {
         // Allow physics to update after moving the object
         yield return new WaitForFixedUpdate();
@@ -336,10 +341,10 @@ public class GenericStateMachine : MonoBehaviour
 
         hand.TryGrab(grabbable);
 
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(waitTime);
 
         hand.Release();
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(waitTime);
         task.Increment();
     }
 
