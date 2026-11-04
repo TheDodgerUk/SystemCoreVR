@@ -185,6 +185,20 @@ public class GenericStateMachine : MonoBehaviour
 
         TaskAction BothTeamsChoisen = new TaskAction(numPlayers, () =>
         {
+            var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[playerTeamIndex[KillTeamGameManager.Player.Player1]];
+            var image2 = KillTeamGameManager.Instance.AssetHolder.teamIcons[playerTeamIndex[KillTeamGameManager.Player.Player2]];
+            TeamSelection.Clear();
+            TeamSelection.Add(KillTeamGameManager.Player.Player1, ContentKillTeamMetaData.TeamType.Kommandos);
+            TeamSelection.Add(KillTeamGameManager.Player.Player2, ContentKillTeamMetaData.TeamType.Kommandos);
+
+            if (Enum.TryParse(image1.name, out ContentKillTeamMetaData.TeamType player1))
+            {
+                TeamSelection[KillTeamGameManager.Player.Player1] =  player1;
+            }
+            if (Enum.TryParse(image1.name, out ContentKillTeamMetaData.TeamType player2))
+            {
+                TeamSelection[KillTeamGameManager.Player.Player2] = player1;
+            }
             KillTeamGameManager.Instance.SetState(nextstate);
         });
 

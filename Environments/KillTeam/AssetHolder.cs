@@ -95,10 +95,14 @@ public class AssetHolder : MonoBehaviour
         {
             Core.AssetBundlesRef.Texture2DAssetBundleRef.GetItem(Core.Mono, team.ToString(), (texture) =>
             {
-                teamIcons.Add(texture);
+                
                 if (texture == null)
                 {
                     Debug.Log($"Team icon not found for {team}");
+                }
+                else
+                {
+                    teamIcons.Add(texture);
                 }
             });
         }

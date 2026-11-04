@@ -224,6 +224,16 @@ public class PhysicalButtons : MonoBehaviour
                         capturedAudio
                     );
                 }
+
+                if (pressed ==
+                    VrInteractionBaseButton.ButtonStateEnum.Up)
+                {
+                    InvokeButtonPressed(
+                        capturedPlayer,
+                        capturedButton,
+                        capturedAudio
+                    );
+                }
             });
         }
     }
