@@ -51,6 +51,7 @@ public class KillTeamGameManager : MonoBehaviour
 
     public enum GameState
     {
+        [InspectorName("GAME")]
         WaitingForPlayers,
         BoardSetup,
         TerrainAssetCreation,
@@ -65,6 +66,7 @@ public class KillTeamGameManager : MonoBehaviour
         Playing,
         Finished,
 
+        [InspectorName("Qucik setup")]
         DEBUG_QuickTeamSelect,
         DEBUG_QuickSceneCreation,
         DEBUG_SlowSceneCreation,
@@ -74,7 +76,11 @@ public class KillTeamGameManager : MonoBehaviour
         DEBUG_SlowPlayerCreation,
         DEBUG_VerySloPlayerCreation,
 
-        UnitTest_StartStripTesting
+        [InspectorName("Unit Testing")]
+        UnitTest_StartStripTesting,
+
+        UnitTest_StartMainTesting,
+
     }
 
     [Serializable]

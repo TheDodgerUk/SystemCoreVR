@@ -18,12 +18,15 @@ public class GenericStateMachine : MonoBehaviour
 
     private List<KillTeamGameManager.Player> taskActionList = new List<KillTeamGameManager.Player>();
 
+
     private Dictionary<KillTeamGameManager.Player, int> playerTeamIndex = new()
     {
         { KillTeamGameManager.Player.Player1, 0 },
         { KillTeamGameManager.Player.Player2, 0 }
     };
 
+
+    private UnitTestingLayout unitTestingLayout;
 
     void Start()
     {
@@ -57,6 +60,8 @@ public class GenericStateMachine : MonoBehaviour
 
             KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
             KillTeamGameManager_OnStateChanged(KillTeamGameManager.Instance.CurrentState);
+
+            unitTestingLayout = this.AddComponent<UnitTestingLayout>();
         };
     }
 
@@ -72,7 +77,8 @@ public class GenericStateMachine : MonoBehaviour
 
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
-
+        // delete all tests
+        unitTestingLayout.ClearAll();
         KillTeamGameManager.Instance.helpers.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(false));
         m_menus[KillTeamGameManager.Player.Player1].SetActive(false);
         m_menus[KillTeamGameManager.Player.Player2].SetActive(false);
@@ -201,11 +207,11 @@ public class GenericStateMachine : MonoBehaviour
                 QuickPlayerCreation(15f);
                 break;
             case KillTeamGameManager.GameState.UnitTest_StartStripTesting:
-                StartStripTesting();
+                unitTestingLayout.StartStripTesting();
                 break;
-
-
-
+            case KillTeamGameManager.GameState.UnitTest_StartMainTesting:
+                unitTestingLayout.StartMainTesting();
+                break;
             default:
                 break;
         }
@@ -362,19 +368,6 @@ public class GenericStateMachine : MonoBehaviour
         itemsToMake += KillTeamGameManager.Instance.AssetHolder.playerGameObjects[KillTeamGameManager.Player.Player1].Count;
         itemsToMake += KillTeamGameManager.Instance.AssetHolder.playerGameObjects[KillTeamGameManager.Player.Player2].Count;
 
-#if UNITY_EDITOR
-        Vector3 player1Min;
-        Vector3 player1Max;
-        Vector3 player2Min;
-        Vector3 player2Max;
-
-
-        var box1 = KillTeamGameManager.Instance.helpers.playerSetupStrip[KillTeamGameManager.Player.Player1].GetComponent<BoxCollider>();
-        var box2 = KillTeamGameManager.Instance.helpers.playerSetupStrip[KillTeamGameManager.Player.Player2].GetComponent<BoxCollider>();
-        box1.GetWorldBoxMinMax(out player1Min, out player1Max);
-        box2.GetWorldBoxMinMax(out player2Min, out player2Max);
-#endif
-
         TaskAction taskTerrain = new TaskAction(itemsToMake, () =>
         {
             RemoveNonPlacedTerrain();
@@ -387,7 +380,7 @@ public class GenericStateMachine : MonoBehaviour
                 KillTeamGameManager.Instance.helpers.playerSetupStrip[p].SetActive(true);
                 var player1Items = KillTeamGameManager.Instance.AssetHolder.playerGameObjects[p];
                 var mesh = KillTeamGameManager.Instance.helpers.playerSetupStrip[p].GetComponent<BoxCollider>();
-                FitBoxColliderToMesh(mesh);
+                unitTestingLayout.FitBoxColliderToMesh(mesh);
                 foreach (var obj in player1Items)
                 {
                     obj.gameObject.transform.position = mesh.GetRandomPointOnBox();
@@ -405,94 +398,6 @@ public class GenericStateMachine : MonoBehaviour
     }
 
 
-    private void StartStripTesting()
-    {
-#if UNITY_EDITOR
-        ClearConsole();
-#endif
-        const int LOOP_NUMBER = 20;
-        const float CUBE_SIZE = 0.005f;
-        const float EDGE_PADDING = 0f;
-
-        System.Text.StringBuilder log = new System.Text.StringBuilder();
-
-        foreach (KillTeamGameManager.Player p in
-            (KillTeamGameManager.Player[])Enum.GetValues(typeof(KillTeamGameManager.Player)))
-        {
-            if (!KillTeamGameManager.Instance.helpers.playerSetupStrip.TryGetValue(p, out GameObject strip) || strip == null)
-            {
-                Debug.LogWarning($"Missing player setup strip for {p}");
-                continue;
-            }
-
-            BoxCollider box = strip.GetComponent<BoxCollider>();
-            if (box == null)
-            {
-                Debug.LogWarning($"No BoxCollider on {strip.name}");
-                continue;
-            }
-
-            // The old collider centre/size did not line up with the visible plane.
-            // Fit it to the actual MeshFilter geometry before calculating points.
-            FitBoxColliderToMesh(box);
-
-            Vector3[] corners = box.GetWorldBoxCorners();
-            box.GetWorldBoxMinMax(out Vector3 min, out Vector3 max);
-
-            log.AppendLine($"========== {p} ==========");
-            log.AppendLine($"Transform: {strip.transform.position.ToString("F6")}");
-            log.AppendLine($"Collider world centre: {strip.transform.TransformPoint(box.center).ToString("F6")}");
-            log.AppendLine($"MIN: {min.ToString("F6")}");
-            log.AppendLine($"MAX: {max.ToString("F6")}");
-            log.AppendLine("CORNERS:");
-
-            for (int i = 0; i < corners.Length; i++)
-            {
-                CreateDebugCube($"Corner_{p}_{i}", corners[i], CUBE_SIZE, Color.red);
-                log.AppendLine($"{i}: {corners[i].ToString("F6")}");
-            }
-
-            log.AppendLine("RANDOM POSITIONS:");
-            for (int i = 0; i < LOOP_NUMBER; i++)
-            {
-                Vector3 pos = box.GetRandomPointOnBox(EDGE_PADDING);
-                CreateDebugCube($"Random_{p}_{i + 1}", pos, CUBE_SIZE, Color.green);
-                log.AppendLine($"{i}: {pos.ToString("F6")}");
-            }
-            log.AppendLine();
-        }
-
-        Debug.Log(log.ToString());
-    }
-
-    private static void CreateDebugCube(string name, Vector3 position, float size, Color color)
-    {
-        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        cube.name = name;
-        cube.transform.position = position;
-        cube.transform.localScale = Vector3.one * size;
-        cube.GetComponent<Renderer>().material.color = color;
-    }
-
-    // Fit the collider to the mesh IN LOCAL SPACE. Works even when the strip is inactive.
-    // This intentionally updates the BoxCollider to match the visible mesh.
-    public static void FitBoxColliderToMesh(BoxCollider box)
-    {
-        if (box == null) return;
-        MeshFilter filter = box.GetComponent<MeshFilter>();
-        if (filter == null || filter.sharedMesh == null)
-        {
-            Debug.LogWarning($"Cannot fit collider on {box.name}: missing MeshFilter or mesh.");
-            return;
-        }
-
-        Bounds meshBounds = filter.sharedMesh.bounds;
-        Vector3 size = meshBounds.size;
-        // Give planar meshes a little thickness for reliable physics queries.
-        if (size.y < 0.001f) size.y = 0.001f;
-        box.center = meshBounds.center;
-        box.size = size;
-    }
 
     private IEnumerator FakeGrabAndRelease(float waitTime, Grabbable grabbable, TaskAction task)
     {
@@ -534,27 +439,7 @@ public class GenericStateMachine : MonoBehaviour
         {
             Core.Scene.RemoveSpawnedVrInteractionAndGameObject(item);
         }
-
-
-
     }
 
 
-#if UNITY_EDITOR
-    public static void ClearConsole()
-    {
-        var assembly = typeof(UnityEditor.Editor).Assembly;
-
-        var type = assembly.GetType("UnityEditor.LogEntries");
-
-        var method = type?.GetMethod(
-            "Clear",
-            System.Reflection.BindingFlags.Static |
-            System.Reflection.BindingFlags.Public |
-            System.Reflection.BindingFlags.NonPublic
-        );
-
-        method?.Invoke(null, null);
-    }
-#endif
 }
