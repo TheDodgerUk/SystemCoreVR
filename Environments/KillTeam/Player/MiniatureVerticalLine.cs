@@ -33,7 +33,9 @@ public class MiniatureVerticalLine : MonoBehaviour
     private Grabbable grabbable;
     private CapsuleCollider capsule;
 
+    [SerializeField]
     private bool isGrabbed;
+    [SerializeField]
     private Vector3 placementPosition;
 
     public Vector3 PlacementPosition => placementPosition;

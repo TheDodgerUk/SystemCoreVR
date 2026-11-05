@@ -8,28 +8,33 @@ using System.Collections.Generic;
 public class MiniatureMovementLine : MonoBehaviour
 {
     [Header("Movement")]
-    private float maxMovementCm = 6f * 0.0254f;
-    private float lineWidth = 0.005f;
-    private float lineHeight = 0.01f;
-    private float distance = 0.01f;
+    [SerializeField] private float maxMovementCm = 6f * 0.0254f;
+    [SerializeField] private float lineWidth = 0.005f;
+    [SerializeField] private float lineHeight = 0.01f;
+    [SerializeField] private float distance = 0.01f;
 
     [Header("Pathfinding")]
-    private float gridSize = 0.025f;
-    private float miniatureRadius = 0.015f;
-    private float searchPadding = 0.3f;
-    private int maxGridCells = 20000;
+    [SerializeField] private float gridSize = 0.025f;
+    [SerializeField] private float miniatureRadius = 0.015f;
+    [SerializeField] private float searchPadding = 0.3f;
+    [SerializeField] private int maxGridCells = 20000;
 
     [Header("Colours")]
-    private Color validColor = Color.green;
-    private Color invalidColor = Color.red;
+    [SerializeField] private Color validColor = Color.green;
+    [SerializeField] private Color invalidColor = Color.red;
 
     private LineRenderer line;
     private Grabbable grab;
 
     private Vector3 startPosition;
     private bool isMoving;
+
+    [SerializeField]
     private Color color;
-    private bool giveValidColourBack = true;
+
+    [SerializeField]
+    public bool isValid => color == validColor;
+
 
     private class Node
     {
@@ -54,11 +59,7 @@ public class MiniatureMovementLine : MonoBehaviour
 
     public bool IsValidDistance()
     {
-        if (giveValidColourBack == true)
-        {
-            return (color == validColor);
-        }
-        return true;
+        return (color == validColor);
     }
 
     // internal

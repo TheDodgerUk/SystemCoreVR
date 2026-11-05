@@ -359,7 +359,7 @@ public class GenericStateMachine : MonoBehaviour
 
             foreach (KillTeamGameManager.Player p in (KillTeamGameManager.Player[])Enum.GetValues(typeof(KillTeamGameManager.Player)))
             {
-                Table.Instance.playerSetupStrip[p].SetActive(false);
+               // Table.Instance.playerSetupStrip[p].SetActive(false);
             }
         });
 

@@ -13,7 +13,6 @@ public class MiniaturePlacementValidator : MonoBehaviour
     public Renderer baseRenderer;
 
     private Vector3 startPosition;
-    private bool isMoving;
 
 
     private Grabbable grabbable;
@@ -45,17 +44,17 @@ public class MiniaturePlacementValidator : MonoBehaviour
 
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
-        miniatureMovementLine.SetActive(true);
-        miniatureVerticalLine.SetActive(true);
-        miniatureStarPositionVerticalLine.SetActive(false);
+        miniatureMovementLine.enabled = true;
+        miniatureVerticalLine.enabled = true;
+        miniatureStarPositionVerticalLine.enabled = false;
         switch (state)
         {
             case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
             case KillTeamGameManager.GameState.DEBUG_SlowPlayerCreation:
                 Debug.LogError("MiniaturePlacementValidator  SetCharacterToStartPlacement");
-                miniatureVerticalLine.SetActive(false);
-                miniatureMovementLine.SetActive(false);
-                miniatureStarPositionVerticalLine.SetActive(true);
+                miniatureVerticalLine.enabled = false;
+                miniatureMovementLine.enabled = false;
+                miniatureStarPositionVerticalLine.enabled = true;
                 grabbable.enabled = true;
                 break;
             default:
@@ -85,33 +84,28 @@ public class MiniaturePlacementValidator : MonoBehaviour
             grabbable.OnReleaseEvent -= OnRelease;
         }
 
-        isMoving = false;
-;
     }
 
     private void OnGrab(Hand hand, Grabbable grab)
     {
         startPosition = transform.position;
-        isMoving = true;
     }
 
     private void LateUpdate()
     {
-        if (!isMoving)
-            return;
+        bool validDistance = !miniatureMovementLine.enabled || miniatureMovementLine.IsValidDistance();
+        bool validPlacement = !miniatureVerticalLine.enabled || miniatureVerticalLine.IsValidPlacement();
+        bool ValidStartPlace = !miniatureStarPositionVerticalLine.enabled || miniatureStarPositionVerticalLine.IsValidPlacement();
 
-        isValid = IsValidPosition(transform.position);
-
+        isValid = validDistance && validPlacement && ValidStartPlace;
     }
 
     private void OnRelease(Hand hand, Grabbable grab)
     {
-        if (!isMoving)
-            return;
 
-        bool validDistance = !miniatureMovementLine.gameObject.activeInHierarchy || miniatureMovementLine.IsValidDistance();
-        bool validPlacement = !miniatureVerticalLine.gameObject.activeInHierarchy || miniatureVerticalLine.IsValidPlacement();
-        bool ValidStartPlace = !miniatureStarPositionVerticalLine.gameObject.activeInHierarchy || miniatureStarPositionVerticalLine.IsValidPlacement();
+        bool validDistance = !miniatureMovementLine.enabled               || miniatureMovementLine.IsValidDistance();
+        bool validPlacement = !miniatureVerticalLine.enabled              || miniatureVerticalLine.IsValidPlacement();
+        bool ValidStartPlace = !miniatureStarPositionVerticalLine.enabled || miniatureStarPositionVerticalLine.IsValidPlacement();
 
         isValid = validDistance && validPlacement && ValidStartPlace;
 
@@ -126,13 +120,20 @@ public class MiniaturePlacementValidator : MonoBehaviour
         }
         else
         {
-            transform.position =  miniatureVerticalLine.PlacementPosition;
+            if(miniatureVerticalLine.enabled == true)
+            {
+                transform.position = miniatureVerticalLine.PlacementPosition;
+            }
+            else
+            {
+                transform.position = miniatureStarPositionVerticalLine.PlacementPosition;
+            }
+
             GenericSoundPlayer.Instance.PlaySound(
                 GenericSoundPlayer.SoundType.PassSound,
                 transform.position);
         }
 
-        isMoving = false;
 
         Debug.Log(
             $"Miniature moved to {transform.position}. " +
@@ -142,17 +143,5 @@ public class MiniaturePlacementValidator : MonoBehaviour
             $"Distance moved: " +
             $"{Vector3.Distance(startPosition, transform.position)} metres. " +
             $"Max allowed: {movementInches * metresPerInch} metres.");
-    }
-
-    private bool IsValidPosition(Vector3 position)
-    {
-        float distance = Vector3.Distance(
-            startPosition,
-            position);
-
-        float maxDistance =
-            movementInches * metresPerInch;
-
-        return distance <= maxDistance;
     }
 }
