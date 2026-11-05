@@ -38,8 +38,8 @@ public class GenericStateMachine : MonoBehaviour
             m_menus[KillTeamGameManager.Player.Player1] = men1.AddComponent<DynamicImagePlane>();
             m_menus[KillTeamGameManager.Player.Player2] = men2.AddComponent<DynamicImagePlane>();
 
-            m_menus[KillTeamGameManager.Player.Player1].transform.position = KillTeamGameManager.Instance.helpers.DynamicImagePlanePoint[KillTeamGameManager.Player.Player1];
-            m_menus[KillTeamGameManager.Player.Player2].transform.position = KillTeamGameManager.Instance.helpers.DynamicImagePlanePoint[KillTeamGameManager.Player.Player2];
+            m_menus[KillTeamGameManager.Player.Player1].transform.position = Table.Instance.DynamicImagePlanePoint[KillTeamGameManager.Player.Player1];
+            m_menus[KillTeamGameManager.Player.Player2].transform.position = Table.Instance.DynamicImagePlanePoint[KillTeamGameManager.Player.Player2];
 
             m_menus[KillTeamGameManager.Player.Player1].CreatePlane(m_menus[KillTeamGameManager.Player.Player1].transform.position, new Vector3(0.1f, 0.1f, 0.1f), null);
             m_menus[KillTeamGameManager.Player.Player2].CreatePlane(m_menus[KillTeamGameManager.Player.Player2].transform.position, new Vector3(0.1f, 0.1f, 0.1f), null);
@@ -79,7 +79,7 @@ public class GenericStateMachine : MonoBehaviour
     {
         // delete all tests
         unitTestingLayout.ClearAll();
-        KillTeamGameManager.Instance.helpers.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(false));
+        Table.Instance.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(false));
         m_menus[KillTeamGameManager.Player.Player1].SetActive(false);
         m_menus[KillTeamGameManager.Player.Player2].SetActive(false);
         PhysicalButtons.Instance.ClearAllButtonCallbacks();
@@ -120,7 +120,7 @@ public class GenericStateMachine : MonoBehaviour
                 });
                 break;
             case KillTeamGameManager.GameState.BarracadePlacement:
-                KillTeamGameManager.Instance.helpers.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(true));
+                Table.Instance.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(true));
                 TaskAction BothPlayersPlacedBarricades = new TaskAction(NumberOfPlayers, () =>
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamSelection);
@@ -159,7 +159,7 @@ public class GenericStateMachine : MonoBehaviour
 
                 break;
             case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
-                KillTeamGameManager.Instance.helpers.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(true));
+                Table.Instance.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(true));
                 TaskAction BothTeamsChoisen1 = new TaskAction(NumberOfPlayers, () =>
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.ReadyToStart);
@@ -342,7 +342,7 @@ public class GenericStateMachine : MonoBehaviour
 
         KillTeamGameManager.Instance.AssetHolder.SpawnTerrain(() =>
         {
-            var mesh = KillTeamGameManager.Instance.helpers.BoardRoot.GetComponent<BoxCollider>();
+            var mesh = Table.Instance.BoardRoot.GetComponent<BoxCollider>();
             var all = Core.Scene.GetAllSpawnedVrInteraction();
             for (int i = 0; i < itemsToMake; i++)
             {
@@ -377,9 +377,9 @@ public class GenericStateMachine : MonoBehaviour
         {
             foreach (KillTeamGameManager.Player p in (KillTeamGameManager.Player[])Enum.GetValues(typeof(KillTeamGameManager.Player)))
             {
-                KillTeamGameManager.Instance.helpers.playerSetupStrip[p].SetActive(true);
+                Table.Instance.playerSetupStrip[p].SetActive(true);
                 var player1Items = KillTeamGameManager.Instance.AssetHolder.playerGameObjects[p];
-                var mesh = KillTeamGameManager.Instance.helpers.playerSetupStrip[p].GetComponent<BoxCollider>();
+                var mesh = Table.Instance.playerSetupStrip[p].GetComponent<BoxCollider>();
                 unitTestingLayout.FitBoxColliderToMesh(mesh);
                 foreach (var obj in player1Items)
                 {

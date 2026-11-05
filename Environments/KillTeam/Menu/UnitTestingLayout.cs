@@ -30,7 +30,7 @@ public class UnitTestingLayout : MonoBehaviour
             (KillTeamGameManager.Player[])Enum.GetValues(
                 typeof(KillTeamGameManager.Player)))
         {
-            if (!KillTeamGameManager.Instance.helpers.playerSetupStrip
+            if (!Table.Instance.playerSetupStrip
                 .TryGetValue(player, out GameObject strip))
             {
                 Debug.LogWarning($"Missing player setup strip for {player}");
@@ -52,7 +52,7 @@ public class UnitTestingLayout : MonoBehaviour
         System.Text.StringBuilder log = new System.Text.StringBuilder();
 
         TestBoxCollider(
-            KillTeamGameManager.Instance.helpers.BoardRoot,
+            Table.Instance.BoardRoot,
             LOOP_NUMBER,
             log
         );

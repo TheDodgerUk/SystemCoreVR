@@ -51,17 +51,14 @@ public class AssetHolder : MonoBehaviour
             }
             else
             {
-                if (catItem.CatalogueFilters.Contains(KillTeamGameManager.Instance.helpers.Ignore) == true || catItem.CatalogueFilters.Count == 0)
+                if (catItem.CatalogueFilters.Contains(Table.Instance.Ignore) == true || catItem.CatalogueFilters.Count == 0)
                 {
                     // reversed logic as easy to read
                 }
                 else
                 {
-                    if (catItem.CatalogueFilters.Contains(KillTeamGameManager.Instance.helpers.Barracade))
+                    if (catItem.CatalogueFilters.Contains(Table.Instance.Barracade))
                     {
-                        // we need 3 of them
-                        catalogueEntryBaracade.Add(catItem);
-                        catalogueEntryBaracade.Add(catItem);
                         catalogueEntryBaracade.Add(catItem);
                     }
                     else
@@ -117,8 +114,8 @@ public class AssetHolder : MonoBehaviour
         TaskAction task = new TaskAction(catalogueEntryTerrain.Count * parts2, () =>
         {
             PrefabRowSpawner spawnerAssets = this.AddComponent<PrefabRowSpawner>();
-            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player1].transform.position, terrainGameObjects[KillTeamGameManager.Player.Player1]);
-            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player2].transform.position, terrainGameObjects[KillTeamGameManager.Player.Player2]);
+            spawnerAssets.Spawn(Table.Instance.playerStartTable[KillTeamGameManager.Player.Player1].transform.position, terrainGameObjects[KillTeamGameManager.Player.Player1]);
+            spawnerAssets.Spawn(Table.Instance.playerStartTable[KillTeamGameManager.Player.Player2].transform.position, terrainGameObjects[KillTeamGameManager.Player.Player2]);
             DestroyImmediate(spawnerAssets);
             callback();
         });
@@ -152,8 +149,8 @@ public class AssetHolder : MonoBehaviour
         TaskAction task = new TaskAction(catalogueEntryBaracade.Count * parts2, () =>
         {
             PrefabRowSpawner spawnerAssets = this.AddComponent < PrefabRowSpawner>();
-            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player1].transform.position, barracadeGameObjects[KillTeamGameManager.Player.Player1]);
-            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player2].transform.position, barracadeGameObjects[KillTeamGameManager.Player.Player2]);
+            spawnerAssets.Spawn(Table.Instance.playerStartTable[KillTeamGameManager.Player.Player1].transform.position, barracadeGameObjects[KillTeamGameManager.Player.Player1]);
+            spawnerAssets.Spawn(Table.Instance.playerStartTable[KillTeamGameManager.Player.Player2].transform.position, barracadeGameObjects[KillTeamGameManager.Player.Player2]);
             DestroyImmediate(spawnerAssets);
             callback();
         });
@@ -192,8 +189,8 @@ public class AssetHolder : MonoBehaviour
         TaskAction task = new TaskAction(PlayersTeamCatalogueEntry.GetValuesAll().Count, () =>
         {
             PrefabRowSpawner spawnerAssets = this.AddComponent<PrefabRowSpawner>();
-            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player1].transform.position, playerGameObjects[KillTeamGameManager.Player.Player1]);
-            spawnerAssets.Spawn(KillTeamGameManager.Instance.helpers.playerStartTable[KillTeamGameManager.Player.Player2].transform.position, playerGameObjects[KillTeamGameManager.Player.Player2]);
+            spawnerAssets.Spawn(Table.Instance.playerStartTable[KillTeamGameManager.Player.Player1].transform.position, playerGameObjects[KillTeamGameManager.Player.Player1]);
+            spawnerAssets.Spawn(Table.Instance.playerStartTable[KillTeamGameManager.Player.Player2].transform.position, playerGameObjects[KillTeamGameManager.Player.Player2]);
             DestroyImmediate(spawnerAssets);
             callback();
         });
