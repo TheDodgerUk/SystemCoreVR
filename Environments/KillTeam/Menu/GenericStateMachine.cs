@@ -382,7 +382,7 @@ public class GenericStateMachine : MonoBehaviour
                     {
                         obj.gameObject.SetActive(true);
                         obj.gameObject.transform.position = mesh.GetRandomPointOnBox();
-                        obj.gameObject.transform.position = new Vector3(obj.gameObject.transform.position.x, obj.gameObject.transform.position.y +0.2f, obj.gameObject.transform.position.x);
+                        obj.gameObject.transform.position = new Vector3(obj.gameObject.transform.position.x, obj.gameObject.transform.position.y +0.2f, obj.gameObject.transform.position.z);
                         Grabbable grabbable = obj.GetComponent<Grabbable>();
 
                         if (grabbable != null)
