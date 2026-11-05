@@ -46,7 +46,7 @@ public class BattleStateMachine : MonoBehaviour
     }
 
     [Serializable]
-    public class Operative
+    public class RunTimePlayerDetails
     {
         public GameObject gameObject;
         public KillTeamGameManager.Player playerIndex;
@@ -113,7 +113,7 @@ public class BattleStateMachine : MonoBehaviour
 
     [Header("Operatives")]
     [SerializeField]
-    private List<Operative> operatives = new List<Operative>();
+    private List<RunTimePlayerDetails> operatives = new List<RunTimePlayerDetails>();
 
     [SerializeField]
     private GameObject activeOperativeObject;
@@ -128,7 +128,7 @@ public class BattleStateMachine : MonoBehaviour
     [SerializeField, Min(0)]
     private int testActionCost = 1;
 
-    private Operative activeOperative;
+    private RunTimePlayerDetails activeOperative;
     private bool initialized;
 
     public BattleState CurrentState => currentState;
@@ -136,9 +136,9 @@ public class BattleStateMachine : MonoBehaviour
     public KillTeamGameManager.Player CurrentPlayer => currentPlayer;
     public KillTeamGameManager.Player InitiativePlayer => initiativePlayer;
     public GameObject ActiveOperative => activeOperativeObject;
-    public Operative ActiveOperativeData => activeOperative;
+    public RunTimePlayerDetails ActiveOperativeData => activeOperative;
     public int RemainingAP => activeOperative != null ? activeOperative.remainingAP : 0;
-    public IReadOnlyList<Operative> Operatives => operatives;
+    public IReadOnlyList<RunTimePlayerDetails> Operatives => operatives;
     public bool IsCurrentPlayerAI => IsAI(currentPlayer);
 
     public bool IsBattleRunning =>
@@ -150,11 +150,11 @@ public class BattleStateMachine : MonoBehaviour
     public event Action<int> OnTurningPointEnded;
     public event Action<KillTeamGameManager.Player> OnInitiativeDetermined;
     public event Action<KillTeamGameManager.Player> OnPlayerChanged;
-    public event Action<Operative> OnOperativeActivated;
-    public event Action<Operative> OnOperativeFinished;
-    public event Action<Operative, OperativeState> OnOperativeStateChanged;
-    public event Action<Operative, BattleAction, int> OnActionCompleted;
-    public event Action<Operative, int> OnWoundsChanged;
+    public event Action<RunTimePlayerDetails> OnOperativeActivated;
+    public event Action<RunTimePlayerDetails> OnOperativeFinished;
+    public event Action<RunTimePlayerDetails, OperativeState> OnOperativeStateChanged;
+    public event Action<RunTimePlayerDetails, BattleAction, int> OnActionCompleted;
+    public event Action<RunTimePlayerDetails, int> OnWoundsChanged;
     public event Action<int, int> OnScoreChanged;
     public event Action<KillTeamGameManager.Player?> OnBattleFinished;
     public event Action<KillTeamGameManager.Player> OnAITurnRequested;
@@ -287,7 +287,7 @@ public class BattleStateMachine : MonoBehaviour
         stats.currentWounds = Mathf.Clamp(
             stats.currentWounds, 0, stats.maxWounds);
 
-        Operative op = new Operative
+        RunTimePlayerDetails op = new RunTimePlayerDetails
         {
             gameObject = obj,
             playerIndex = player,
@@ -349,7 +349,7 @@ public class BattleStateMachine : MonoBehaviour
     {
         var result = new List<GameObject>();
 
-        foreach (Operative op in operatives)
+        foreach (RunTimePlayerDetails op in operatives)
         {
             if (op != null &&
                 op.playerIndex == player &&
@@ -365,7 +365,7 @@ public class BattleStateMachine : MonoBehaviour
     {
         var result = new List<GameObject>();
 
-        foreach (Operative op in operatives)
+        foreach (RunTimePlayerDetails op in operatives)
         {
             if (IsEligible(op, player))
                 result.Add(op.gameObject);
@@ -375,7 +375,7 @@ public class BattleStateMachine : MonoBehaviour
     }
 
     private bool IsEligible(
-        Operative op,
+        RunTimePlayerDetails op,
         KillTeamGameManager.Player player)
     {
         return op != null &&
@@ -389,7 +389,7 @@ public class BattleStateMachine : MonoBehaviour
     public bool HasEligibleOperatives(
         KillTeamGameManager.Player player)
     {
-        foreach (Operative op in operatives)
+        foreach (RunTimePlayerDetails op in operatives)
         {
             if (IsEligible(op, player))
                 return true;
@@ -398,7 +398,7 @@ public class BattleStateMachine : MonoBehaviour
         return false;
     }
 
-    public Operative FindOperative(GameObject obj)
+    public RunTimePlayerDetails FindOperative(GameObject obj)
     {
         return operatives.Find(
             op => op != null && op.gameObject == obj);
@@ -406,7 +406,7 @@ public class BattleStateMachine : MonoBehaviour
 
     public bool UnregisterOperative(GameObject obj)
     {
-        Operative op = FindOperative(obj);
+        RunTimePlayerDetails op = FindOperative(obj);
 
         if (op == null || op == activeOperative)
             return false;
@@ -449,7 +449,7 @@ public class BattleStateMachine : MonoBehaviour
         activeOperative = null;
         activeOperativeObject = null;
 
-        foreach (Operative op in operatives)
+        foreach (RunTimePlayerDetails op in operatives)
         {
             if (op == null)
                 continue;
@@ -494,7 +494,7 @@ public class BattleStateMachine : MonoBehaviour
         currentTurningPoint++;
         SetState(BattleState.StartTurningPoint);
 
-        foreach (Operative op in operatives)
+        foreach (RunTimePlayerDetails op in operatives)
         {
             if (op == null)
                 continue;
@@ -552,7 +552,7 @@ public class BattleStateMachine : MonoBehaviour
 
     public bool CanActivate(GameObject obj)
     {
-        Operative op = FindOperative(obj);
+        RunTimePlayerDetails op = FindOperative(obj);
 
         return currentState == BattleState.SelectOperative &&
                IsEligible(op, currentPlayer);
@@ -592,7 +592,7 @@ public class BattleStateMachine : MonoBehaviour
     }
 
     private void SetOperativeStateInternal(
-        Operative op, OperativeState next)
+        RunTimePlayerDetails op, OperativeState next)
     {
         if (op.state == next)
             return;
@@ -611,7 +611,7 @@ public class BattleStateMachine : MonoBehaviour
             actionPointCost > activeOperative.remainingAP)
             return false;
 
-        Operative op = activeOperative;
+        RunTimePlayerDetails op = activeOperative;
 
         op.remainingAP -= actionPointCost;
 
@@ -637,7 +637,7 @@ public class BattleStateMachine : MonoBehaviour
 
         SetState(BattleState.EndActivation);
 
-        Operative finished = activeOperative;
+        RunTimePlayerDetails finished = activeOperative;
 
         finished.activated = true;
         finished.remainingAP = 0;
@@ -671,7 +671,7 @@ public class BattleStateMachine : MonoBehaviour
 
     public bool ApplyDamage(GameObject obj, int damage)
     {
-        Operative op = FindOperative(obj);
+        RunTimePlayerDetails op = FindOperative(obj);
 
         if (op == null || op.stats == null ||
             op.incapacitated || damage <= 0)
@@ -690,7 +690,7 @@ public class BattleStateMachine : MonoBehaviour
 
     public bool HealOperative(GameObject obj, int amount)
     {
-        Operative op = FindOperative(obj);
+        RunTimePlayerDetails op = FindOperative(obj);
 
         if (op == null || op.stats == null ||
             op.incapacitated || amount <= 0)
@@ -706,7 +706,7 @@ public class BattleStateMachine : MonoBehaviour
 
     public void MarkIncapacitated(GameObject obj)
     {
-        Operative op = FindOperative(obj);
+        RunTimePlayerDetails op = FindOperative(obj);
 
         if (op == null || op.incapacitated)
             return;
@@ -732,7 +732,7 @@ public class BattleStateMachine : MonoBehaviour
     public List<ContentKillTeamMetaData.WeaponStats> GetWeapons(
         GameObject obj)
     {
-        Operative op = FindOperative(obj);
+        RunTimePlayerDetails op = FindOperative(obj);
 
         return op != null
             ? op.weapons
@@ -742,7 +742,7 @@ public class BattleStateMachine : MonoBehaviour
     public ContentKillTeamMetaData.WeaponStats GetWeapon(
         GameObject obj, string weaponName)
     {
-        Operative op = FindOperative(obj);
+        RunTimePlayerDetails op = FindOperative(obj);
 
         if (op == null)
             return null;
@@ -888,7 +888,7 @@ public class BattleStateMachine : MonoBehaviour
             testOperativeIndex >= operatives.Count)
             return;
 
-        Operative op = operatives[testOperativeIndex];
+        RunTimePlayerDetails op = operatives[testOperativeIndex];
 
         if (op != null)
             ActivateOperative(op.gameObject);
