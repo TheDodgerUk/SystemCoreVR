@@ -7,7 +7,6 @@ public class MiniatureVerticalLine : MonoBehaviour
     [Header("Line Settings")]
     public float lineWidth = 0.005f;
     public float maxDistance = 5f;
-    public LayerMask groundLayer = ~0;
 
     [Header("Base")]
     public int edgeSamples = 16;
@@ -44,7 +43,7 @@ public class MiniatureVerticalLine : MonoBehaviour
     private void Awake()
     {
         grabbable = GetComponent<Grabbable>();
-        capsule = GetComponent<CapsuleCollider>();
+        capsule = this.GetComponentInChildren<CapsuleCollider>();
 
         GameObject child = new GameObject(GetType().Name);
         child.transform.SetParent(transform, false);
@@ -58,6 +57,8 @@ public class MiniatureVerticalLine : MonoBehaviour
 
         line.material = new Material(
             Shader.Find("Universal Render Pipeline/Unlit"));
+
+        line.material.SetColor("_BaseColor", validColor);
 
         line.startColor = validColor;
         line.endColor = validColor;
@@ -151,7 +152,7 @@ public class MiniatureVerticalLine : MonoBehaviour
             Vector3.down,
             out RaycastHit hit,
             maxDistance,
-            groundLayer,
+            placementLayers,
             QueryTriggerInteraction.Ignore))
         {
             end = hit.point;

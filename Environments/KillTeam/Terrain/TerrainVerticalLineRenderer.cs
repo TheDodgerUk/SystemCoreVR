@@ -46,6 +46,7 @@ public class TerrainVerticalLineRenderer : MonoBehaviour
         line.enabled = false;
 
         line.material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+        line.material.SetColor("_BaseColor", validColor);
     }
 
     public void SetActive(bool active)

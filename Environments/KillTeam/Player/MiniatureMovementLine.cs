@@ -79,7 +79,8 @@ public class MiniatureMovementLine : MonoBehaviour
         line.material = new Material(
             Shader.Find("Universal Render Pipeline/Unlit"));
 
-        line.enabled = false;
+        line.material.SetColor("_BaseColor", validColor);
+
 
     }
 
