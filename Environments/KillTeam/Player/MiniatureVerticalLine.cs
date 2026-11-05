@@ -69,6 +69,7 @@ public class MiniatureVerticalLine : MonoBehaviour
 
         grabbable.OnGrabEvent += OnGrab;
         grabbable.OnReleaseEvent += OnRelease;
+        line.enabled = true;
     }
 
     private void OnDisable()

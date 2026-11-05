@@ -465,6 +465,8 @@ public class KillTeamGameManager : MonoBehaviour
         Debug.Log($"Kill Team State: {state}");
 
         OnStateChanged?.Invoke(state);
+
+        Debug.Log($"KillTeamGameManager Global state: {currentState} ");
     }
 
     public bool BeginBoardSetup(int playerId)

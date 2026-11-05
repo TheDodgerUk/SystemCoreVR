@@ -11,43 +11,43 @@ public class MiniaturePlacementValidator : MonoBehaviour
 
     [Header("Visuals")]
     public Renderer baseRenderer;
-    public Color validColor = Color.green;
-    public Color invalidColor = Color.red;
 
     private Vector3 startPosition;
     private bool isMoving;
 
-    private Material baseMaterial;
-    private Color originalColor;
 
     private Grabbable grabbable;
     private MiniatureMovementLine miniatureMovementLine;
     private MiniatureVerticalLine miniatureVerticalLine;
     protected MiniatureStarPositionVerticalLine miniatureStarPositionVerticalLine;
 
+    [SerializeField]
+    private bool isValid = false;
+
     private void Awake()
     {
         grabbable = GetComponent<Grabbable>();
 
-        if (baseRenderer != null)
-        {
-            baseMaterial = baseRenderer.material;
-            originalColor = baseMaterial.color;
-        }
-
-        miniatureMovementLine =
-            gameObject.AddComponent<MiniatureMovementLine>();
-
-        miniatureVerticalLine =
-            gameObject.AddComponent<MiniatureVerticalLine>();
-
+        miniatureMovementLine = gameObject.AddComponent<MiniatureMovementLine>();
+        miniatureVerticalLine = gameObject.AddComponent<MiniatureVerticalLine>();
         miniatureStarPositionVerticalLine = gameObject.AddComponent<MiniatureStarPositionVerticalLine>();
+
         KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
+        KillTeamGameManager_OnStateChanged(KillTeamGameManager.Instance.CurrentState);
+        Debug.Log($"MiniaturePlacementValidator {this.gameObject.name}  state {KillTeamGameManager.Instance.CurrentState} ");
+    }
+    private void OnDestroy()
+    {
+        KillTeamGameManager.Instance.OnStateChanged -= KillTeamGameManager_OnStateChanged;
     }
 
 
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
+        if(KillTeamGameManager.Instance.CurrentState == state)
+        { 
+            return;
+        }
         miniatureMovementLine.SetActive(true);
         miniatureVerticalLine.SetActive(true);
         miniatureStarPositionVerticalLine.SetActive(false);
@@ -67,6 +67,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
                 break;
             case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
                 miniatureVerticalLine.SetActive(false);
+                miniatureMovementLine.SetActive(false);
                 miniatureStarPositionVerticalLine.SetActive(true);
 
                 break;
@@ -104,9 +105,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
         }
 
         isMoving = false;
-
-        if (baseMaterial != null)
-            baseMaterial.color = originalColor;
+;
     }
 
     private void OnGrab(Hand hand, Grabbable grab)
@@ -120,13 +119,8 @@ public class MiniaturePlacementValidator : MonoBehaviour
         if (!isMoving)
             return;
 
-        bool valid = IsValidPosition(transform.position);
+        isValid = IsValidPosition(transform.position);
 
-        if (baseMaterial != null)
-        {
-            baseMaterial.color =
-                valid ? validColor : invalidColor;
-        }
     }
 
     private void OnRelease(Hand hand, Grabbable grab)
@@ -134,30 +128,14 @@ public class MiniaturePlacementValidator : MonoBehaviour
         if (!isMoving)
             return;
 
-        bool validDistance =
-            miniatureMovementLine.IsValidDistance();
+        bool validDistance = !miniatureMovementLine.gameObject.activeInHierarchy || miniatureMovementLine.IsValidDistance();
+        bool validPlacement = !miniatureVerticalLine.gameObject.activeInHierarchy || miniatureVerticalLine.IsValidPlacement();
+        bool ValidStartPlace = !miniatureStarPositionVerticalLine.gameObject.activeInHierarchy || miniatureStarPositionVerticalLine.IsValidPlacement();
 
-        bool validPlacement =
-            miniatureVerticalLine.IsValidPlacement();
+        isValid = validDistance && validPlacement && ValidStartPlace;
 
-        bool ValidStartPlace = miniatureStarPositionVerticalLine.IsValidPlacement();
 
-        bool isStartPlacement =
-            KillTeamGameManager.Instance.CurrentState ==
-            KillTeamGameManager.GameState.SetCharacterToStartPlacement;
-
-        bool valid;
-
-        if (isStartPlacement)
-        {
-            valid = ValidStartPlace;
-        }
-        else
-        {
-            valid = validDistance && validPlacement;
-        }
-
-        if (!valid)
+        if (!isValid)
         {
             transform.position = startPosition;
 
@@ -175,12 +153,9 @@ public class MiniaturePlacementValidator : MonoBehaviour
 
         isMoving = false;
 
-        if (baseMaterial != null)
-            baseMaterial.color = originalColor;
-
         Debug.Log(
             $"Miniature moved to {transform.position}. " +
-            $"Valid: {valid}");
+            $"Valid: {isValid}");
 
         Debug.Log(
             $"Distance moved: " +

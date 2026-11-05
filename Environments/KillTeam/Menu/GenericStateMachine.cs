@@ -56,6 +56,7 @@ public class GenericStateMachine : MonoBehaviour
 
 
             KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
+            KillTeamGameManager_OnStateChanged(KillTeamGameManager.Instance.CurrentState);
         };
     }
 

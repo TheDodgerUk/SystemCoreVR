@@ -89,12 +89,14 @@ public class MiniatureMovementLine : MonoBehaviour
     {
         grab.OnGrabEvent += OnGrab;
         grab.OnReleaseEvent += OnRelease;
+        line.enabled = true;
     }
 
     private void OnDisable()
     {
         grab.OnGrabEvent -= OnGrab;
         grab.OnReleaseEvent -= OnRelease;
+        line.enabled = false;
     }
 
     private void OnGrab(Hand hand, Grabbable grabbable)

@@ -23,8 +23,8 @@ public class TerrainPlacementValidator : MonoBehaviour
         grab = GetComponent<Grabbable>();
         verticalLine = GetComponent<TerrainVerticalLineRenderer>();
 
-        KillTeamGameManager.Instance.OnStateChanged +=
-            KillTeamGameManager_OnStateChanged;
+        KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
+        KillTeamGameManager_OnStateChanged(KillTeamGameManager.Instance.CurrentState);
     }
 
     public KillTeamGameManager.LayerType GetPlacementLayer()
@@ -32,8 +32,7 @@ public class TerrainPlacementValidator : MonoBehaviour
         return mLayer;
     }
 
-    protected virtual void KillTeamGameManager_OnStateChanged(
-        KillTeamGameManager.GameState state)
+    protected virtual void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
         grab.enabled = false;
 
