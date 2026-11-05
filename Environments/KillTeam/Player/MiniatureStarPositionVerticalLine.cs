@@ -5,6 +5,10 @@ using Autohand;
 
 public class MiniatureStarPositionVerticalLine : MiniatureVerticalLine
 {
-    protected override LayerMask placementLayers => (int)KillTeamGameManager.LayerType.PlayerSetupStrip;
+    private void Reset()
+    {
+        placementLayers =
+            1 << (int)KillTeamGameManager.LayerType.PlayerSetupStrip;
+    }
 
 }

@@ -11,7 +11,9 @@ public class MiniatureVerticalLine : MonoBehaviour
     [Header("Base")]
     public int edgeSamples = 16;
 
-    protected virtual LayerMask placementLayers =>
+    [Header("Placement Layers")]
+    [SerializeField]
+    protected LayerMask placementLayers =
         (1 << (int)KillTeamGameManager.LayerType.TableBoard) |
         (1 << (int)KillTeamGameManager.LayerType.Terrain);
 
