@@ -16,10 +16,11 @@ public class InitiliseMiniture : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        CameraControllerVR.Instance.AutoHandPlayerRef.useMovement = false;
-        CameraControllerVR.Instance.AutoHandPlayerRef.snapTurning = false;
-        CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.position = Vector3.zero;
-        CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.rotation = Quaternion.identity;
+        // just so i can see it 
+        //////CameraControllerVR.Instance.AutoHandPlayerRef.useMovement = false;
+        //////CameraControllerVR.Instance.AutoHandPlayerRef.snapTurning = false;
+        //////CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.position = Vector3.zero;
+        //////CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.rotation = Quaternion.identity;
 
 
         gameObject.AddComponent<TestAutoHand>();
