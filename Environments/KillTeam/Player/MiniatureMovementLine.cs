@@ -76,7 +76,7 @@ public class MiniatureMovementLine : MonoBehaviour
         line.endWidth = lineWidth;
 
         line.material = new Material(
-            Shader.Find("Sprites/Default"));
+            Shader.Find("Universal Render Pipeline/Unlit"));
 
         line.enabled = false;
 

@@ -146,11 +146,15 @@ public class UnitTestingLayout : MonoBehaviour
 
     public void FitBoxColliderToMesh(BoxCollider box)
     {
-        if (box == null) return;
+        if (box == null)
+        {
+            Debug.LogError($"BoxCollider is null");
+            return;
+        }
         MeshFilter filter = box.GetComponent<MeshFilter>();
         if (filter == null || filter.sharedMesh == null)
         {
-            Debug.LogWarning($"Cannot fit collider on {box.name}: missing MeshFilter or mesh.");
+            Debug.LogError($"Cannot fit collider on {box.name}: missing MeshFilter or mesh.");
             return;
         }
 
@@ -160,5 +164,6 @@ public class UnitTestingLayout : MonoBehaviour
         if (size.y < 0.001f) size.y = 0.001f;
         box.center = meshBounds.center;
         box.size = size;
+        Debug.Log($"box name {box.gameObject.name},  box.center: {box.center}, box.size {box.size} ");
     }
 }

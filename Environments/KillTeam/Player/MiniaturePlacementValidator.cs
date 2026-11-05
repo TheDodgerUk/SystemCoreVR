@@ -24,6 +24,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
     [SerializeField]
     private bool isValid = false;
 
+    public bool IsValidPlacement() => isValid;
     private void Awake()
     {
         grabbable = GetComponent<Grabbable>();
@@ -49,30 +50,13 @@ public class MiniaturePlacementValidator : MonoBehaviour
         miniatureStarPositionVerticalLine.SetActive(false);
         switch (state)
         {
-            case KillTeamGameManager.GameState.WaitingForPlayers:
-                break;
-            case KillTeamGameManager.GameState.BoardSetup:
-                break;
-            case KillTeamGameManager.GameState.TerrainPlacement:
-                break;
-            case KillTeamGameManager.GameState.BarracadePlacement:
-                break;
-            case KillTeamGameManager.GameState.MissionSetup:
-                break;
-            case KillTeamGameManager.GameState.TeamSelection:
-                break;
             case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
+            case KillTeamGameManager.GameState.DEBUG_SlowPlayerCreation:
                 Debug.LogError("MiniaturePlacementValidator  SetCharacterToStartPlacement");
                 miniatureVerticalLine.SetActive(false);
                 miniatureMovementLine.SetActive(false);
                 miniatureStarPositionVerticalLine.SetActive(true);
-
-                break;
-            case KillTeamGameManager.GameState.ReadyToStart:
-                break;
-            case KillTeamGameManager.GameState.Playing:
-                break;
-            case KillTeamGameManager.GameState.Finished:
+                grabbable.enabled = true;
                 break;
             default:
                 break;

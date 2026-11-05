@@ -8,22 +8,17 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using System.Linq;
 using static KillTeamGameManager;
+using System.Runtime.CompilerServices;
 
 public class GenericStateMachine : MonoBehaviour
 {
 
     private Dictionary<KillTeamGameManager.Player, DynamicImagePlane> m_menus = new Dictionary<KillTeamGameManager.Player, DynamicImagePlane>();
 
-    private Dictionary<KillTeamGameManager.Player, ContentKillTeamMetaData.TeamType> TeamSelection = new Dictionary<KillTeamGameManager.Player, ContentKillTeamMetaData.TeamType>();
 
     private List<KillTeamGameManager.Player> taskActionList = new List<KillTeamGameManager.Player>();
 
 
-    private Dictionary<KillTeamGameManager.Player, int> playerTeamIndex = new()
-    {
-        { KillTeamGameManager.Player.Player1, 0 },
-        { KillTeamGameManager.Player.Player2, 0 }
-    };
 
 
     private UnitTestingLayout unitTestingLayout;
@@ -33,6 +28,7 @@ public class GenericStateMachine : MonoBehaviour
 
         Core.Environment.OnEnvironmentLoadingComplete += () =>
         {
+            unitTestingLayout = this.AddComponent<UnitTestingLayout>();
             var men1 = new GameObject("DynamicImagePlane1");
             var men2 = new GameObject("DynamicImagePlane2");
             m_menus[KillTeamGameManager.Player.Player1] = men1.AddComponent<DynamicImagePlane>();
@@ -50,18 +46,18 @@ public class GenericStateMachine : MonoBehaviour
             m_menus[KillTeamGameManager.Player.Player2].SetRotation(new Vector3(0, +90f, 0f));
 
 
-            playerTeamIndex[KillTeamGameManager.Player.Player1] = 0;
-            playerTeamIndex[KillTeamGameManager.Player.Player2] = 0;
+            KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1] = 0;
+            KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2] = 0;
 
-            TeamSelection.Clear();
-            TeamSelection.Add(KillTeamGameManager.Player.Player1, ContentKillTeamMetaData.TeamType.Kommandos);
-            TeamSelection.Add(KillTeamGameManager.Player.Player2, ContentKillTeamMetaData.TeamType.AngelsOfDeath);
+            KillTeamGameManager.Instance.AssetHolder.TeamSelection.Clear();
+            KillTeamGameManager.Instance.AssetHolder.TeamSelection.Add(KillTeamGameManager.Player.Player1, ContentKillTeamMetaData.TeamType.Kommandos);
+            KillTeamGameManager.Instance.AssetHolder.TeamSelection.Add(KillTeamGameManager.Player.Player2, ContentKillTeamMetaData.TeamType.AngelsOfDeath);
 
 
             KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
             KillTeamGameManager_OnStateChanged(KillTeamGameManager.Instance.CurrentState);
 
-            unitTestingLayout = this.AddComponent<UnitTestingLayout>();
+            
         };
     }
 
@@ -121,7 +117,7 @@ public class GenericStateMachine : MonoBehaviour
                 break;
             case KillTeamGameManager.GameState.BarracadePlacement:
                 Table.Instance.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(true));
-                TaskAction BothPlayersPlacedBarricades = new TaskAction(NumberOfPlayers, () =>
+                TaskAction BothPlayersPlacedBarricades = new TaskAction(NumberOfPlayers, "BarracadePlacement", () =>
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamSelection);
                 });
@@ -144,7 +140,7 @@ public class GenericStateMachine : MonoBehaviour
                 TeamSelectionMethod(NumberOfPlayers, KillTeamGameManager.GameState.TeamsAssetCreation);
                 break;
             case KillTeamGameManager.GameState.TeamsAssetCreation:
-                KillTeamGameManager.Instance.AssetHolder.SpawnPlayers(TeamSelection, () =>
+                KillTeamGameManager.Instance.AssetHolder.SpawnPlayers(KillTeamGameManager.Instance.AssetHolder.TeamSelection, () =>
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.SetCharacterToStartPlacement);
                 });
@@ -160,7 +156,7 @@ public class GenericStateMachine : MonoBehaviour
                 break;
             case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
                 Table.Instance.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(true));
-                TaskAction BothTeamsChoisen1 = new TaskAction(NumberOfPlayers, () =>
+                TaskAction BothTeamsChoisen1 = new TaskAction(NumberOfPlayers, "SetCharacterToStartPlacement", () =>
                 {
                     KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.ReadyToStart);
                 });
@@ -180,32 +176,20 @@ public class GenericStateMachine : MonoBehaviour
                 break;
             case KillTeamGameManager.GameState.Finished:
                 break;
-            case KillTeamGameManager.GameState.DEBUG_QuickTeamSelect:
-                KillTeamGameManager.Instance.SetState(KillTeamGameManager.GameState.TeamsAssetCreation);
-                break;
 
-            case KillTeamGameManager.GameState.DEBUG_QuickSceneCreation:
-                QuickSceneCreation(1f);
-                break;
 
+                // quick testing 
             case KillTeamGameManager.GameState.DEBUG_SlowSceneCreation:
                 QuickSceneCreation(5f);
                 break;
-            case KillTeamGameManager.GameState.DEBUG_VerySlowSceneCreation:
-                QuickSceneCreation(15f);
-                break;
 
-            case KillTeamGameManager.GameState.DEBUG_QuickPlayerCreation:
-                QuickPlayerCreation(1f);
-                break;
 
             case KillTeamGameManager.GameState.DEBUG_SlowPlayerCreation:
                 QuickPlayerCreation(5f);
                 break;
 
-            case KillTeamGameManager.GameState.DEBUG_VerySloPlayerCreation:
-                QuickPlayerCreation(15f);
-                break;
+
+                // unit testing 
             case KillTeamGameManager.GameState.UnitTest_StartStripTesting:
                 unitTestingLayout.StartStripTesting();
                 break;
@@ -234,81 +218,81 @@ public class GenericStateMachine : MonoBehaviour
 
 
 
-        TaskAction BothTeamsChoisen = new TaskAction(numPlayers, () =>
+        TaskAction BothTeamsChoisen = new TaskAction(numPlayers, "TeamSelectionMethod", () =>
         {
-            var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[playerTeamIndex[KillTeamGameManager.Player.Player1]];
-            var image2 = KillTeamGameManager.Instance.AssetHolder.teamIcons[playerTeamIndex[KillTeamGameManager.Player.Player2]];
-            TeamSelection.Clear();
-            TeamSelection.Add(KillTeamGameManager.Player.Player1, ContentKillTeamMetaData.TeamType.Kommandos);
-            TeamSelection.Add(KillTeamGameManager.Player.Player2, ContentKillTeamMetaData.TeamType.Kommandos);
+            var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1]];
+            var image2 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2]];
+            KillTeamGameManager.Instance.AssetHolder.TeamSelection.Clear();
+            KillTeamGameManager.Instance.AssetHolder.TeamSelection.Add(KillTeamGameManager.Player.Player1, ContentKillTeamMetaData.TeamType.Kommandos);
+            KillTeamGameManager.Instance.AssetHolder.TeamSelection.Add(KillTeamGameManager.Player.Player2, ContentKillTeamMetaData.TeamType.Kommandos);
 
             if (Enum.TryParse(image1.name, out ContentKillTeamMetaData.TeamType player1))
             {
-                TeamSelection[KillTeamGameManager.Player.Player1] = player1;
+                KillTeamGameManager.Instance.AssetHolder.TeamSelection[KillTeamGameManager.Player.Player1] = player1;
             }
             if (Enum.TryParse(image2.name, out ContentKillTeamMetaData.TeamType player2))
             {
-                TeamSelection[KillTeamGameManager.Player.Player2] = player2;
+                KillTeamGameManager.Instance.AssetHolder.TeamSelection[KillTeamGameManager.Player.Player2] = player2;
             }
             KillTeamGameManager.Instance.SetState(nextstate);
         });
 
 
 
-        var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[playerTeamIndex[KillTeamGameManager.Player.Player1]];
+        var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1]];
         m_menus[KillTeamGameManager.Player.Player1].SetImage(image1);
 
-        var image2 = KillTeamGameManager.Instance.AssetHolder.teamIcons[playerTeamIndex[KillTeamGameManager.Player.Player2]];
+        var image2 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2]];
         m_menus[KillTeamGameManager.Player.Player2].SetImage(image2);
 
 
         // right 
         PhysicalButtons.Instance.OnButtonPressed(KillTeamGameManager.Player.Player1, PhysicalButtons.ButtonType.Right, () =>
         {
-            playerTeamIndex[KillTeamGameManager.Player.Player1]++;
-            if (playerTeamIndex[KillTeamGameManager.Player.Player1] > KillTeamGameManager.Instance.AssetHolder.teamIcons.Count - 1)
+            KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1]++;
+            if (KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1] > KillTeamGameManager.Instance.AssetHolder.teamIcons.Count - 1)
             {
-                playerTeamIndex[KillTeamGameManager.Player.Player1] = 0;
+                KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1] = 0;
             }
 
-            var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[playerTeamIndex[KillTeamGameManager.Player.Player1]];
+            var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1]];
             m_menus[KillTeamGameManager.Player.Player1].SetImage(image1);
         });
 
         PhysicalButtons.Instance.OnButtonPressed(KillTeamGameManager.Player.Player2, PhysicalButtons.ButtonType.Right, () =>
         {
-            playerTeamIndex[KillTeamGameManager.Player.Player2]++;
-            if (playerTeamIndex[KillTeamGameManager.Player.Player2] > KillTeamGameManager.Instance.AssetHolder.teamIcons.Count - 1)
+            KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2]++;
+            if (KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2] > KillTeamGameManager.Instance.AssetHolder.teamIcons.Count - 1)
             {
-                playerTeamIndex[KillTeamGameManager.Player.Player2] = 0;
+                KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2] = 0;
             }
 
-            var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[playerTeamIndex[KillTeamGameManager.Player.Player2]];
+            var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2]];
             m_menus[KillTeamGameManager.Player.Player2].SetImage(image1);
         });
 
         // left 
         PhysicalButtons.Instance.OnButtonPressed(KillTeamGameManager.Player.Player1, PhysicalButtons.ButtonType.Left, () =>
         {
-            playerTeamIndex[KillTeamGameManager.Player.Player1]--;
-            if (playerTeamIndex[KillTeamGameManager.Player.Player1] < 0)
+            KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1]--;
+            if (KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1] < 0)
             {
-                playerTeamIndex[KillTeamGameManager.Player.Player1] = KillTeamGameManager.Instance.AssetHolder.teamIcons.Count - 1;
+                KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1] = KillTeamGameManager.Instance.AssetHolder.teamIcons.Count - 1;
             }
 
-            var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[playerTeamIndex[KillTeamGameManager.Player.Player1]];
+            var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1]];
             m_menus[KillTeamGameManager.Player.Player1].SetImage(image1);
         });
 
         PhysicalButtons.Instance.OnButtonPressed(KillTeamGameManager.Player.Player2, PhysicalButtons.ButtonType.Left, () =>
         {
-            playerTeamIndex[KillTeamGameManager.Player.Player2]--;
-            if (playerTeamIndex[KillTeamGameManager.Player.Player2] < 0)
+            KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2]--;
+            if (KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2] < 0)
             {
-                playerTeamIndex[KillTeamGameManager.Player.Player2] = KillTeamGameManager.Instance.AssetHolder.teamIcons.Count - 1;
+                KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2] = KillTeamGameManager.Instance.AssetHolder.teamIcons.Count - 1;
             }
 
-            var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[playerTeamIndex[KillTeamGameManager.Player.Player2]];
+            var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2]];
             m_menus[KillTeamGameManager.Player.Player2].SetImage(image1);
         });
 
@@ -333,7 +317,7 @@ public class GenericStateMachine : MonoBehaviour
     private void QuickSceneCreation(float waitTime)
     {
         int itemsToMake = 3;
-        TaskAction taskTerrain = new TaskAction(itemsToMake, () =>
+        TaskAction taskTerrain = new TaskAction(itemsToMake, "QuickSceneCreation",() =>
         {
             RemoveNonPlacedTerrain();
         });
@@ -363,39 +347,58 @@ public class GenericStateMachine : MonoBehaviour
 
     private void QuickPlayerCreation(float waitTime)
     {
-        int itemsToMake = 0;
+        int itemsToMake = KillTeamGameManager.Instance.AssetHolder.TotalPlayerCount();
 
-        itemsToMake += KillTeamGameManager.Instance.AssetHolder.playerGameObjects[KillTeamGameManager.Player.Player1].Count;
-        itemsToMake += KillTeamGameManager.Instance.AssetHolder.playerGameObjects[KillTeamGameManager.Player.Player2].Count;
 
-        TaskAction taskTerrain = new TaskAction(itemsToMake, () =>
+        TaskAction taskTerrain = new TaskAction(itemsToMake, "QuickPlayerCreation", () =>
         {
-            RemoveNonPlacedTerrain();
-        });
+            Debug.Log($"QuickPlayerCreation taskTerrain");
 
-        KillTeamGameManager.Instance.AssetHolder.SpawnPlayers(TeamSelection, () =>
-        {
+
+            // RemoveNonPlacedTerrain();
+
             foreach (KillTeamGameManager.Player p in (KillTeamGameManager.Player[])Enum.GetValues(typeof(KillTeamGameManager.Player)))
             {
-                Table.Instance.playerSetupStrip[p].SetActive(true);
-                var player1Items = KillTeamGameManager.Instance.AssetHolder.playerGameObjects[p];
-                var mesh = Table.Instance.playerSetupStrip[p].GetComponent<BoxCollider>();
-                unitTestingLayout.FitBoxColliderToMesh(mesh);
-                foreach (var obj in player1Items)
-                {
-                    obj.gameObject.transform.position = mesh.GetRandomPointOnBox();
-                    obj.gameObject.transform.position = new Vector3(obj.gameObject.transform.position.x, 0.5f, obj.gameObject.transform.position.z);
-
-                    Grabbable grabbable = obj.GetComponent<Grabbable>();
-
-                    if (grabbable != null)
-                    {
-                        StartCoroutine(FakeGrabAndRelease(waitTime, grabbable, taskTerrain));
-                    }
-                }
+                Table.Instance.playerSetupStrip[p].SetActive(false);
             }
         });
+
+
+
+        foreach (KillTeamGameManager.Player p in (KillTeamGameManager.Player[])Enum.GetValues(typeof(KillTeamGameManager.Player)))
+        {
+            Table.Instance.playerSetupStrip[p].SetActive(true);
+        }
+
+        KillTeamGameManager.Instance.AssetHolder.SpawnPlayers(KillTeamGameManager.Instance.AssetHolder.TeamSelection, () =>
+            {
+                foreach (KillTeamGameManager.Player p in (KillTeamGameManager.Player[])Enum.GetValues(typeof(KillTeamGameManager.Player)))
+                {
+
+                    var player1Items = KillTeamGameManager.Instance.AssetHolder.playerGameObjects[p];
+                    var mesh = Table.Instance.playerSetupStrip[p].GetComponent<BoxCollider>();
+                    unitTestingLayout.FitBoxColliderToMesh(mesh);
+                    foreach (var obj in player1Items)
+                    {
+                        obj.gameObject.SetActive(true);
+                        obj.gameObject.transform.position = mesh.GetRandomPointOnBox();
+                        obj.gameObject.transform.position = new Vector3(obj.gameObject.transform.position.x, obj.gameObject.transform.position.y +0.2f, obj.gameObject.transform.position.x);
+                        Grabbable grabbable = obj.GetComponent<Grabbable>();
+
+                        if (grabbable != null)
+                        {
+                            StartCoroutine(FakeGrabAndRelease(waitTime, grabbable, taskTerrain));
+                        }
+                        else
+                        {
+                            Debug.LogError($"{obj.gameObject.name} , does not have Grabbable ");
+                        }
+                    }
+                }
+            });
     }
+
+
 
 
 
@@ -413,9 +416,13 @@ public class GenericStateMachine : MonoBehaviour
         grabbable.OnReleaseEvent?.Invoke(null, grabbable);
         yield return new WaitForSeconds(1f);
         task.Increment();
+        Debug.Log($" taskAction TargetCount : {task.TargetCount}  currentCount {task.GetCount}  name: {task.Name}");
     }
 
+    private void RemoveNonPlacedTeam()
+    {
 
+    }
 
     private void RemoveNonPlacedTerrain()
     {
@@ -434,7 +441,17 @@ public class GenericStateMachine : MonoBehaviour
             {
                 nonValid.Add(item);
             }
+
+            var val2 = item.gameObject.GetComponent<MiniaturePlacementValidator>();
+            if (val2 != null && val2.IsValidPlacement() == false)
+            {
+                nonValid.Add(item);
+            }
+
         }
+
+        Debug.Log($"RemoveNonPlacedTerrain count {nonValid.Count}");
+
         foreach (var item in nonValid)
         {
             Core.Scene.RemoveSpawnedVrInteractionAndGameObject(item);

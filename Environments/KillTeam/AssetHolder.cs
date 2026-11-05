@@ -32,6 +32,16 @@ public class AssetHolder : MonoBehaviour
     [SerializeField]
     public SimpleDictionaryList<KillTeamGameManager.Player, GameObject> playerGameObjects = new SimpleDictionaryList<KillTeamGameManager.Player, GameObject>();
 
+
+    public Dictionary<KillTeamGameManager.Player, ContentKillTeamMetaData.TeamType> TeamSelection = new Dictionary<KillTeamGameManager.Player, ContentKillTeamMetaData.TeamType>();
+
+
+    public Dictionary<KillTeamGameManager.Player, int> playerTeamIndex = new()
+    {
+        { KillTeamGameManager.Player.Player1, 0 },
+        { KillTeamGameManager.Player.Player2, 0 }
+    };
+
     public void Initilise()
     {
         int totalCount = 0;
@@ -133,6 +143,7 @@ public class AssetHolder : MonoBehaviour
                         assetsFolder = go.transform;
                         assetsFolder.SetParent(transform, false);
                     }
+     
                     KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Terrain, KillTeamGameManager.Player.Player1 /*notused*/);
                     terrainGameObjects.AddToList(player, item.gameObject);
                     task.Increment();
@@ -176,6 +187,19 @@ public class AssetHolder : MonoBehaviour
         }
     }
 
+
+    public int TotalPlayerCount()
+    {
+        var teamTypes = KillTeamGameManager.Instance.AssetHolder.TeamSelection;
+        // collects it all 
+        int count = 0;
+        foreach (KillTeamGameManager.Player player in Enum.GetValues(typeof(KillTeamGameManager.Player)))
+        {
+            count += catalogueEntryPlayer[teamTypes[player]].Count;
+        }
+        return count;
+    }
+
     public void SpawnPlayers(Dictionary<KillTeamGameManager.Player, ContentKillTeamMetaData.TeamType> teamTypes, Action callback)
     {
 
@@ -210,6 +234,8 @@ public class AssetHolder : MonoBehaviour
                         assetsFolder = go.transform;
                         assetsFolder.SetParent(transform, false);
                     }
+
+
 
                     KillTeamGameManager.Instance.SetUpItem(assetsFolder, catItem, item, KillTeamGameManager.LayerType.Player, player);
 

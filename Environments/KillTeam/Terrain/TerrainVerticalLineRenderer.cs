@@ -44,6 +44,8 @@ public class TerrainVerticalLineRenderer : MonoBehaviour
         line.startWidth = lineWidth;
         line.endWidth = lineWidth;
         line.enabled = false;
+
+        line.material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
     }
 
     public void SetActive(bool active)

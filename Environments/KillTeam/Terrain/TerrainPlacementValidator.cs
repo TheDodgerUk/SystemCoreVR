@@ -68,9 +68,8 @@ public class TerrainPlacementValidator : MonoBehaviour
 
             case KillTeamGameManager.GameState.Finished:
                 break;
-            case KillTeamGameManager.GameState.DEBUG_QuickSceneCreation:
+            case KillTeamGameManager.GameState.DEBUG_SlowPlayerCreation:
             case KillTeamGameManager.GameState.DEBUG_SlowSceneCreation:
-            case KillTeamGameManager.GameState.DEBUG_VerySlowSceneCreation:
                 grab.enabled = true;
                 break;
 

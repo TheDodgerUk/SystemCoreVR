@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class PrefabRowSpawner : MonoBehaviour
 {
-
     [Header("Spacing")]
     [Tooltip("0.5 = gap of half the previous collider size")]
     [SerializeField, Min(0f)]
@@ -13,6 +12,8 @@ public class PrefabRowSpawner : MonoBehaviour
     [Header("Fallback")]
     [SerializeField]
     private Vector3 fallbackSize = Vector3.one;
+
+    private const float MIN_SIZE = 0.0001f;
 
     private class Item
     {
@@ -24,18 +25,33 @@ public class PrefabRowSpawner : MonoBehaviour
 
     public void Spawn(Vector3 centrePoint, List<GameObject> gameObjects)
     {
-        if (gameObjects == null)
+        if (gameObjects == null || gameObjects.Count == 0)
             return;
 
-        List<GameObject> validObjects =
-            gameObjects.FindAll(obj => obj != null);
+        List<GameObject> validObjects = new List<GameObject>();
+        HashSet<GameObject> seen = new HashSet<GameObject>();
+
+        foreach (GameObject obj in gameObjects)
+        {
+            if (obj == null)
+                continue;
+
+            if (!seen.Add(obj))
+            {
+                Debug.LogWarning(
+                    $"Duplicate GameObject ignored: {obj.name}",
+                    obj
+                );
+                continue;
+            }
+
+            validObjects.Add(obj);
+        }
 
         int count = validObjects.Count;
 
         if (count == 0)
             return;
-
-        Physics.SyncTransforms();
 
         int columns = Mathf.CeilToInt(Mathf.Sqrt(count));
         int rowCount = Mathf.CeilToInt(count / (float)columns);
@@ -47,10 +63,7 @@ public class PrefabRowSpawner : MonoBehaviour
 
         int index = 0;
 
-        // ---------------------------------------------
         // BUILD ROWS
-        // ---------------------------------------------
-
         for (int row = 0; row < rowCount; row++)
         {
             List<Item> items = new List<Item>();
@@ -65,9 +78,10 @@ public class PrefabRowSpawner : MonoBehaviour
             {
                 GameObject instance = validObjects[index++];
 
-                Bounds bounds = GetColliderBounds(instance, out float axis);
+                Bounds bounds = GetColliderBounds(instance);
 
-                float width = bounds.size.x;
+                float width = Mathf.Max(bounds.size.x, MIN_SIZE);
+                float depth = Mathf.Max(bounds.size.z, MIN_SIZE);
 
                 if (col > 0)
                     rightEdge += previousWidth * gapMultiplier;
@@ -84,28 +98,19 @@ public class PrefabRowSpawner : MonoBehaviour
                 rightEdge += width;
                 previousWidth = width;
 
-                maxDepth = Mathf.Max(
-                    maxDepth,
-                    bounds.size.z
-                );
+                maxDepth = Mathf.Max(maxDepth, depth);
             }
 
-            // Centre each row around X = 0
             float rowCentre = rightEdge * 0.5f;
 
             foreach (Item item in items)
-            {
                 item.x -= rowCentre;
-            }
 
             rows.Add(items);
             rowDepths.Add(maxDepth);
         }
 
-        // ---------------------------------------------
         // CALCULATE TOTAL DEPTH
-        // ---------------------------------------------
-
         float totalDepth = 0f;
 
         for (int row = 0; row < rowCount; row++)
@@ -113,22 +118,15 @@ public class PrefabRowSpawner : MonoBehaviour
             totalDepth += rowDepths[row];
 
             if (row < rowCount - 1)
-            {
-                totalDepth +=
-                    rowDepths[row] * gapMultiplier;
-            }
+                totalDepth += rowDepths[row] * gapMultiplier;
         }
 
-        // ---------------------------------------------
         // POSITION OBJECTS
-        // ---------------------------------------------
-
         float currentZ = totalDepth * 0.5f;
 
         for (int row = 0; row < rowCount; row++)
         {
             float depth = rowDepths[row];
-
             float rowZ = currentZ - depth * 0.5f;
 
             foreach (Item item in rows[row])
@@ -141,11 +139,9 @@ public class PrefabRowSpawner : MonoBehaviour
                     centrePoint.z + item.z
                 );
 
-                // Calculate X/Z movement from collider centre
                 Vector3 offset =
                     targetBoundsCentre - item.bounds.center;
 
-                // Set Y EXACTLY to the passed centrePoint.y
                 Vector3 position = item.instance.transform.position;
 
                 position.x += offset.x;
@@ -158,21 +154,11 @@ public class PrefabRowSpawner : MonoBehaviour
             currentZ -= depth * (1f + gapMultiplier);
         }
 
-        Physics.SyncTransforms();
-
-        // ---------------------------------------------
-        // FINAL CENTRING CORRECTION (X/Z ONLY)
-        // ---------------------------------------------
-
-        Bounds combinedBounds =
-            GetColliderBounds(validObjects[0], out float axis0);
+        // FINAL CENTRING CORRECTION
+        Bounds combinedBounds = GetColliderBounds(validObjects[0]);
 
         for (int i = 1; i < validObjects.Count; i++)
-        {
-            combinedBounds.Encapsulate(
-                GetColliderBounds(validObjects[i], out float axis2)
-            );
-        }
+            combinedBounds.Encapsulate(GetColliderBounds(validObjects[i]));
 
         Vector3 correction = new Vector3(
             centrePoint.x - combinedBounds.center.x,
@@ -189,62 +175,97 @@ public class PrefabRowSpawner : MonoBehaviour
             position.z += correction.z;
 
             obj.transform.position = position;
-
         }
 
         Physics.SyncTransforms();
+
+        Debug.Log(
+            $"PrefabRowSpawner: Positioned {count} objects " +
+            $"in {rowCount} rows and {columns} columns."
+        );
     }
 
-    // ---------------------------------------------
-    // GET COLLIDER BOUNDS
-    // ---------------------------------------------
-
-    private Bounds GetColliderBounds(GameObject instance, out float offset)
+    // GET WORLD-SPACE COLLIDER BOUNDS
+    // Works with any scale, rotation, or disabled collider.
+    private Bounds GetColliderBounds(GameObject instance)
     {
-        // Default value - required for an out parameter
-        offset = 0;
-
         Transform collisionTransform =
             instance.transform.Find("PlacementCollision");
 
         if (collisionTransform != null)
         {
-
-
-            BoxCollider collider =
+            BoxCollider box =
                 collisionTransform.GetComponentInChildren<BoxCollider>(true);
 
-
-            if (collider != null)
+            if (box != null)
             {
-                bool wasEnabled = collider.enabled;
+                Bounds bounds = CalculateWorldBounds(box);
 
-                if (!wasEnabled)
+                if (bounds.size.x > MIN_SIZE &&
+                    bounds.size.z > MIN_SIZE)
                 {
-                    collider.enabled = true;
-                    Physics.SyncTransforms();
+                    return bounds;
                 }
 
-                Bounds bounds = collider.bounds;
-
-                if (!wasEnabled)
-                {
-                    collider.enabled = false;
-                }
-
-                return bounds;
+                Debug.LogWarning(
+                    $"Invalid collider dimensions on {instance.name}: " +
+                    $"{bounds.size}. Using fallback.",
+                    instance
+                );
             }
         }
 
         Debug.LogWarning(
-            $"No PlacementCollision BoxCollider found on " +
+            $"No valid PlacementCollision BoxCollider found on " +
             $"{instance.name}. Using fallback size.",
             instance
         );
 
         return new Bounds(
             instance.transform.position,
-            fallbackSize
+            new Vector3(
+                Mathf.Max(Mathf.Abs(fallbackSize.x), MIN_SIZE),
+                Mathf.Max(Mathf.Abs(fallbackSize.y), MIN_SIZE),
+                Mathf.Max(Mathf.Abs(fallbackSize.z), MIN_SIZE)
+            )
         );
+    }
+
+    // CALCULATE BOUNDS FROM ALL 8 BOX CORNERS
+    private Bounds CalculateWorldBounds(BoxCollider box)
+    {
+        Vector3 centre = box.center;
+        Vector3 halfSize = box.size * 0.5f;
+
+        Transform t = box.transform;
+
+        Vector3 firstCorner = t.TransformPoint(
+            centre + new Vector3(
+                -halfSize.x,
+                -halfSize.y,
+                -halfSize.z
+            )
+        );
+
+        Bounds bounds = new Bounds(firstCorner, Vector3.zero);
+
+        for (int x = -1; x <= 1; x += 2)
+        {
+            for (int y = -1; y <= 1; y += 2)
+            {
+                for (int z = -1; z <= 1; z += 2)
+                {
+                    Vector3 localCorner = centre + new Vector3(
+                        halfSize.x * x,
+                        halfSize.y * y,
+                        halfSize.z * z
+                    );
+
+                    bounds.Encapsulate(t.TransformPoint(localCorner));
+                }
+            }
+        }
+
+        return bounds;
     }
 }

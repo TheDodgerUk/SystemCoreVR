@@ -19,18 +19,19 @@ public class Table : MonoBehaviour
 
 
 
-    [Header("Board")]
-    [SerializeField]
-    public GameObject boardRoot;
-
-
-    [SerializeField]
-    public GameObject menuPoint;
     public Dictionary<KillTeamGameManager.Player, Vector3> DynamicImagePlanePoint = new Dictionary<KillTeamGameManager.Player, Vector3>()        {
             { KillTeamGameManager.Player.Player1, new Vector3(0.4243714f, 0.4678285f + 0.1f, 0f) },
             { KillTeamGameManager.Player.Player2, new Vector3(-0.4243714f, 0.4678285f + 0.1f, 0f) }
         };
 
+
+
+
+    [Header("Board")]
+    [SerializeField]
+    private GameObject boardRoot;
+
+    [SerializeField]
     public GameObject BoardRoot => boardRoot;
 
     [SerializeField]

@@ -66,15 +66,9 @@ public class KillTeamGameManager : MonoBehaviour
         Playing,
         Finished,
 
-        [InspectorName("Qucik setup")]
-        DEBUG_QuickTeamSelect,
-        DEBUG_QuickSceneCreation,
+        [InspectorName("Quick setup")]
         DEBUG_SlowSceneCreation,
-        DEBUG_VerySlowSceneCreation,
-
-        DEBUG_QuickPlayerCreation,
         DEBUG_SlowPlayerCreation,
-        DEBUG_VerySloPlayerCreation,
 
         [InspectorName("Unit Testing")]
         UnitTest_StartStripTesting,
