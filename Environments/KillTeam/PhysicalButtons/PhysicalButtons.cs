@@ -42,6 +42,8 @@ public class PhysicalButtons : MonoBehaviour
 
     private AudioClip audioClip;
 
+    public Dictionary<KillTeamGameManager.Player, DynamicImagePlane> m_menus = new Dictionary<KillTeamGameManager.Player, DynamicImagePlane>();
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -51,6 +53,31 @@ public class PhysicalButtons : MonoBehaviour
         }
 
         Instance = this;
+        Core.Environment.OnEnvironmentLoadingComplete += () =>
+        {
+
+            var men1 = new GameObject("DynamicImagePlane1");
+            var men2 = new GameObject("DynamicImagePlane2");
+            m_menus[KillTeamGameManager.Player.Player1] = men1.AddComponent<DynamicImagePlane>();
+            m_menus[KillTeamGameManager.Player.Player2] = men2.AddComponent<DynamicImagePlane>();
+
+            var menu1 = this.transform.FindChildRecursive("MenuPlayer1");
+            var menu2 = this.transform.FindChildRecursive("MenuPlayer2");
+            menu1.gameObject.SetActive(false);
+            menu2.gameObject.SetActive(false);
+            m_menus[KillTeamGameManager.Player.Player1].transform.position = menu1.position;
+            m_menus[KillTeamGameManager.Player.Player2].transform.position = menu2.position;
+
+            m_menus[KillTeamGameManager.Player.Player1].CreatePlane(m_menus[KillTeamGameManager.Player.Player1].transform.position, new Vector3(0.1f, 0.1f, 0.1f), null);
+            m_menus[KillTeamGameManager.Player.Player2].CreatePlane(m_menus[KillTeamGameManager.Player.Player2].transform.position, new Vector3(0.1f, 0.1f, 0.1f), null);
+            m_menus[KillTeamGameManager.Player.Player1].SetActive(false);
+            m_menus[KillTeamGameManager.Player.Player2].SetActive(false);
+
+            m_menus[KillTeamGameManager.Player.Player1].SetRotation(new Vector3(0, -90f, 0f));
+            m_menus[KillTeamGameManager.Player.Player2].SetRotation(new Vector3(0, +90f, 0f));
+
+        };
+
 
         Core.AssetBundlesRef.AudioClipAssetBundleRef.GetItem(
             Core.Mono,

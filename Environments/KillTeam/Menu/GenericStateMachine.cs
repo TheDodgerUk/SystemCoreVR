@@ -13,7 +13,6 @@ using System.Runtime.CompilerServices;
 public class GenericStateMachine : MonoBehaviour
 {
 
-    private Dictionary<KillTeamGameManager.Player, DynamicImagePlane> m_menus = new Dictionary<KillTeamGameManager.Player, DynamicImagePlane>();
 
 
     private List<KillTeamGameManager.Player> taskActionList = new List<KillTeamGameManager.Player>();
@@ -29,21 +28,7 @@ public class GenericStateMachine : MonoBehaviour
         Core.Environment.OnEnvironmentLoadingComplete += () =>
         {
             unitTestingLayout = this.AddComponent<UnitTestingLayout>();
-            var men1 = new GameObject("DynamicImagePlane1");
-            var men2 = new GameObject("DynamicImagePlane2");
-            m_menus[KillTeamGameManager.Player.Player1] = men1.AddComponent<DynamicImagePlane>();
-            m_menus[KillTeamGameManager.Player.Player2] = men2.AddComponent<DynamicImagePlane>();
 
-            m_menus[KillTeamGameManager.Player.Player1].transform.position = Table.Instance.DynamicImagePlanePoint[KillTeamGameManager.Player.Player1];
-            m_menus[KillTeamGameManager.Player.Player2].transform.position = Table.Instance.DynamicImagePlanePoint[KillTeamGameManager.Player.Player2];
-
-            m_menus[KillTeamGameManager.Player.Player1].CreatePlane(m_menus[KillTeamGameManager.Player.Player1].transform.position, new Vector3(0.1f, 0.1f, 0.1f), null);
-            m_menus[KillTeamGameManager.Player.Player2].CreatePlane(m_menus[KillTeamGameManager.Player.Player2].transform.position, new Vector3(0.1f, 0.1f, 0.1f), null);
-            m_menus[KillTeamGameManager.Player.Player1].SetActive(false);
-            m_menus[KillTeamGameManager.Player.Player2].SetActive(false);
-
-            m_menus[KillTeamGameManager.Player.Player1].SetRotation(new Vector3(0, -90f, 0f));
-            m_menus[KillTeamGameManager.Player.Player2].SetRotation(new Vector3(0, +90f, 0f));
 
 
             KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1] = 0;
@@ -76,8 +61,12 @@ public class GenericStateMachine : MonoBehaviour
         // delete all tests
         unitTestingLayout.ClearAll();
         Table.Instance.playerSetupStrip.Values.ToList().ForEach(obj => obj.SetActive(false));
-        m_menus[KillTeamGameManager.Player.Player1].SetActive(false);
-        m_menus[KillTeamGameManager.Player.Player2].SetActive(false);
+
+        if (PhysicalButtons.Instance != null && PhysicalButtons.Instance.m_menus != null && PhysicalButtons.Instance.m_menus.Count != 0)
+        {
+            PhysicalButtons.Instance.m_menus[KillTeamGameManager.Player.Player1].SetActive(false);
+            PhysicalButtons.Instance.m_menus[KillTeamGameManager.Player.Player2].SetActive(false);
+        }
         PhysicalButtons.Instance.ClearAllButtonCallbacks();
         taskActionList.Clear();
         int NumberOfPlayers = KillTeamGameManager.Instance.IsSinglePlayer ? 1 : 2;
@@ -207,13 +196,13 @@ public class GenericStateMachine : MonoBehaviour
     {
         if (numPlayers == 1)
         {
-            m_menus[KillTeamGameManager.Player.Player1].SetActive(true);
-            m_menus[KillTeamGameManager.Player.Player2].SetActive(false);
+            PhysicalButtons.Instance.m_menus[KillTeamGameManager.Player.Player1].SetActive(true);
+            PhysicalButtons.Instance.m_menus[KillTeamGameManager.Player.Player2].SetActive(false);
         }
         else
         {
-            m_menus[KillTeamGameManager.Player.Player1].SetActive(true);
-            m_menus[KillTeamGameManager.Player.Player2].SetActive(true);
+            PhysicalButtons.Instance.m_menus[KillTeamGameManager.Player.Player1].SetActive(true);
+            PhysicalButtons.Instance.m_menus[KillTeamGameManager.Player.Player2].SetActive(true);
         }
 
 
@@ -240,10 +229,10 @@ public class GenericStateMachine : MonoBehaviour
 
 
         var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1]];
-        m_menus[KillTeamGameManager.Player.Player1].SetImage(image1);
+        PhysicalButtons.Instance.m_menus[KillTeamGameManager.Player.Player1].SetImage(image1);
 
         var image2 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2]];
-        m_menus[KillTeamGameManager.Player.Player2].SetImage(image2);
+        PhysicalButtons.Instance.m_menus[KillTeamGameManager.Player.Player2].SetImage(image2);
 
 
         // right 
@@ -256,7 +245,7 @@ public class GenericStateMachine : MonoBehaviour
             }
 
             var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1]];
-            m_menus[KillTeamGameManager.Player.Player1].SetImage(image1);
+            PhysicalButtons.Instance.m_menus[KillTeamGameManager.Player.Player1].SetImage(image1);
         });
 
         PhysicalButtons.Instance.OnButtonPressed(KillTeamGameManager.Player.Player2, PhysicalButtons.ButtonType.Right, () =>
@@ -268,7 +257,7 @@ public class GenericStateMachine : MonoBehaviour
             }
 
             var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2]];
-            m_menus[KillTeamGameManager.Player.Player2].SetImage(image1);
+            PhysicalButtons.Instance.m_menus[KillTeamGameManager.Player.Player2].SetImage(image1);
         });
 
         // left 
@@ -281,7 +270,7 @@ public class GenericStateMachine : MonoBehaviour
             }
 
             var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player1]];
-            m_menus[KillTeamGameManager.Player.Player1].SetImage(image1);
+            PhysicalButtons.Instance.m_menus[KillTeamGameManager.Player.Player1].SetImage(image1);
         });
 
         PhysicalButtons.Instance.OnButtonPressed(KillTeamGameManager.Player.Player2, PhysicalButtons.ButtonType.Left, () =>
@@ -293,7 +282,7 @@ public class GenericStateMachine : MonoBehaviour
             }
 
             var image1 = KillTeamGameManager.Instance.AssetHolder.teamIcons[KillTeamGameManager.Instance.AssetHolder.playerTeamIndex[KillTeamGameManager.Player.Player2]];
-            m_menus[KillTeamGameManager.Player.Player2].SetImage(image1);
+            PhysicalButtons.Instance.m_menus[KillTeamGameManager.Player.Player2].SetImage(image1);
         });
 
 
@@ -322,8 +311,6 @@ public class GenericStateMachine : MonoBehaviour
             RemoveNonPlacedTerrain();
         });
 
-
-
         KillTeamGameManager.Instance.AssetHolder.SpawnTerrain(() =>
         {
             var mesh = Table.Instance.BoardRoot.GetComponent<BoxCollider>();
@@ -332,7 +319,8 @@ public class GenericStateMachine : MonoBehaviour
             {
                 GameObject obj = all[i].gameObject;
                 obj.gameObject.transform.position = mesh.GetRandomPointOnBox(0.01f);
-                obj.gameObject.transform.position = new Vector3(all[i].gameObject.transform.position.x, 0.5f, all[i].gameObject.transform.position.z);
+                obj.gameObject.transform.position = new Vector3(obj.gameObject.transform.position.x, obj.gameObject.transform.position.y + 0.2f, obj.gameObject.transform.position.z);
+
 
                 Grabbable grabbable = obj.GetComponent<Grabbable>();
 
@@ -355,11 +343,11 @@ public class GenericStateMachine : MonoBehaviour
             Debug.Log($"QuickPlayerCreation taskTerrain");
 
 
-            // RemoveNonPlacedTerrain();
+             RemoveNonPlacedTerrain();
 
             foreach (KillTeamGameManager.Player p in (KillTeamGameManager.Player[])Enum.GetValues(typeof(KillTeamGameManager.Player)))
             {
-               // Table.Instance.playerSetupStrip[p].SetActive(false);
+                Table.Instance.playerSetupStrip[p].SetActive(false);
             }
         });
 
