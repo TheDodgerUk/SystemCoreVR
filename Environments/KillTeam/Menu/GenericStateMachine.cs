@@ -44,7 +44,7 @@ public class GenericStateMachine : MonoBehaviour
 
             this.AddComponent<VRInputDebug>();
 
-            
+            this.AddComponent<XRTrackingDebug>();
         };
     }
 

@@ -124,6 +124,8 @@ public class MiniatureMovementLine : MonoBehaviour
         endPosition.y = startPosition.y;
 
         List<Collider> terrainColliders =
+            
+            
             GetTerrainColliders();
 
         List<Vector3> path =
