@@ -716,7 +716,6 @@ public class KillTeamGameManager : MonoBehaviour
 }
 
 #if UNITY_EDITOR
-
 [CustomEditor(typeof(KillTeamGameManager))]
 public class KillTeamGameManagerEditor : Editor
 {
@@ -762,11 +761,9 @@ public class KillTeamGameManagerEditor : Editor
                 if (target == null) return;
                 serializedObject.Update();
                 SerializedProperty state = serializedObject.FindProperty("currentState");
-                if (state != null)
-                {
-                    state.intValue = selected;
-                    serializedObject.ApplyModifiedProperties();
-                }
+                if (state == null) return;
+                state.intValue = selected;
+                serializedObject.ApplyModifiedProperties();
             });
             dropdown.Show(buttonRect);
         }
@@ -786,10 +783,29 @@ public class KillTeamGameManagerEditor : Editor
         protected override AdvancedDropdownItem BuildRoot()
         {
             var root = new AdvancedDropdownItem("Game States");
+            AdvancedDropdownItem group = null;
+
+            // InspectorName on the first enum value of a section marks its group.
             foreach (KillTeamGameManager.GameState state in
                 Enum.GetValues(typeof(KillTeamGameManager.GameState)))
             {
-                root.AddChild(new StateItem(state.ToString(), (int)state));
+                var field = typeof(KillTeamGameManager.GameState).GetField(state.ToString());
+                var heading = (InspectorNameAttribute)Attribute.GetCustomAttribute(
+                    field, typeof(InspectorNameAttribute));
+
+                if (heading != null)
+                {
+                    group = new AdvancedDropdownItem(heading.displayName);
+                    root.AddChild(group);
+                }
+
+                if (group == null)
+                {
+                    group = new AdvancedDropdownItem("Other");
+                    root.AddChild(group);
+                }
+
+                group.AddChild(new StateItem(state.ToString(), (int)state));
             }
             return root;
         }
