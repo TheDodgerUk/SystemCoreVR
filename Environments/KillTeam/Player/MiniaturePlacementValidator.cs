@@ -44,10 +44,6 @@ public class MiniaturePlacementValidator : MonoBehaviour
 
     private void KillTeamGameManager_OnStateChanged(KillTeamGameManager.GameState state)
     {
-        if(KillTeamGameManager.Instance.CurrentState == state)
-        { 
-            return;
-        }
         miniatureMovementLine.SetActive(true);
         miniatureVerticalLine.SetActive(true);
         miniatureStarPositionVerticalLine.SetActive(false);
@@ -66,6 +62,7 @@ public class MiniaturePlacementValidator : MonoBehaviour
             case KillTeamGameManager.GameState.TeamSelection:
                 break;
             case KillTeamGameManager.GameState.SetCharacterToStartPlacement:
+                Debug.LogError("MiniaturePlacementValidator  SetCharacterToStartPlacement");
                 miniatureVerticalLine.SetActive(false);
                 miniatureMovementLine.SetActive(false);
                 miniatureStarPositionVerticalLine.SetActive(true);
