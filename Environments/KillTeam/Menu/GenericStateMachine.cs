@@ -42,6 +42,7 @@ public class GenericStateMachine : MonoBehaviour
             KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
             KillTeamGameManager_OnStateChanged(KillTeamGameManager.Instance.CurrentState);
 
+            this.AddComponent<SkyboxController>();
             this.AddComponent<VRInputDebug>();
 
             this.AddComponent<XRTrackingDebug>();
