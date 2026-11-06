@@ -1,6 +1,4 @@
 
-using Oculus.Avatar2;
-using Oculus.Interaction;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -72,7 +70,7 @@ public class RandomMusicPlaylist : MonoBehaviour
             List<string> names = new List<string>();
             foreach (var item in itemList)
             {
-                if (item.ContainsIgnoreCase(BACKGROUND_NAME))
+                if (item.CaseInsensitiveContains(BACKGROUND_NAME))
                 {
                     names.Add(item);
                 }

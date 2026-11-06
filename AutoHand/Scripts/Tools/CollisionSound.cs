@@ -62,29 +62,32 @@ public class CollisionSound : MonoBehaviour
     {
         if (clip == null)
         {
-            Core.Mono.WaitFor(5, () => // long wait because of loading in via bundles
+            if (Core.Mono != null)
             {
-                VrInteraction vr = null;
-                if (this.CompareTag(Layers.RootCatTag) == true)
+                Core.Mono.WaitFor(5, () => // long wait because of loading in via bundles
                 {
-                    vr = this.GetComponent<VrInteraction>();
-                }
-                else
-                {
-                    vr = this.GetComponentInParent<VrInteraction>();
-                }
-
-                if (vr != null)
-                {
-                    if (m_fGuid.Contains(vr.CatalogueEntryRef.Guid) == false)
+                    VrInteraction vr = null;
+                    if (this.CompareTag(Layers.RootCatTag) == true)
                     {
-                        m_fGuid.Add(vr.CatalogueEntryRef.Guid);
-                        DebugBeep.Log($"No CollisionSound clip here, {vr.CatalogueEntryRef.ShortName}, GlobalCount: {m_fGuid.Count}", DebugBeep.MessageLevel.Medium, this.gameObject);
+                        vr = this.GetComponent<VrInteraction>();
                     }
-                }
-                this.enabled = false;
-                source.enabled = false;
-            });
+                    else
+                    {
+                        vr = this.GetComponentInParent<VrInteraction>();
+                    }
+
+                    if (vr != null)
+                    {
+                        if (m_fGuid.Contains(vr.CatalogueEntryRef.Guid) == false)
+                        {
+                            m_fGuid.Add(vr.CatalogueEntryRef.Guid);
+                            DebugBeep.Log($"No CollisionSound clip here, {vr.CatalogueEntryRef.ShortName}, GlobalCount: {m_fGuid.Count}", DebugBeep.MessageLevel.Medium, this.gameObject);
+                        }
+                    }
+                    this.enabled = false;
+                    source.enabled = false;
+                });
+            }
         }
     }
 

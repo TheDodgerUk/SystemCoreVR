@@ -156,9 +156,16 @@ public class KillTeamGameManager : MonoBehaviour
 
         lastAppliedState = currentState;
 
+       var yy = CameraControllerVR.Instance.AutoHandPlayerRef.handLeft;
+        var yy1 = CameraControllerVR.Instance.HandLeftRef;
+        //CameraControllerVR.Instance.
 
 
-
+        CameraControllerVR.Instance.AutoHandPlayerRef.useMovement = true;
+        CameraControllerVR.Instance.AutoHandPlayerRef.snapTurning = true;
+        CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.position = Vector3.zero;
+        CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.rotation = Quaternion.identity;
+        CameraControllerVR.Instance.SnapTeleport(new Vector3(-1,0,0));
 
         var assetHolder = new GameObject("assetHolder");
         assetHolder.transform.SetParent(transform, false);

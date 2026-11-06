@@ -1,5 +1,6 @@
 
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace KillTeam
 {
@@ -38,6 +39,10 @@ namespace KillTeam
         // World-space pivot on the board
         private Vector3 startPivot;
 
+        private ControllerVr left;
+        private ControllerVr right;
+
+
         private void Awake()
         {
             if (CameraControllerVR.Instance != null)
@@ -51,6 +56,11 @@ namespace KillTeam
 
             if (head == null && Camera.main != null)
                 head = Camera.main.transform;
+
+
+                left = CameraControllerVR.Instance.ControllerLeft;
+
+            right = CameraControllerVR.Instance.ControllerRight;
         }
 
         private void Update()
@@ -61,13 +71,9 @@ namespace KillTeam
                 return;
 
             // Use Get, not GetDown, to detect held buttons.
-            bool leftGrip = OVRInput.Get(
-                OVRInput.Button.One,
-                OVRInput.Controller.LTouch);
+            bool leftGrip = left.PrimaryButton;
 
-            bool rightGrip = OVRInput.Get(
-                OVRInput.Button.One,
-                OVRInput.Controller.RTouch);
+            bool rightGrip = left.PrimaryButton;
 
             if (leftGrip && rightGrip)
             {
