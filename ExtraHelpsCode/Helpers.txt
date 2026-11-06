@@ -1,0 +1,47 @@
+using UnityEngine;
+
+public class MiniatureSelectionController : MonoBehaviour
+{
+    private VRControllerSetup setup;
+
+    private void Start()
+    {
+        setup = CameraControllerVR.Instance.vRControllerSetup;
+
+        // Register mode change callbacks
+        setup.Left.OnLaserModeChanged += OnLaserModeChanged;
+        setup.Right.OnLaserModeChanged += OnLaserModeChanged;
+
+        // Enable automatic pointer selection
+        setup.SetBothLaserModes(true, OnObjectSelected);
+    }
+
+    private void OnLaserModeChanged(
+        bool isLaserMode,
+        GameObject target)
+    {
+        if (isLaserMode)
+        {
+            Debug.Log("Laser over: " +
+                (target != null ? target.name : "None"));
+        }
+        else
+        {
+            Debug.Log("Normal AutoHand grabbing");
+        }
+    }
+
+    private void OnObjectSelected(GameObject obj)
+    {
+        Debug.Log("Clicked object: " + obj.name);
+    }
+
+    private void OnDestroy()
+    {
+        if (setup == null)
+            return;
+
+        setup.Left.OnLaserModeChanged -= OnLaserModeChanged;
+        setup.Right.OnLaserModeChanged -= OnLaserModeChanged;
+    }
+}
