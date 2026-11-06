@@ -7,12 +7,12 @@ using Autohand;
 public class VRControllerSetup : MonoBehaviour
 {
     [Header("Left AutoHand")]
-    public AutoHand.Hand leftHand;
+    public Autohand.Hand leftHand;
     public HandGameObjectPointer leftLaser;
     public Behaviour leftGrabInput;
 
     [Header("Right AutoHand")]
-    public AutoHand.Hand rightHand;
+    public Autohand.Hand rightHand;
     public HandGameObjectPointer rightLaser;
     public Behaviour rightGrabInput;
 

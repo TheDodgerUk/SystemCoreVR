@@ -9,7 +9,7 @@ public class ControllerVr : IDisposable
     public XRNode Node { get; private set; }
 
     private InputDevice device;
-    private AutoHand.Hand hand;
+    private Autohand.Hand hand;
     private HandGameObjectPointer pointer;
     private Behaviour grabInput;
 
@@ -61,7 +61,7 @@ public class ControllerVr : IDisposable
     // -------------------------
 
     public void SetAutoHand(
-        AutoHand.Hand autoHand,
+        Autohand.Hand autoHand,
         HandGameObjectPointer laserPointer,
         Behaviour grabInputComponent)
     {
