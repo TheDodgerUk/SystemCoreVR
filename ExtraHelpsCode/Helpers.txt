@@ -45,3 +45,15 @@ public class MiniatureSelectionController : MonoBehaviour
         setup.Right.OnLaserModeChanged -= OnLaserModeChanged;
     }
 }
+
+
+
+var setup = CameraControllerVR.Instance.vRControllerSetup;
+
+setup.Left.OnLaserClick += OnObjectSelected;
+setup.Right.OnLaserClick += OnObjectSelected;
+
+private void OnObjectSelected(GameObject obj)
+{
+    Debug.Log("Selected: " + obj.name);
+}

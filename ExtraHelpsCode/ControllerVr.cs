@@ -385,6 +385,11 @@ public class ControllerVr : IDisposable
     // CLEANUP
     // -------------------------
 
+    public void ClearLaserClickCallbacks()
+    {
+        OnLaserClick = null;
+    }
+
     public void Dispose()
     {
         if (pointer != null)
