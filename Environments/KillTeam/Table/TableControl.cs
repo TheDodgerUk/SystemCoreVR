@@ -61,6 +61,7 @@ namespace KillTeam
                 left = CameraControllerVR.Instance.ControllerLeft;
 
             right = CameraControllerVR.Instance.ControllerRight;
+            rigRoot = CameraControllerVR.Instance.RigRoot;
         }
 
         private void Update()
