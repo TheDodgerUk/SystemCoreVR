@@ -58,10 +58,12 @@ namespace KillTeam
                 head = Camera.main.transform;
 
 
-                left = CameraControllerVR.Instance.ControllerLeft;
+                left = CameraControllerVR.Instance.vRControllerSetup.LeftController;
 
-            right = CameraControllerVR.Instance.ControllerRight;
+            right = CameraControllerVR.Instance.vRControllerSetup.RightController;
             rigRoot = CameraControllerVR.Instance.RigRoot;
+
+            CameraControllerVR.Instance.vRControllerSetup.SetLeftLaserMode(true);
         }
 
         private void Update()

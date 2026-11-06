@@ -1,6 +1,8 @@
 
+using System;
 using UnityEngine;
 using UnityEngine.XR;
+using Autohand;
 
 public class ControllerVr
 {
@@ -8,11 +10,155 @@ public class ControllerVr
 
     private InputDevice device;
 
+    // -------------------------
+    // AUTOHAND
+    // -------------------------
+
+    private Autohand.Hand hand;
+    private HandDistanceGrabber laserPointer;
+    private Behaviour grabInputComponent;
+
+    private bool originalGrabInputEnabled;
+    private bool originalLaserEnabled;
+
+    public bool IsLaserMode { get; private set; }
+
+    public void SetAutoHand(
+        Autohand.Hand autoHand,
+        HandDistanceGrabber distanceGrabber,
+        Behaviour grabInput)
+    {
+        hand = autoHand;
+        laserPointer = distanceGrabber;
+        grabInputComponent = grabInput;
+
+        originalGrabInputEnabled =
+            grabInputComponent != null &&
+            grabInputComponent.enabled;
+
+        originalLaserEnabled =
+            laserPointer != null &&
+            laserPointer.enabled;
+
+        SetLaserMode(false);
+    }
+
+    public void SetLaserMode(bool enabled)
+    {
+        IsLaserMode = enabled;
+
+        // Disable normal grabbing input
+        if (grabInputComponent != null)
+        {
+            grabInputComponent.enabled =
+                enabled ? false : originalGrabInputEnabled;
+        }
+
+        // Enable AutoHand distance laser
+        if (laserPointer != null)
+            laserPointer.enabled = enabled;
+
+        previousLaserTrigger = TriggerPressed;
+
+        if (previousHoverObject != null)
+        {
+            previousHoverObject = null;
+            OnLaserHover?.Invoke(null);
+        }
+
+        Debug.Log(
+            $"{Node}: " +
+            (enabled
+                ? "Laser ON - Normal grabbing OFF"
+                : "Laser OFF - Normal grabbing ON"));
+    }
+
+    public void ToggleLaserMode()
+    {
+        SetLaserMode(!IsLaserMode);
+    }
+
+    // -------------------------
+    // LASER CALLBACKS
+    // -------------------------
+
+    public event Action<GameObject> OnLaserClick;
+    public event Action<GameObject> OnLaserHover;
+
+    public Transform LaserOrigin { get; set; }
+
+    public float LaserDistance { get; set; } = 5f;
+
+    public LayerMask LaserLayers { get; set; } = ~0;
+
+    private bool previousLaserTrigger;
+    private GameObject previousHoverObject;
+
+    public GameObject LaserTarget
+    {
+        get
+        {
+            return TryGetLaserHit(out RaycastHit hit)
+                ? hit.collider.gameObject
+                : null;
+        }
+    }
+
+    public bool TryGetLaserHit(out RaycastHit hit)
+    {
+        hit = default(RaycastHit);
+
+        if (!IsLaserMode || LaserOrigin == null)
+            return false;
+
+        return Physics.Raycast(
+            LaserOrigin.position,
+            LaserOrigin.forward,
+            out hit,
+            LaserDistance,
+            LaserLayers,
+            QueryTriggerInteraction.Collide);
+    }
+
+    public void UpdateLaser()
+    {
+        if (!IsLaserMode)
+            return;
+
+        GameObject target = LaserTarget;
+
+        // Hover callback
+        if (target != previousHoverObject)
+        {
+            previousHoverObject = target;
+            OnLaserHover?.Invoke(target);
+        }
+
+        // Click callback
+        bool trigger = TriggerPressed;
+
+        if (trigger && !previousLaserTrigger)
+        {
+            if (target != null)
+                OnLaserClick?.Invoke(target);
+        }
+
+        previousLaserTrigger = trigger;
+    }
+
+    // -------------------------
+    // CONSTRUCTOR
+    // -------------------------
+
     public ControllerVr(XRNode node)
     {
         Node = node;
         RefreshDevice();
     }
+
+    // -------------------------
+    // XR DEVICE
+    // -------------------------
 
     private void RefreshDevice()
     {
@@ -143,5 +289,23 @@ public class ControllerVr
                device.TryGetFeatureValue(
                    usage, out Quaternion value)
                    ? value : Quaternion.identity;
+    }
+
+    // -------------------------
+    // CLEANUP
+    // -------------------------
+
+    public void Dispose()
+    {
+        if (grabInputComponent != null)
+            grabInputComponent.enabled =
+                originalGrabInputEnabled;
+
+        if (laserPointer != null)
+            laserPointer.enabled =
+                originalLaserEnabled;
+
+        OnLaserClick = null;
+        OnLaserHover = null;
     }
 }
