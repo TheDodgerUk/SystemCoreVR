@@ -23,16 +23,16 @@ public class VRControllerSetup : MonoBehaviour
     [Header("Mode Settings")]
     public bool autoSwitchLaser = true;
 
-    public ControllerVr Left { get; private set; }
-    public ControllerVr Right { get; private set; }
+    public ControllerVr LeftController { get; private set; }
+    public ControllerVr RightController { get; private set; }
 
     private Action<GameObject> leftClickCallback;
     private Action<GameObject> rightClickCallback;
 
     private void Awake()
     {
-        Left = new ControllerVr(XRNode.LeftHand);
-        Right = new ControllerVr(XRNode.RightHand);
+        LeftController = new ControllerVr(XRNode.LeftHand);
+        RightController = new ControllerVr(XRNode.RightHand);
 
         if (leftLaser != null)
         {
@@ -46,19 +46,21 @@ public class VRControllerSetup : MonoBehaviour
             rightLaser.selectableLayers = selectableLayers;
         }
 
-        Left.SetAutoHand(leftHand, leftLaser, leftGrabInput);
-        Right.SetAutoHand(rightHand, rightLaser, rightGrabInput);
+        LeftController.SetAutoHand(leftHand, leftLaser, leftGrabInput);
+        RightController.SetAutoHand(rightHand, rightLaser, rightGrabInput);
 
-        Left.AutoSwitchLaser = autoSwitchLaser;
-        Right.AutoSwitchLaser = autoSwitchLaser;
-        Left.SetLaserMode(true);
-        Right.SetLaserMode(true);
+        LeftController.AutoSwitchLaser = autoSwitchLaser;
+        RightController.AutoSwitchLaser = autoSwitchLaser;
+
+        Debug.LogError("NNNNEEEED CHEACKING ");
+        LeftController.SetLaserMode(true);
+        RightController.SetLaserMode(true);
     }
 
     private void Update()
     {
-        Left?.Update();
-        Right?.Update();
+        LeftController?.Update();
+        RightController?.Update();
     }
 
     // -------------------------
@@ -69,18 +71,18 @@ public class VRControllerSetup : MonoBehaviour
         bool enabled,
         Action<GameObject> onClick = null)
     {
-        if (Left == null)
+        if (LeftController == null)
             return;
 
         if (leftClickCallback != null)
-            Left.OnLaserClick -= leftClickCallback;
+            LeftController.OnLaserClick -= leftClickCallback;
 
         leftClickCallback = enabled ? onClick : null;
 
         if (leftClickCallback != null)
-            Left.OnLaserClick += leftClickCallback;
+            LeftController.OnLaserClick += leftClickCallback;
 
-        Left.SetLaserMode(enabled);
+        LeftController.SetLaserMode(enabled);
     }
 
     // -------------------------
@@ -91,18 +93,18 @@ public class VRControllerSetup : MonoBehaviour
         bool enabled,
         Action<GameObject> onClick = null)
     {
-        if (Right == null)
+        if (RightController == null)
             return;
 
         if (rightClickCallback != null)
-            Right.OnLaserClick -= rightClickCallback;
+            RightController.OnLaserClick -= rightClickCallback;
 
         rightClickCallback = enabled ? onClick : null;
 
         if (rightClickCallback != null)
-            Right.OnLaserClick += rightClickCallback;
+            RightController.OnLaserClick += rightClickCallback;
 
-        Right.SetLaserMode(enabled);
+        RightController.SetLaserMode(enabled);
     }
 
     public void SetBothLaserModes(
@@ -115,20 +117,20 @@ public class VRControllerSetup : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (Left != null)
+        if (LeftController != null)
         {
             if (leftClickCallback != null)
-                Left.OnLaserClick -= leftClickCallback;
+                LeftController.OnLaserClick -= leftClickCallback;
 
-            Left.Dispose();
+            LeftController.Dispose();
         }
 
-        if (Right != null)
+        if (RightController != null)
         {
             if (rightClickCallback != null)
-                Right.OnLaserClick -= rightClickCallback;
+                RightController.OnLaserClick -= rightClickCallback;
 
-            Right.Dispose();
+            RightController.Dispose();
         }
     }
 }
