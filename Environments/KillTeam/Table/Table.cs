@@ -81,6 +81,7 @@ public class Table : MonoBehaviour
         try
         {
             boardRoot = this.transform.FindChildRecursive(LayerType.TableBoard.ToString()).gameObject;
+            boardRoot.AddComponent<BoxColliderEdgeParticles>();
             boardRoot.layer = (int)LayerType.TableBoard;
         }
         catch (Exception ex)
@@ -91,7 +92,9 @@ public class Table : MonoBehaviour
         try
         {
             playerStartTable[Player.Player1] = this.transform.FindChildRecursive("StartTableHolder1").gameObject.transform.FindChildRecursive("Image").gameObject;
+            playerStartTable[Player.Player1].AddComponent<BoxColliderEdgeParticles>();
             playerStartTable[Player.Player2] = this.transform.FindChildRecursive("StartTableHolder2").gameObject.transform.FindChildRecursive("Image").gameObject;
+            playerStartTable[Player.Player2].AddComponent<BoxColliderEdgeParticles>();
         }
         catch (Exception ex)
         {

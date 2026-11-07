@@ -1,5 +1,7 @@
 
 using UnityEngine;
+using Antlr4.Runtime.Tree;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -96,6 +98,11 @@ namespace KillTeam
             controller.vRControllerSetup.SetRightLaserMode(true);
 
             colliderStorage.Store(gameObject);
+
+            foreach (var item in transform.Find("Table").GetComponentsInChildren<Collider>())
+            {
+                item.enabled = false;
+            }
         }
 
         private void Update()
