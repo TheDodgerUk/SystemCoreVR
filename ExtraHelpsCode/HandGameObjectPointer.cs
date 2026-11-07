@@ -25,16 +25,16 @@ namespace Autohand
             QueryTriggerInteraction.Collide;
 
         [Header("Events")]
-        public UnityGameObjectPointerEvent StartSelect =
+        public UnityGameObjectPointerEvent OnLaserClick =
             new UnityGameObjectPointerEvent();
 
-        public UnityGameObjectPointerEvent StopSelect =
+        public UnityGameObjectPointerEvent OnLaserRelease =
             new UnityGameObjectPointerEvent();
 
-        public UnityGameObjectPointerEvent StartPoint =
+        public UnityGameObjectPointerEvent OnLaserHoverEnter =
             new UnityGameObjectPointerEvent();
 
-        public UnityGameObjectPointerEvent StopPoint =
+        public UnityGameObjectPointerEvent OnLaserHoverExit =
             new UnityGameObjectPointerEvent();
 
         public GameObject currTarget { get; private set; }
@@ -69,7 +69,7 @@ namespace Autohand
                 Release();
 
             if (currTarget != null)
-                StopPoint?.Invoke(lastHit.point, currTarget);
+                OnLaserHoverExit?.Invoke(lastHit.point, currTarget);
 
             currTarget = null;
             lastHit = default(RaycastHit);
@@ -122,12 +122,12 @@ namespace Autohand
             if (newTarget != currTarget)
             {
                 if (currTarget != null)
-                    StopPoint?.Invoke(lastHit.point, currTarget);
+                    OnLaserHoverExit?.Invoke(lastHit.point, currTarget);
 
                 currTarget = newTarget;
 
                 if (currTarget != null)
-                    StartPoint?.Invoke(hit.point, currTarget);
+                    OnLaserHoverEnter?.Invoke(hit.point, currTarget);
             }
 
             lastHit = hit;
@@ -166,7 +166,7 @@ namespace Autohand
             selectedPoint = lastHit.point;
 
             if (selectedTarget != null)
-                StartSelect?.Invoke(selectedPoint, selectedTarget);
+                OnLaserClick?.Invoke(selectedPoint, selectedTarget);
         }
 
         public void Release()
@@ -177,7 +177,7 @@ namespace Autohand
             IsSelecting = false;
 
             if (selectedTarget != null)
-                StopSelect?.Invoke(selectedPoint, selectedTarget);
+                OnLaserRelease?.Invoke(selectedPoint, selectedTarget);
 
             selectedTarget = null;
         }

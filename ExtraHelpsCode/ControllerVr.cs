@@ -67,8 +67,8 @@ public class ControllerVr : IDisposable
     {
         if (pointer != null)
         {
-            pointer.StartSelect.RemoveListener(HandlePointerClick);
-            pointer.StartPoint.RemoveListener(HandlePointerHover);
+            pointer.OnLaserClick.RemoveListener(HandlePointerClick);
+            pointer.OnLaserHoverEnter.RemoveListener(HandlePointerHover);
         }
 
         hand = autoHand;
@@ -83,8 +83,8 @@ public class ControllerVr : IDisposable
 
         if (pointer != null)
         {
-            pointer.StartSelect.AddListener(HandlePointerClick);
-            pointer.StartPoint.AddListener(HandlePointerHover);
+            pointer.OnLaserClick.AddListener(HandlePointerClick);
+            pointer.OnLaserHoverEnter.AddListener(HandlePointerHover);
             pointer.enabled = false;
         }
 
@@ -394,8 +394,8 @@ public class ControllerVr : IDisposable
     {
         if (pointer != null)
         {
-            pointer.StartSelect.RemoveListener(HandlePointerClick);
-            pointer.StartPoint.RemoveListener(HandlePointerHover);
+            pointer.OnLaserClick.RemoveListener(HandlePointerClick);
+            pointer.OnLaserHoverEnter.RemoveListener(HandlePointerHover);
             pointer.enabled = originalPointerEnabled;
         }
 
