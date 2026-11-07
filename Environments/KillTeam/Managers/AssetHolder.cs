@@ -51,6 +51,7 @@ public class AssetHolder : MonoBehaviour
             var dataCard = catItem.GetMetaData<ContentKillTeamAPMetaData>();
             {
                 DataPlayingCards.AddToList(dataCard, catItem);
+                continue;
             }
 
 
