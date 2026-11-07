@@ -20,8 +20,6 @@ public class AssetHolder : MonoBehaviour
     [SerializeField]
     public List<Texture2D> teamIcons = new List<Texture2D>();
 
-    [SerializeField]
-    public Texture2D nextIcon;
 
     [SerializeField]
     public Material wallMaterail;
@@ -45,11 +43,14 @@ public class AssetHolder : MonoBehaviour
 
     public void Initilise()
     {
+        int index = 0;
         int totalCount = 0;
         foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)
         {
             var dataCard = catItem.GetMetaData<ContentKillTeamAPMetaData>();
+            if(dataCard != null)
             {
+                index++;
                 DataPlayingCards.AddToList(dataCard, catItem);
                 continue;
             }
@@ -88,14 +89,6 @@ public class AssetHolder : MonoBehaviour
                 totalCount++;          
         }
 
-        Core.AssetBundlesRef.Texture2DAssetBundleRef.GetItem(Core.Mono, "Next", (texture) =>
-        {
-            nextIcon = texture;
-            if (texture == null)
-            {
-                Debug.LogError("Next icon not found");
-            }
-        });
 
         Core.AssetBundlesRef.MaterialAssetBundleRef.GetItem(Core.Mono, "Wall_Brick_Generic_Mat_Scale4", (textmature) =>
         {

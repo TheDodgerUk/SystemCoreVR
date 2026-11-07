@@ -6,6 +6,13 @@ using UnityEngine.Events;
 using UnityEditor;
 #endif
 
+////AutoHandPlayer
+//// └── TrackingContainer
+////      ├── LeftHand
+////      │    └── VRPalmUpDetector
+////      └── RightHand
+////           └── VRPalmUpDetector
+
 public class VRPalmUpDetector : MonoBehaviour
 {
     [Header("References")]
