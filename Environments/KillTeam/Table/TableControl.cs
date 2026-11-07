@@ -1,7 +1,9 @@
 
 using UnityEngine;
+
+#if UNITY_EDITOR
 using UnityEditor;
-using System.Collections.Generic;
+#endif
 
 namespace KillTeam
 {
@@ -20,9 +22,6 @@ namespace KillTeam
         public float maxScale = 5f;
         public float movementSpeed = 1f;
         public float rotationSpeed = 1f;
-
-        [Header("Rotation")]
-        public Vector3 rotationPivot = Vector3.zero;
 
         [Header("Inspector Testing")]
         public float debugScale = 1f;
@@ -51,9 +50,23 @@ namespace KillTeam
         private ColliderStorage colliderStorage =
             new ColliderStorage();
 
+        // Cached reference to the actual AutoHand player.
+        private Transform Player =>
+            CameraControllerVR.Instance != null &&
+            CameraControllerVR.Instance.AutoHandPlayerRef != null
+                ? CameraControllerVR.Instance.AutoHandPlayerRef.transform
+                : null;
+
+        // Table centre in world space.
+        private Vector3 TableCentre => transform.position;
+
+        // Table up direction.
+        private Vector3 TableUp => transform.up;
+
         private void Awake()
         {
-            var controller = CameraControllerVR.Instance;
+            CameraControllerVR controller =
+                CameraControllerVR.Instance;
 
             if (controller == null)
             {
@@ -76,7 +89,8 @@ namespace KillTeam
             left = controller.vRControllerSetup.LeftController;
             right = controller.vRControllerSetup.RightController;
 
-            rigRoot = controller.RigRoot;
+            // Use the actual AutoHand player.
+            rigRoot = Player;
 
             controller.vRControllerSetup.SetLeftLaserMode(true);
             controller.vRControllerSetup.SetRightLaserMode(true);
@@ -86,7 +100,7 @@ namespace KillTeam
 
         private void Update()
         {
-            if (rigRoot == null ||
+            if (Player == null ||
                 leftHand == null ||
                 rightHand == null ||
                 left == null ||
@@ -144,11 +158,11 @@ namespace KillTeam
         // SHARED PLAYER CONTROL METHODS
         // ==========================================
 
-        // Set the player's absolute world scale.
-        // All scaling must go through CameraControllerVR.
+        // Set the player's absolute scale.
+        // Always use CameraControllerVR.
         public void SetScale(float scale)
         {
-            if (CameraControllerVR.Instance == null)
+            if (Player == null)
                 return;
 
             scale = Mathf.Clamp(
@@ -159,57 +173,64 @@ namespace KillTeam
             CameraControllerVR.Instance.SetScale(scale);
         }
 
-        // Set the player's absolute world position.
-        public void SetPosition(Vector3 position)
+        // Position the player relative to the table.
+        // Vector3.zero means the table centre.
+        public void SetPosition(Vector3 localPosition)
         {
-            if (rigRoot == null)
+            if (Player == null)
                 return;
 
-            rigRoot.position = position;
+            Player.position =
+                transform.TransformPoint(localPosition);
         }
 
-        // Apply a relative Y rotation around rotationPivot.
+        // Set an absolute world position.
+        // Used internally by VR gesture calculations.
+        private void SetWorldPosition(Vector3 worldPosition)
+        {
+            if (Player == null)
+                return;
+
+            Player.position = worldPosition;
+        }
+
+        // Rotate the player around the table centre.
+        // The table itself does not move.
         public void SetRotation(float degrees)
         {
-            if (rigRoot == null)
+            if (Player == null)
                 return;
 
-            Quaternion rotation =
-                Quaternion.Euler(0f, degrees, 0f);
-
-            Vector3 offset =
-                rigRoot.position - rotationPivot;
-
-            SetPosition(
-                rotationPivot + rotation * offset);
-
-            rigRoot.rotation =
-                rotation * rigRoot.rotation;
+            Player.RotateAround(
+                TableCentre,
+                TableUp,
+                degrees);
         }
 
-        // Apply an absolute rotation and position.
+        // Set the player's world position and rotation.
         // Used by VR gesture calculations.
-        public void SetTransform(
-            Vector3 position,
-            Quaternion rotation)
+        private void SetPlayerTransform(
+            Vector3 worldPosition,
+            Quaternion worldRotation)
         {
-            if (rigRoot == null)
+            if (Player == null)
                 return;
 
-            SetPosition(position);
-            rigRoot.rotation = rotation;
+            Player.SetPositionAndRotation(
+                worldPosition,
+                worldRotation);
         }
 
-        // Reset the player using the shared methods.
+        // Reset player using the same real methods.
         public void ResetRig()
         {
-            if (rigRoot == null)
+            if (Player == null)
                 return;
 
             SetScale(1f);
             SetPosition(Vector3.zero);
 
-            rigRoot.rotation = Quaternion.identity;
+            Player.rotation = transform.rotation;
 
             activeHand = null;
             twoHanded = false;
@@ -224,9 +245,9 @@ namespace KillTeam
         private void BeginSingleHand()
         {
             startHandPosition = activeHand.position;
-            startRigPosition = rigRoot.position;
+            startRigPosition = Player.position;
             startHandYaw = activeHand.eulerAngles.y;
-            startRigRotation = rigRoot.rotation;
+            startRigRotation = Player.rotation;
         }
 
         private void UpdateSingleHand()
@@ -247,16 +268,17 @@ namespace KillTeam
                 startRigPosition -
                 movement * movementSpeed;
 
+            // Rotate the player position around the table.
             Vector3 offset =
-                position - rotationPivot;
+                position - TableCentre;
 
             Vector3 finalPosition =
-                rotationPivot + rotation * offset;
+                TableCentre + rotation * offset;
 
             Quaternion finalRotation =
                 rotation * startRigRotation;
 
-            SetTransform(
+            SetPlayerTransform(
                 finalPosition,
                 finalRotation);
         }
@@ -271,11 +293,11 @@ namespace KillTeam
                 leftHand.position,
                 rightHand.position);
 
-            // Read the world scale, not local scale.
-            startScale = rigRoot.lossyScale.x;
+            // Get the actual player's world scale.
+            startScale = Player.lossyScale.x;
 
-            startRigPosition = rigRoot.position;
-            startTwoHandRotation = rigRoot.rotation;
+            startRigPosition = Player.position;
+            startTwoHandRotation = Player.rotation;
 
             startMidpoint =
                 (leftHand.position + rightHand.position) * 0.5f;
@@ -313,7 +335,7 @@ namespace KillTeam
             float scaleFactor =
                 newScale / Mathf.Max(startScale, 0.0001f);
 
-            // Use the actual player scaling system.
+            // Scale the real AutoHand player.
             SetScale(newScale);
 
             // ======================================
@@ -323,12 +345,12 @@ namespace KillTeam
             Vector3 startFlat =
                 Vector3.ProjectOnPlane(
                     startDirection,
-                    Vector3.up);
+                    TableUp);
 
             Vector3 currentFlat =
                 Vector3.ProjectOnPlane(
                     direction,
-                    Vector3.up);
+                    TableUp);
 
             float yawChange = 0f;
 
@@ -338,13 +360,13 @@ namespace KillTeam
                 yawChange = Vector3.SignedAngle(
                     startFlat,
                     currentFlat,
-                    Vector3.up);
+                    TableUp);
             }
 
-            Quaternion rotation = Quaternion.Euler(
-                0f,
-                -yawChange * rotationSpeed,
-                0f);
+            Quaternion rotation =
+                Quaternion.AngleAxis(
+                    -yawChange * rotationSpeed,
+                    TableUp);
 
             Quaternion finalRotation =
                 rotation * startTwoHandRotation;
@@ -353,23 +375,27 @@ namespace KillTeam
             // POSITION
             // ======================================
 
-            // Preserve relative distance from the
-            // world rotation pivot when scaling.
+            // Player distance from table centre.
             Vector3 offset =
-                startRigPosition - rotationPivot;
+                startRigPosition - TableCentre;
 
+            // Preserve relative distance when scaling.
             offset *= scaleFactor;
+
+            // Rotate the offset around the table.
             offset = rotation * offset;
 
+            // Move in the opposite direction
+            // to the controller movement.
             Vector3 handMovement =
                 midpoint - startMidpoint;
 
             Vector3 finalPosition =
-                rotationPivot +
+                TableCentre +
                 offset -
                 handMovement * movementSpeed;
 
-            SetTransform(
+            SetPlayerTransform(
                 finalPosition,
                 finalRotation);
         }
@@ -408,8 +434,8 @@ namespace KillTeam
                 EditorStyles.boldLabel);
 
             bool canControl =
-                table.rigRoot != null &&
-                CameraControllerVR.Instance != null;
+                CameraControllerVR.Instance != null &&
+                CameraControllerVR.Instance.AutoHandPlayerRef != null;
 
             EditorGUI.BeginDisabledGroup(!canControl);
 
@@ -417,8 +443,12 @@ namespace KillTeam
                 "Apply Scale",
                 GUILayout.Height(30)))
             {
+                Transform player =
+                    CameraControllerVR.Instance
+                        .AutoHandPlayerRef.transform;
+
                 Undo.RecordObject(
-                    table.rigRoot,
+                    player,
                     "Apply Player Scale");
 
                 table.SetScale(table.debugScale);
@@ -428,8 +458,12 @@ namespace KillTeam
                 "Apply Rotation",
                 GUILayout.Height(30)))
             {
+                Transform player =
+                    CameraControllerVR.Instance
+                        .AutoHandPlayerRef.transform;
+
                 Undo.RecordObject(
-                    table.rigRoot,
+                    player,
                     "Apply Player Rotation");
 
                 table.SetRotation(table.debugRotation);
@@ -439,8 +473,12 @@ namespace KillTeam
                 "Apply Position",
                 GUILayout.Height(30)))
             {
+                Transform player =
+                    CameraControllerVR.Instance
+                        .AutoHandPlayerRef.transform;
+
                 Undo.RecordObject(
-                    table.rigRoot,
+                    player,
                     "Apply Player Position");
 
                 table.SetPosition(table.debugPosition);
@@ -452,8 +490,12 @@ namespace KillTeam
                 "RESET RIG",
                 GUILayout.Height(40)))
             {
+                Transform player =
+                    CameraControllerVR.Instance
+                        .AutoHandPlayerRef.transform;
+
                 Undo.RecordObject(
-                    table.rigRoot,
+                    player,
                     "Reset Player Rig");
 
                 table.ResetRig();
