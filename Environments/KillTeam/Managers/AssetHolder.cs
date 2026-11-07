@@ -15,6 +15,8 @@ public class AssetHolder : MonoBehaviour
     public List<CatalogueEntry> catalogueEntryBaracade = new List<CatalogueEntry>();
     public SimpleDictionaryList<ContentKillTeamMetaData.TeamType, CatalogueEntry> catalogueEntryPlayer = new SimpleDictionaryList<ContentKillTeamMetaData.TeamType, CatalogueEntry>();
 
+    public SimpleDictionaryList<ContentKillTeamAPMetaData, CatalogueEntry> DataPlayingCards = new SimpleDictionaryList<ContentKillTeamAPMetaData, CatalogueEntry>();
+
     [SerializeField]
     public List<Texture2D> teamIcons = new List<Texture2D>();
 
@@ -46,6 +48,12 @@ public class AssetHolder : MonoBehaviour
         int totalCount = 0;
         foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)
         {
+            var dataCard = catItem.GetMetaData<ContentKillTeamAPMetaData>();
+            {
+                DataPlayingCards.AddToList(dataCard, catItem);
+            }
+
+
             var data = catItem.GetMetaData<ContentKillTeamMetaData>();
 
             if (data != null)

@@ -154,7 +154,7 @@ namespace Autohand
         // PRESS / RELEASE
         // -------------------------
 
-        public void Press()
+        public virtual void Press()
         {
             if (IsSelecting)
                 return;
@@ -169,7 +169,7 @@ namespace Autohand
                 OnLaserClick?.Invoke(selectedPoint, selectedTarget);
         }
 
-        public void Release()
+        public void virtual Release()
         {
             if (!IsSelecting)
                 return;
