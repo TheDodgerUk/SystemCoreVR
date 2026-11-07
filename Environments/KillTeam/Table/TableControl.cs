@@ -1,6 +1,7 @@
 
 using UnityEngine;
-using UnityEngine.XR;
+using UnityEditor;
+using System.Collections.Generic;
 
 namespace KillTeam
 {
@@ -20,69 +21,98 @@ namespace KillTeam
         public float movementSpeed = 1f;
         public float rotationSpeed = 1f;
 
+        [Header("Rotation")]
+        public Vector3 rotationPivot = Vector3.zero;
+
+        [Header("Inspector Testing")]
+        public float debugScale = 1f;
+        public float debugRotation = 45f;
+        public Vector3 debugPosition = Vector3.zero;
+
         private Transform activeHand;
         private bool twoHanded;
 
-        // Single hand
+        // Single-hand starting values.
         private Vector3 startHandPosition;
         private Vector3 startRigPosition;
         private float startHandYaw;
         private Quaternion startRigRotation;
 
-        // Two hands
+        // Two-hand starting values.
         private float startDistance;
         private float startScale;
         private Vector3 startMidpoint;
         private Vector3 startDirection;
         private Quaternion startTwoHandRotation;
 
-        // World-space pivot on the board
-        private Vector3 startPivot;
-
         private ControllerVr left;
         private ControllerVr right;
 
+        private ColliderStorage colliderStorage =
+            new ColliderStorage();
 
         private void Awake()
         {
-            if (CameraControllerVR.Instance != null)
-            {
-                leftHand =
-                    CameraControllerVR.Instance.HandLeftRef.transform;
+            var controller = CameraControllerVR.Instance;
 
-                rightHand =
-                    CameraControllerVR.Instance.HandRightRef.transform;
+            if (controller == null)
+            {
+                Debug.LogError(
+                    "TableControl: CameraControllerVR not found!");
+
+                enabled = false;
+                return;
             }
+
+            if (controller.HandLeftRef != null)
+                leftHand = controller.HandLeftRef.transform;
+
+            if (controller.HandRightRef != null)
+                rightHand = controller.HandRightRef.transform;
 
             if (head == null && Camera.main != null)
                 head = Camera.main.transform;
 
+            left = controller.vRControllerSetup.LeftController;
+            right = controller.vRControllerSetup.RightController;
 
-                left = CameraControllerVR.Instance.vRControllerSetup.LeftController;
+            rigRoot = controller.RigRoot;
 
-            right = CameraControllerVR.Instance.vRControllerSetup.RightController;
-            rigRoot = CameraControllerVR.Instance.RigRoot;
+            controller.vRControllerSetup.SetLeftLaserMode(true);
+            controller.vRControllerSetup.SetRightLaserMode(true);
 
-            CameraControllerVR.Instance.vRControllerSetup.SetLeftLaserMode(true);
+            colliderStorage.Store(gameObject);
         }
 
         private void Update()
         {
             if (rigRoot == null ||
                 leftHand == null ||
-                rightHand == null)
+                rightHand == null ||
+                left == null ||
+                right == null)
                 return;
 
-            // Use Get, not GetDown, to detect held buttons.
             bool leftGrip = left.PrimaryButton;
+            bool rightGrip = right.PrimaryButton;
 
-            bool rightGrip = left.PrimaryButton;
+            if (!leftGrip && !rightGrip)
+            {
+                activeHand = null;
+                twoHanded = false;
+
+                colliderStorage.Restore();
+                return;
+            }
+
+            colliderStorage.DisableAll();
 
             if (leftGrip && rightGrip)
             {
                 if (!twoHanded)
                 {
                     BeginTwoHand();
+
                     twoHanded = true;
                     activeHand = null;
                 }
@@ -97,27 +127,104 @@ namespace KillTeam
                     activeHand = null;
                 }
 
-                Transform hand = leftGrip ? leftHand :
-                                 rightGrip ? rightHand : null;
+                Transform hand =
+                    leftGrip ? leftHand : rightHand;
 
                 if (hand != activeHand)
                 {
                     activeHand = hand;
-
-                    if (activeHand != null)
-                        BeginSingleHand();
+                    BeginSingleHand();
                 }
 
-                if (activeHand != null)
-                    UpdateSingleHand();
+                UpdateSingleHand();
             }
         }
+
+        // ==========================================
+        // SHARED PLAYER CONTROL METHODS
+        // ==========================================
+
+        // Set the player's absolute world scale.
+        // All scaling must go through CameraControllerVR.
+        public void SetScale(float scale)
+        {
+            if (CameraControllerVR.Instance == null)
+                return;
+
+            scale = Mathf.Clamp(
+                scale,
+                minScale,
+                maxScale);
+
+            CameraControllerVR.Instance.SetScale(scale);
+        }
+
+        // Set the player's absolute world position.
+        public void SetPosition(Vector3 position)
+        {
+            if (rigRoot == null)
+                return;
+
+            rigRoot.position = position;
+        }
+
+        // Apply a relative Y rotation around rotationPivot.
+        public void SetRotation(float degrees)
+        {
+            if (rigRoot == null)
+                return;
+
+            Quaternion rotation =
+                Quaternion.Euler(0f, degrees, 0f);
+
+            Vector3 offset =
+                rigRoot.position - rotationPivot;
+
+            SetPosition(
+                rotationPivot + rotation * offset);
+
+            rigRoot.rotation =
+                rotation * rigRoot.rotation;
+        }
+
+        // Apply an absolute rotation and position.
+        // Used by VR gesture calculations.
+        public void SetTransform(
+            Vector3 position,
+            Quaternion rotation)
+        {
+            if (rigRoot == null)
+                return;
+
+            SetPosition(position);
+            rigRoot.rotation = rotation;
+        }
+
+        // Reset the player using the shared methods.
+        public void ResetRig()
+        {
+            if (rigRoot == null)
+                return;
+
+            SetScale(1f);
+            SetPosition(Vector3.zero);
+
+            rigRoot.rotation = Quaternion.identity;
+
+            activeHand = null;
+            twoHanded = false;
+
+            colliderStorage.Restore();
+        }
+
+        // ==========================================
+        // SINGLE HAND
+        // ==========================================
 
         private void BeginSingleHand()
         {
             startHandPosition = activeHand.position;
             startRigPosition = rigRoot.position;
-
             startHandYaw = activeHand.eulerAngles.y;
             startRigRotation = rigRoot.rotation;
         }
@@ -136,14 +243,27 @@ namespace KillTeam
                 -yawChange * rotationSpeed,
                 0f);
 
-            // Inverse hand movement:
-            // dragging the world right moves the rig left.
-            rigRoot.position =
-                startRigPosition - movement * movementSpeed;
+            Vector3 position =
+                startRigPosition -
+                movement * movementSpeed;
 
-            rigRoot.rotation =
+            Vector3 offset =
+                position - rotationPivot;
+
+            Vector3 finalPosition =
+                rotationPivot + rotation * offset;
+
+            Quaternion finalRotation =
                 rotation * startRigRotation;
+
+            SetTransform(
+                finalPosition,
+                finalRotation);
         }
+
+        // ==========================================
+        // TWO HANDS
+        // ==========================================
 
         private void BeginTwoHand()
         {
@@ -151,7 +271,9 @@ namespace KillTeam
                 leftHand.position,
                 rightHand.position);
 
-            startScale = rigRoot.localScale.x;
+            // Read the world scale, not local scale.
+            startScale = rigRoot.lossyScale.x;
+
             startRigPosition = rigRoot.position;
             startTwoHandRotation = rigRoot.rotation;
 
@@ -160,9 +282,6 @@ namespace KillTeam
 
             startDirection =
                 rightHand.position - leftHand.position;
-
-            // Pivot is fixed in world space.
-            startPivot = startMidpoint;
         }
 
         private void UpdateTwoHand()
@@ -179,10 +298,12 @@ namespace KillTeam
                 distance < 0.001f)
                 return;
 
-            // Inverse scale:
-            // hands apart -> player becomes smaller -> zoom out.
-            // hands together -> player becomes bigger -> zoom in.
-            float handFactor = distance / startDistance;
+            // ======================================
+            // SCALE
+            // ======================================
+
+            float handFactor =
+                distance / startDistance;
 
             float newScale = Mathf.Clamp(
                 startScale / handFactor,
@@ -192,15 +313,22 @@ namespace KillTeam
             float scaleFactor =
                 newScale / Mathf.Max(startScale, 0.0001f);
 
-            rigRoot.localScale =
-                Vector3.one * newScale;
+            // Use the actual player scaling system.
+            SetScale(newScale);
 
-            // Horizontal rotation
+            // ======================================
+            // ROTATION
+            // ======================================
+
             Vector3 startFlat =
-                Vector3.ProjectOnPlane(startDirection, Vector3.up);
+                Vector3.ProjectOnPlane(
+                    startDirection,
+                    Vector3.up);
 
             Vector3 currentFlat =
-                Vector3.ProjectOnPlane(direction, Vector3.up);
+                Vector3.ProjectOnPlane(
+                    direction,
+                    Vector3.up);
 
             float yawChange = 0f;
 
@@ -218,17 +346,129 @@ namespace KillTeam
                 -yawChange * rotationSpeed,
                 0f);
 
-            rigRoot.rotation =
+            Quaternion finalRotation =
                 rotation * startTwoHandRotation;
 
-            // Keep the original world pivot stationary
-            // relative to the scaled/rotated rig.
-            Vector3 offset = startRigPosition - startPivot;
+            // ======================================
+            // POSITION
+            // ======================================
 
-            rigRoot.position =
-                startPivot +
-                rotation * (offset * scaleFactor)
-                - (midpoint - startMidpoint);
+            // Preserve relative distance from the
+            // world rotation pivot when scaling.
+            Vector3 offset =
+                startRigPosition - rotationPivot;
+
+            offset *= scaleFactor;
+            offset = rotation * offset;
+
+            Vector3 handMovement =
+                midpoint - startMidpoint;
+
+            Vector3 finalPosition =
+                rotationPivot +
+                offset -
+                handMovement * movementSpeed;
+
+            SetTransform(
+                finalPosition,
+                finalRotation);
+        }
+
+        private void OnDisable()
+        {
+            colliderStorage.Restore();
+        }
+
+        private void OnDestroy()
+        {
+            colliderStorage.Restore();
         }
     }
+
+#if UNITY_EDITOR
+
+    [CustomEditor(typeof(TableControl))]
+    public class TableControlEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            serializedObject.Update();
+
+            DrawDefaultInspector();
+
+            serializedObject.ApplyModifiedProperties();
+
+            TableControl table =
+                (TableControl)target;
+
+            EditorGUILayout.Space(15);
+
+            EditorGUILayout.LabelField(
+                "Quick Testing",
+                EditorStyles.boldLabel);
+
+            bool canControl =
+                table.rigRoot != null &&
+                CameraControllerVR.Instance != null;
+
+            EditorGUI.BeginDisabledGroup(!canControl);
+
+            if (GUILayout.Button(
+                "Apply Scale",
+                GUILayout.Height(30)))
+            {
+                Undo.RecordObject(
+                    table.rigRoot,
+                    "Apply Player Scale");
+
+                table.SetScale(table.debugScale);
+            }
+
+            if (GUILayout.Button(
+                "Apply Rotation",
+                GUILayout.Height(30)))
+            {
+                Undo.RecordObject(
+                    table.rigRoot,
+                    "Apply Player Rotation");
+
+                table.SetRotation(table.debugRotation);
+            }
+
+            if (GUILayout.Button(
+                "Apply Position",
+                GUILayout.Height(30)))
+            {
+                Undo.RecordObject(
+                    table.rigRoot,
+                    "Apply Player Position");
+
+                table.SetPosition(table.debugPosition);
+            }
+
+            EditorGUILayout.Space(10);
+
+            if (GUILayout.Button(
+                "RESET RIG",
+                GUILayout.Height(40)))
+            {
+                Undo.RecordObject(
+                    table.rigRoot,
+                    "Reset Player Rig");
+
+                table.ResetRig();
+            }
+
+            EditorGUI.EndDisabledGroup();
+
+            if (!canControl)
+            {
+                EditorGUILayout.HelpBox(
+                    "Enter Play Mode to test player controls.",
+                    MessageType.Info);
+            }
+        }
+    }
+
+#endif
 }

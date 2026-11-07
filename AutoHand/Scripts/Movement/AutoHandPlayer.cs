@@ -929,6 +929,7 @@ namespace Autohand {
             SetPosition(position, headCamera.transform.rotation);
         }
 
+
         public virtual void SetPosition(Vector3 position, Quaternion rotation) {
             Vector3 deltaPos = position - transform.position;
             transform.position += deltaPos;
@@ -954,6 +955,7 @@ namespace Autohand {
             //trackingContainer.RotateAround(headCamera.transform.position, Vector3.right, deltaRot.eulerAngles.x);
             //trackingContainer.RotateAround(headCamera.transform.position, Vector3.forward, deltaRot.eulerAngles.z);
         }
+
 
         public virtual void SetRotation(Quaternion rotation) {
             var targetPos = transform.position - headCamera.transform.position; targetPos.y = 0;
