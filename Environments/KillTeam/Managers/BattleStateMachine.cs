@@ -19,32 +19,6 @@ public class BattleStateMachine : MonoBehaviour
         Finished
     }
 
-    public enum OperativeState
-    {
-        Idle,
-        Selected,
-        Moving,
-        Aiming,
-        Shooting,
-        Fighting,
-        ResolvingAction,
-        Incapacitated
-    }
-
-    public enum BattleAction
-    {
-        Move,
-        Dash,
-        Shoot,
-        Fight,
-        Charge,
-        FallBack,
-        Guard,
-        PickUp,
-        MissionAction,
-        Pass
-    }
-
     [Serializable]
     public class RunTimePlayerDetails
     {
@@ -56,7 +30,7 @@ public class BattleStateMachine : MonoBehaviour
         public List<ContentKillTeamMetaData.WeaponStats> weapons =
             new List<ContentKillTeamMetaData.WeaponStats>();
 
-        public OperativeState state = OperativeState.Idle;
+        public ContentKillTeamAPMetaData.ApType ApAction = ContentKillTeamAPMetaData.ApType.Move;
         public bool incapacitated;
 
         [NonSerialized] public bool activated;
@@ -123,7 +97,7 @@ public class BattleStateMachine : MonoBehaviour
     private int testOperativeIndex;
 
     [SerializeField]
-    private BattleAction testAction = BattleAction.Move;
+    private ContentKillTeamAPMetaData.ApType testAction = ContentKillTeamAPMetaData.ApType.Move;
 
     [SerializeField, Min(0)]
     private int testActionCost = 1;
@@ -152,8 +126,8 @@ public class BattleStateMachine : MonoBehaviour
     public event Action<KillTeamGameManager.Player> OnPlayerChanged;
     public event Action<RunTimePlayerDetails> OnOperativeActivated;
     public event Action<RunTimePlayerDetails> OnOperativeFinished;
-    public event Action<RunTimePlayerDetails, OperativeState> OnOperativeStateChanged;
-    public event Action<RunTimePlayerDetails, BattleAction, int> OnActionCompleted;
+    public event Action<RunTimePlayerDetails, ContentKillTeamAPMetaData.ApType> OnOperativeActionChanged;
+    public event Action<RunTimePlayerDetails, ContentKillTeamAPMetaData.ApType, int> OnActionCompleted;
     public event Action<RunTimePlayerDetails, int> OnWoundsChanged;
     public event Action<int, int> OnScoreChanged;
     public event Action<KillTeamGameManager.Player?> OnBattleFinished;
@@ -296,9 +270,6 @@ public class BattleStateMachine : MonoBehaviour
             incapacitated = stats.currentWounds <= 0
         };
 
-        op.state = op.incapacitated
-            ? OperativeState.Incapacitated
-            : OperativeState.Idle;
 
         operatives.Add(op);
 
@@ -386,6 +357,17 @@ public class BattleStateMachine : MonoBehaviour
                op.gameObject.activeInHierarchy;
     }
 
+    private bool HasAvailableOperatives(KillTeamGameManager.Player player)
+    {
+        foreach (RunTimePlayerDetails op in operatives)
+        {
+            if (op != null && op.playerIndex == player && !op.incapacitated &&
+                op.gameObject != null && op.gameObject.activeInHierarchy)
+                return true;
+        }
+        return false;
+    }
+
     public bool HasEligibleOperatives(
         KillTeamGameManager.Player player)
     {
@@ -428,8 +410,8 @@ public class BattleStateMachine : MonoBehaviour
         if (IsBattleRunning)
             return;
 
-        if (!HasEligibleOperatives(KillTeamGameManager.Player.Player1) ||
-            !HasEligibleOperatives(KillTeamGameManager.Player.Player2))
+        if (!HasAvailableOperatives(KillTeamGameManager.Player.Player1) ||
+            !HasAvailableOperatives(KillTeamGameManager.Player.Player2))
         {
             Debug.LogWarning(
                 "Both players must have at least one available miniature.",
@@ -438,6 +420,7 @@ public class BattleStateMachine : MonoBehaviour
         }
 
         initialized = true;
+        currentState = BattleState.Inactive;
         currentTurningPoint = 0;
 
         currentPlayer = KillTeamGameManager.Player.Player1;
@@ -457,9 +440,6 @@ public class BattleStateMachine : MonoBehaviour
             op.activated = false;
             op.remainingAP = 0;
 
-            op.state = op.incapacitated
-                ? OperativeState.Incapacitated
-                : OperativeState.Idle;
         }
 
         StartNextTurningPoint();
@@ -502,11 +482,6 @@ public class BattleStateMachine : MonoBehaviour
             op.activated = false;
             op.remainingAP = 0;
 
-            SetOperativeStateInternal(
-                op,
-                op.incapacitated
-                    ? OperativeState.Incapacitated
-                    : OperativeState.Idle);
         }
 
         OnTurningPointStarted?.Invoke(currentTurningPoint);
@@ -570,8 +545,6 @@ public class BattleStateMachine : MonoBehaviour
         activeOperative.remainingAP =
             activeOperative.ActionPointLimit;
 
-        SetOperativeStateInternal(
-            activeOperative, OperativeState.Selected);
 
         SetState(BattleState.OperativeActivation);
 
@@ -580,29 +553,20 @@ public class BattleStateMachine : MonoBehaviour
         return true;
     }
 
-    public bool SetActiveOperativeState(OperativeState next)
+    // Select which of the three action cards is being used.
+    public bool SetActiveOperativeAction(ContentKillTeamAPMetaData.ApType action)
     {
         if (currentState != BattleState.OperativeActivation ||
-            activeOperative == null ||
-            activeOperative.incapacitated)
+            activeOperative == null || activeOperative.incapacitated)
             return false;
 
-        SetOperativeStateInternal(activeOperative, next);
+        activeOperative.ApAction = action;
+        OnOperativeActionChanged?.Invoke(activeOperative, action);
         return true;
     }
 
-    private void SetOperativeStateInternal(
-        RunTimePlayerDetails op, OperativeState next)
-    {
-        if (op.state == next)
-            return;
-
-        op.state = next;
-        OnOperativeStateChanged?.Invoke(op, next);
-    }
-
     public bool CompleteAction(
-        BattleAction action, int actionPointCost = 1)
+        ContentKillTeamAPMetaData.ApType action, int actionPointCost = 1)
     {
         if (currentState != BattleState.OperativeActivation ||
             activeOperative == null ||
@@ -613,18 +577,15 @@ public class BattleStateMachine : MonoBehaviour
 
         RunTimePlayerDetails op = activeOperative;
 
+        op.ApAction = action;
         op.remainingAP -= actionPointCost;
+        OnOperativeActionChanged?.Invoke(op, action);
 
         OnActionCompleted?.Invoke(op, action, actionPointCost);
 
         if (activeOperative != op ||
             currentState != BattleState.OperativeActivation)
             return true;
-
-        if (op.remainingAP == 0 || action == BattleAction.Pass)
-            EndActivation();
-        else
-            SetOperativeStateInternal(op, OperativeState.Selected);
 
         return true;
     }
@@ -642,11 +603,6 @@ public class BattleStateMachine : MonoBehaviour
         finished.activated = true;
         finished.remainingAP = 0;
 
-        SetOperativeStateInternal(
-            finished,
-            finished.incapacitated
-                ? OperativeState.Incapacitated
-                : OperativeState.Idle);
 
         activeOperative = null;
         activeOperativeObject = null;
@@ -716,8 +672,6 @@ public class BattleStateMachine : MonoBehaviour
         if (op.stats != null)
             op.stats.currentWounds = 0;
 
-        SetOperativeStateInternal(
-            op, OperativeState.Incapacitated);
 
         if (op == activeOperative)
             EndActivation();
