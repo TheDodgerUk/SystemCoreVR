@@ -12,6 +12,7 @@ using UnityEditor.IMGUI.Controls;
 using static KillTeamGameManager;
 using static ObjectInteraction;
 using static UnityEngine.UI.ContentSizeFitter;
+using Autohand;
 
 
 public class KillTeamGameManager : MonoBehaviour
@@ -237,6 +238,8 @@ public class KillTeamGameManager : MonoBehaviour
             case LayerType.Terrain:
                 item.gameObject.ForceComponent<ObjectInteraction>();
                 var t = item.gameObject.AddComponent<InitiliseTerrain>();
+                item.gameObject.AddComponent<HandGameObjectVerticalPickupPointer>();
+
                 break;
             case LayerType.Barracade:
                 item.gameObject.ForceComponent<ObjectInteraction>();
