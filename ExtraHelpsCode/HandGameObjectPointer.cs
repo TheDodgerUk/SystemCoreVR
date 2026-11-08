@@ -9,7 +9,7 @@ namespace Autohand
     public class UnityGameObjectPointerEvent
         : UnityEvent<Vector3, GameObject>
     { }
-
+    // this attaches to VR hand 
     [RequireComponent(typeof(LineRenderer))]
     public class HandGameObjectPointer : MonoBehaviour
     {
