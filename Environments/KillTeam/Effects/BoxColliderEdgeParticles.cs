@@ -13,9 +13,9 @@ public class BoxColliderEdgeParticles : MonoBehaviour
     public ParticleSystem particles;
 
     [Header("Particle Settings")]
-    [Min(1)] public int particlesPerEdge = 20;
+    [Min(1)] public int particlesPerEdge = 120;
     [Min(0f)] public float speed = 1f;
-    [Min(0.001f)] public float particleSize = 0.0025f;
+    [Min(0.001f)] public float particleSize = 0.01f;
     public Color highlightColor = Color.green;
 
     [Header("Glow Settings")]
