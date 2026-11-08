@@ -35,6 +35,7 @@ public class VRPalmUpDetector : MonoBehaviour
     public UnityEvent OnPalmUp = new UnityEvent();
     public UnityEvent OnPalmDown = new UnityEvent();
 
+    private bool isPalmUpLast = false;
     [Header("Debug")]
     [SerializeField] private bool isPalmUp;
     [SerializeField] private float palmDot;
@@ -89,6 +90,12 @@ public class VRPalmUpDetector : MonoBehaviour
                 palm.position,
                 worldPalmDirection * 0.2f,
                 isPalmUp ? Color.green : Color.red);
+        }
+
+        if(isPalmUpLast != isPalmUp)
+        {
+            Debug.Log($"isPalmUp {isPalmUp}");
+            isPalmUpLast = isPalmUp;
         }
     }
 

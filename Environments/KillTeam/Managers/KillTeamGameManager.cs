@@ -166,6 +166,8 @@ public class KillTeamGameManager : MonoBehaviour
         CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.position = Vector3.zero;
         CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.rotation = Quaternion.identity;
 
+        CameraControllerVR.Instance.HandLeftRef.AddComponent<VRPalmUpDetector>();
+        CameraControllerVR.Instance.HandRightRef.AddComponent<VRPalmUpDetector>();
 
         var assetHolder = new GameObject("assetHolder");
         assetHolder.transform.SetParent(transform, false);

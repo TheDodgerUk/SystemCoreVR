@@ -1,0 +1,5 @@
+SystemCoreVR\ExtraHelpsCode
+
+HandGameObjectPointer
+HandGameObjectPickupPointer
+HandGameObjectVerticalPickupPointer
