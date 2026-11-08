@@ -11,7 +11,7 @@ namespace Autohand
     { }
     // this attaches to VR hand 
     [RequireComponent(typeof(LineRenderer))]
-    public class HandGameObjectPointer : MonoBehaviour
+    public class HandGameObjectPointer_OnVrHands : MonoBehaviour
     {
         [Header("References")]
         public GameObject hitPointMarker;

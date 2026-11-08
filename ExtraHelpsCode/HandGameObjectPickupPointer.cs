@@ -3,35 +3,32 @@ using UnityEngine;
 
 namespace Autohand
 {
-    public class HandGameObjectPickupPointer : MonoBehaviour
+    public class HandGameObjectPickupPointer
+        : HandGameObjectPointerBase
     {
         [Header("Pickup Settings")]
         public bool followRotation = true;
         public bool preserveGrabOffset = true;
-
-        [Header("Debug")]
-        [SerializeField] protected bool isHeld;
 
         protected Transform pointerTransform;
         protected float holdDistance;
         protected Vector3 grabOffset;
         protected Quaternion rotationOffset;
 
-        public bool IsHeld => isHeld;
-
-        // Called when the laser trigger is pressed.
-        public virtual void Pickup(
+        public override void Click(
             Transform pointer,
-            Vector3 hitPoint)
+            Vector3 hitPoint,
+            GameObject clickedObject)
         {
-            if (isHeld || pointer == null)
+            if (isPressed || pointer == null)
                 return;
+
+            base.Click(pointer, hitPoint, clickedObject);
 
             pointerTransform = pointer;
 
             holdDistance = Vector3.Distance(
-                pointer.position,
-                hitPoint);
+                pointer.position, hitPoint);
 
             Vector3 targetPosition =
                 pointer.position +
@@ -44,45 +41,33 @@ namespace Autohand
             rotationOffset =
                 Quaternion.Inverse(pointer.rotation) *
                 transform.rotation;
-
-            isHeld = true;
-        }
-
-        // Called while the object is being held.
-        public virtual void Move()
-        {
-            if (!isHeld || pointerTransform == null)
-                return;
-
-            Vector3 targetPosition =
-                pointerTransform.position +
-                pointerTransform.forward * holdDistance;
-
-            transform.position =
-                targetPosition + grabOffset;
-
-            if (followRotation)
-            {
-                transform.rotation =
-                    pointerTransform.rotation * rotationOffset;
-            }
-        }
-
-        // Called when the laser trigger is released.
-        public virtual void Release()
-        {
-            isHeld = false;
-            pointerTransform = null;
         }
 
         protected virtual void LateUpdate()
         {
+            if (!isPressed || pointerTransform == null)
+                return;
+
             Move();
         }
 
-        protected virtual void OnDisable()
+        protected virtual void Move()
         {
-            Release();
+            Vector3 targetPosition =
+                pointerTransform.position +
+                pointerTransform.forward * holdDistance;
+
+            transform.position = targetPosition + grabOffset;
+
+            if (followRotation)
+                transform.rotation =
+                    pointerTransform.rotation * rotationOffset;
+        }
+
+        public override void Release(GameObject clickedObject)
+        {
+            base.Release(clickedObject);
+            pointerTransform = null;
         }
     }
 }

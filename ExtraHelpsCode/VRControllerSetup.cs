@@ -8,12 +8,12 @@ public class VRControllerSetup : MonoBehaviour
 {
     [Header("Left AutoHand")]
     public Autohand.Hand leftHand;
-    public HandGameObjectPointer leftLaser;
+    public HandGameObjectPointer_OnVrHands leftLaser;
     public Behaviour leftGrabInput;
 
     [Header("Right AutoHand")]
     public Autohand.Hand rightHand;
-    public HandGameObjectPointer rightLaser;
+    public HandGameObjectPointer_OnVrHands rightLaser;
     public Behaviour rightGrabInput;
 
     [Header("Laser Settings")]

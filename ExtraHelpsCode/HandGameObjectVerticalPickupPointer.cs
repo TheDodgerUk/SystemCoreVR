@@ -12,41 +12,35 @@ namespace Autohand
         private float initialYaw;
         private float pointerYawAtPickup;
 
-        public override void Pickup(
+        public override void Click(
             Transform pointer,
-            Vector3 hitPoint)
+            Vector3 hitPoint,
+            GameObject clickedObject)
         {
-            if (isHeld || pointer == null)
+            if (isPressed || pointer == null)
                 return;
 
-            base.Pickup(pointer, hitPoint);
+            base.Click(pointer, hitPoint, clickedObject);
 
             initialYaw = transform.eulerAngles.y;
             pointerYawAtPickup = pointer.eulerAngles.y;
         }
 
-        public override void Move()
+        protected override void Move()
         {
-            if (!isHeld || pointerTransform == null)
-                return;
-
             Vector3 targetPosition =
                 pointerTransform.position +
                 pointerTransform.forward * holdDistance;
 
-            transform.position =
-                targetPosition + grabOffset;
+            transform.position = targetPosition + grabOffset;
 
-            // Keep the object upright.
             float yaw = initialYaw;
 
             if (allowYRotation)
             {
-                float deltaYaw = Mathf.DeltaAngle(
+                yaw += Mathf.DeltaAngle(
                     pointerYawAtPickup,
                     pointerTransform.eulerAngles.y);
-
-                yaw += deltaYaw;
             }
 
             transform.rotation =

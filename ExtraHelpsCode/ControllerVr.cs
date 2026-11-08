@@ -10,7 +10,7 @@ public class ControllerVr : IDisposable
 
     private InputDevice device;
     private Autohand.Hand hand;
-    private HandGameObjectPointer pointer;
+    private HandGameObjectPointer_OnVrHands pointer;
     private Behaviour grabInput;
 
     private bool originalGrabInputEnabled;
@@ -62,7 +62,7 @@ public class ControllerVr : IDisposable
 
     public void SetAutoHand(
         Autohand.Hand autoHand,
-        HandGameObjectPointer laserPointer,
+        HandGameObjectPointer_OnVrHands laserPointer,
         Behaviour grabInputComponent)
     {
         if (pointer != null)
