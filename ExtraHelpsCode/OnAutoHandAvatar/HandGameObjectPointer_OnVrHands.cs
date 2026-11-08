@@ -5,6 +5,42 @@ using UnityEngine.Events;
 
 namespace Autohand
 {
+
+
+////    pointer.OnLaserClick.RemoveAllListeners();
+////    pointer.OnLaserRelease.RemoveAllListeners();
+////    pointer.OnLaserHoverEnter.RemoveAllListeners();
+////    pointer.OnLaserHoverExit.RemoveAllListeners();
+
+////    pointer.OnLaserClick.AddListener(OnClick);
+////    pointer.OnLaserRelease.AddListener(OnRelease);
+////    pointer.OnLaserHoverEnter.AddListener(OnHoverEnter);
+////    pointer.OnLaserHoverExit.AddListener(OnHoverExit);
+
+////    private void OnClick(Vector3 point, GameObject target)
+////    {
+////        Debug.Log("Clicked: " + target.name);
+////    }
+
+////    private void OnRelease(Vector3 point, GameObject target)
+////    {
+////        Debug.Log("Released: " + target.name);
+////    }
+
+////    private void OnHoverEnter(Vector3 point, GameObject target)
+////    {
+////        Debug.Log("Hover Enter: " + target.name);
+////    }
+
+////    private void OnHoverExit(Vector3 point, GameObject target)
+////    {
+////        Debug.Log("Hover Exit: " + target.name);
+////    }
+
+
+
+
+
     [Serializable]
     public class UnityGameObjectPointerEvent
         : UnityEvent<Vector3, GameObject>
