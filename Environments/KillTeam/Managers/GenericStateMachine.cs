@@ -43,9 +43,9 @@ public class GenericStateMachine : MonoBehaviour
             KillTeamGameManager_OnStateChanged(KillTeamGameManager.Instance.CurrentState);
 
             this.AddComponent<SkyboxController>();
-            this.AddComponent<VRInputDebug>();
+            //this.AddComponent<VRInputDebug>();
 
-            this.AddComponent<XRTrackingDebug>();
+            //this.AddComponent<XRTrackingDebug>();
 
 
             foreach (var pointer in CameraControllerVR.Instance.HandGameObjectPointerRef)
