@@ -157,7 +157,7 @@ public class KillTeamGameManager : MonoBehaviour
 
         lastAppliedState = currentState;
 
-        CameraControllerVR.Instance.TeleportAvatar(this.gameObject.scene, new Vector3(0.0f, 0, -1f), null);
+        CameraControllerVR.Instance.SnapTeleport (new Vector3(0.0f, 0, -1f));
 
 
 
