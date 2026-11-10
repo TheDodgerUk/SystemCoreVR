@@ -930,6 +930,11 @@ namespace Autohand {
         }
 
 
+        public Vector3 GetPosition()
+        {
+            return transform.position;
+        }
+
         public virtual void SetPosition(Vector3 position, Quaternion rotation) {
             Vector3 deltaPos = position - transform.position;
             transform.position += deltaPos;

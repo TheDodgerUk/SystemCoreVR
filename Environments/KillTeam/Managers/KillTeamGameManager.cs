@@ -157,15 +157,9 @@ public class KillTeamGameManager : MonoBehaviour
 
         lastAppliedState = currentState;
 
-       var yy = CameraControllerVR.Instance.AutoHandPlayerRef.handLeft;
-        var yy1 = CameraControllerVR.Instance.HandLeftRef;
-        //CameraControllerVR.Instance.
+        CameraControllerVR.Instance.TeleportAvatar(this.gameObject.scene, new Vector3(0.0f, 0, -1f), null);
 
 
-        CameraControllerVR.Instance.AutoHandPlayerRef.useMovement = false;
-        CameraControllerVR.Instance.AutoHandPlayerRef.snapTurning = false;
-        CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.position = Vector3.zero;
-        CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.rotation = Quaternion.identity;
 
         CameraControllerVR.Instance.HandLeftRef.AddComponent<VRPalmUpDetector>();
         CameraControllerVR.Instance.HandRightRef.AddComponent<VRPalmUpDetector>();

@@ -14,12 +14,6 @@ public class InitiliseBarracade : MonoBehaviour
 
     void Awake()
     {
-        CameraControllerVR.Instance.AutoHandPlayerRef.useMovement = false;
-        CameraControllerVR.Instance.AutoHandPlayerRef.snapTurning = false;
-        CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.position = Vector3.zero;
-        CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer.rotation = Quaternion.identity;
-
-
         barracadePlacementValidator = gameObject.AddComponent<BarracadePlacementValidator>();
 
         gameObject.AddComponent<TestAutoHand>();

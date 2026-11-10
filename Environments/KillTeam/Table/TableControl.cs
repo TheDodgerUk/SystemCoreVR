@@ -1,7 +1,5 @@
 
 using UnityEngine;
-using Antlr4.Runtime.Tree;
-
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -52,17 +50,23 @@ namespace KillTeam
         private ColliderStorage colliderStorage =
             new ColliderStorage();
 
-        // Cached reference to the actual AutoHand player.
-        private Transform Player =>
-            CameraControllerVR.Instance != null &&
-            CameraControllerVR.Instance.AutoHandPlayerRef != null
-                ? CameraControllerVR.Instance.AutoHandPlayerRef.transform
-                : null;
+        // Actual AutoHand player.
+        private Transform Player
+        {
+            get
+            {
+                CameraControllerVR controller =
+                    CameraControllerVR.Instance;
 
-        // Table centre in world space.
+                if (controller == null ||
+                    controller.AutoHandPlayerRef == null)
+                    return null;
+
+                return controller.AutoHandPlayerRef.transform;
+            }
+        }
+
         private Vector3 TableCentre => transform.position;
-
-        // Table up direction.
         private Vector3 TableUp => transform.up;
 
         private void Awake()
@@ -88,10 +92,18 @@ namespace KillTeam
             if (head == null && Camera.main != null)
                 head = Camera.main.transform;
 
+            if (controller.vRControllerSetup == null)
+            {
+                Debug.LogError(
+                    "TableControl: VR controller setup not found!");
+
+                enabled = false;
+                return;
+            }
+
             left = controller.vRControllerSetup.LeftController;
             right = controller.vRControllerSetup.RightController;
 
-            // Use the actual AutoHand player.
             rigRoot = Player;
 
             controller.vRControllerSetup.SetLeftLaserMode(true);
@@ -99,9 +111,20 @@ namespace KillTeam
 
             colliderStorage.Store(gameObject);
 
-            foreach (var item in transform.Find("Table").GetComponentsInChildren<Collider>())
+            Transform table = transform.Find("Table");
+
+            if (table != null)
             {
-                item.enabled = false;
+                foreach (Collider item in
+                    table.GetComponentsInChildren<Collider>())
+                {
+                    item.enabled = false;
+                }
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "TableControl: Child object 'Table' not found.");
             }
         }
 
@@ -162,11 +185,9 @@ namespace KillTeam
         }
 
         // ==========================================
-        // SHARED PLAYER CONTROL METHODS
+        // PLAYER CONTROL
         // ==========================================
 
-        // Set the player's absolute scale.
-        // Always use CameraControllerVR.
         public void SetScale(float scale)
         {
             if (Player == null)
@@ -180,8 +201,7 @@ namespace KillTeam
             CameraControllerVR.Instance.SetScale(scale);
         }
 
-        // Position the player relative to the table.
-        // Vector3.zero means the table centre.
+        // Local position relative to table.
         public void SetPosition(Vector3 localPosition)
         {
             if (Player == null)
@@ -191,8 +211,6 @@ namespace KillTeam
                 transform.TransformPoint(localPosition);
         }
 
-        // Set an absolute world position.
-        // Used internally by VR gesture calculations.
         private void SetWorldPosition(Vector3 worldPosition)
         {
             if (Player == null)
@@ -201,8 +219,7 @@ namespace KillTeam
             Player.position = worldPosition;
         }
 
-        // Rotate the player around the table centre.
-        // The table itself does not move.
+        // Rotate player around table centre.
         public void SetRotation(float degrees)
         {
             if (Player == null)
@@ -214,8 +231,6 @@ namespace KillTeam
                 degrees);
         }
 
-        // Set the player's world position and rotation.
-        // Used by VR gesture calculations.
         private void SetPlayerTransform(
             Vector3 worldPosition,
             Quaternion worldRotation)
@@ -228,7 +243,6 @@ namespace KillTeam
                 worldRotation);
         }
 
-        // Reset player using the same real methods.
         public void ResetRig()
         {
             if (Player == null)
@@ -251,6 +265,9 @@ namespace KillTeam
 
         private void BeginSingleHand()
         {
+            if (activeHand == null || Player == null)
+                return;
+
             startHandPosition = activeHand.position;
             startRigPosition = Player.position;
             startHandYaw = activeHand.eulerAngles.y;
@@ -259,6 +276,9 @@ namespace KillTeam
 
         private void UpdateSingleHand()
         {
+            if (activeHand == null || Player == null)
+                return;
+
             Vector3 movement =
                 activeHand.position - startHandPosition;
 
@@ -275,7 +295,6 @@ namespace KillTeam
                 startRigPosition -
                 movement * movementSpeed;
 
-            // Rotate the player position around the table.
             Vector3 offset =
                 position - TableCentre;
 
@@ -296,11 +315,13 @@ namespace KillTeam
 
         private void BeginTwoHand()
         {
+            if (Player == null)
+                return;
+
             startDistance = Vector3.Distance(
                 leftHand.position,
                 rightHand.position);
 
-            // Get the actual player's world scale.
             startScale = Player.lossyScale.x;
 
             startRigPosition = Player.position;
@@ -315,6 +336,9 @@ namespace KillTeam
 
         private void UpdateTwoHand()
         {
+            if (Player == null)
+                return;
+
             Vector3 midpoint =
                 (leftHand.position + rightHand.position) * 0.5f;
 
@@ -342,7 +366,6 @@ namespace KillTeam
             float scaleFactor =
                 newScale / Mathf.Max(startScale, 0.0001f);
 
-            // Scale the real AutoHand player.
             SetScale(newScale);
 
             // ======================================
@@ -382,18 +405,12 @@ namespace KillTeam
             // POSITION
             // ======================================
 
-            // Player distance from table centre.
             Vector3 offset =
                 startRigPosition - TableCentre;
 
-            // Preserve relative distance when scaling.
             offset *= scaleFactor;
-
-            // Rotate the offset around the table.
             offset = rotation * offset;
 
-            // Move in the opposite direction
-            // to the controller movement.
             Vector3 handMovement =
                 midpoint - startMidpoint;
 
@@ -423,6 +440,8 @@ namespace KillTeam
     [CustomEditor(typeof(TableControl))]
     public class TableControlEditor : Editor
     {
+        private bool showTransformPositions = true;
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -434,7 +453,30 @@ namespace KillTeam
             TableControl table =
                 (TableControl)target;
 
-            DrawTransformPositions(table);
+            // ======================================
+            // LIVE TRANSFORM POSITIONS
+            // ======================================
+
+            EditorGUILayout.Space(15);
+
+            showTransformPositions =
+                EditorGUILayout.Foldout(
+                    showTransformPositions,
+                    "VR Transform Positions",
+                    true);
+
+            if (showTransformPositions)
+            {
+                EditorGUI.indentLevel++;
+
+                DrawTransformPositions(table);
+
+                EditorGUI.indentLevel--;
+            }
+
+            // ======================================
+            // QUICK TESTING
+            // ======================================
 
             EditorGUILayout.Space(15);
 
@@ -442,9 +484,12 @@ namespace KillTeam
                 "Quick Testing",
                 EditorStyles.boldLabel);
 
+            CameraControllerVR controller =
+                CameraControllerVR.Instance;
+
             bool canControl =
-                CameraControllerVR.Instance != null &&
-                CameraControllerVR.Instance.AutoHandPlayerRef != null;
+                controller != null &&
+                controller.AutoHandPlayerRef != null;
 
             EditorGUI.BeginDisabledGroup(!canControl);
 
@@ -453,8 +498,7 @@ namespace KillTeam
                 GUILayout.Height(30)))
             {
                 Transform player =
-                    CameraControllerVR.Instance
-                        .AutoHandPlayerRef.transform;
+                    controller.AutoHandPlayerRef.transform;
 
                 Undo.RecordObject(
                     player,
@@ -468,8 +512,7 @@ namespace KillTeam
                 GUILayout.Height(30)))
             {
                 Transform player =
-                    CameraControllerVR.Instance
-                        .AutoHandPlayerRef.transform;
+                    controller.AutoHandPlayerRef.transform;
 
                 Undo.RecordObject(
                     player,
@@ -483,8 +526,7 @@ namespace KillTeam
                 GUILayout.Height(30)))
             {
                 Transform player =
-                    CameraControllerVR.Instance
-                        .AutoHandPlayerRef.transform;
+                    controller.AutoHandPlayerRef.transform;
 
                 Undo.RecordObject(
                     player,
@@ -500,8 +542,7 @@ namespace KillTeam
                 GUILayout.Height(40)))
             {
                 Transform player =
-                    CameraControllerVR.Instance
-                        .AutoHandPlayerRef.transform;
+                    controller.AutoHandPlayerRef.transform;
 
                 Undo.RecordObject(
                     player,
@@ -518,58 +559,71 @@ namespace KillTeam
                     "Enter Play Mode to test player controls.",
                     MessageType.Info);
             }
-        }
-    }
 
-    private void DrawTransformPositions(TableControl table)
-        {
-            EditorGUILayout.Space(10);
-
-            EditorGUILayout.LabelField(
-                "VR Transform Positions",
-                EditorStyles.boldLabel);
-
-            DrawPosition("Rig Root", table.rigRoot);
-            DrawPosition("Head", table.head);
-            DrawPosition("Left Hand", table.leftHand);
-            DrawPosition("Right Hand", table.rightHand);
-
-            // Refresh values continuously during Play Mode.
+            // Refresh inspector while playing.
             if (Application.isPlaying)
                 Repaint();
         }
 
-        private void DrawPosition(string label, Transform target)
+        // ==========================================
+        // TRANSFORM DISPLAY
+        // ==========================================
+
+        private void DrawTransformPositions(
+            TableControl table)
         {
-            if (target == null)
+            DrawPosition("Rig Root", table.rigRoot);
+            DrawPosition("Head", table.head);
+            DrawPosition("Left Hand", table.leftHand);
+            DrawPosition("Right Hand", table.rightHand);
+        }
+
+        private void DrawPosition(
+            string label,
+            Transform targetTransform)
+        {
+            EditorGUILayout.Space(5);
+
+            EditorGUILayout.LabelField(
+                label,
+                EditorStyles.boldLabel);
+
+            if (targetTransform == null)
             {
-                EditorGUILayout.LabelField(label, "Not Assigned");
+                EditorGUILayout.HelpBox(
+                    label + " is not assigned.",
+                    MessageType.Warning);
+
                 return;
             }
 
-            EditorGUILayout.Space(4);
-            EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
-
             EditorGUI.BeginDisabledGroup(true);
+
+            EditorGUILayout.ObjectField(
+                "Transform",
+                targetTransform,
+                typeof(Transform),
+                true);
 
             EditorGUILayout.Vector3Field(
                 "World Position",
-                target.position);
+                targetTransform.position);
 
             EditorGUILayout.Vector3Field(
                 "Local Position",
-                target.localPosition);
+                targetTransform.localPosition);
 
             EditorGUILayout.Vector3Field(
                 "World Rotation",
-                target.eulerAngles);
+                targetTransform.eulerAngles);
 
             EditorGUILayout.Vector3Field(
                 "Local Rotation",
-                target.localEulerAngles);
+                targetTransform.localEulerAngles);
 
             EditorGUI.EndDisabledGroup();
         }
+    }
 
 #endif
-    }
+}
