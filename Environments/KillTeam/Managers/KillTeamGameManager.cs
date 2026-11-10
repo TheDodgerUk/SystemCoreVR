@@ -157,7 +157,7 @@ public class KillTeamGameManager : MonoBehaviour
 
         lastAppliedState = currentState;
 
-        CameraControllerVR.Instance.SnapTeleport (new Vector3(0.0f, 0, -1f));
+        CameraControllerVR.Instance.SnapTeleport (new Vector3(-1.5f, 0, 0));
 
 
 
@@ -183,9 +183,31 @@ public class KillTeamGameManager : MonoBehaviour
         Core.Environment.OnEnvironmentLoadingComplete += () =>
         {
             InitiliseAll();
+            FindByName("Floor").GetComponent<Collider>().enabled = false;
         };
 
     }
+
+
+
+    public GameObject FindByName(string objectName)
+    {
+        GameObject obj = gameObject;
+
+        Scene scene = obj.scene;
+
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (child.name == objectName)
+                    return child.gameObject;
+            }
+        }
+
+        return null;
+    }
+
 
     private void InitiliseAll()
     {

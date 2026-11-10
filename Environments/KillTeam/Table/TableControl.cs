@@ -20,28 +20,19 @@ namespace KillTeam
         [Header("Settings")]
         public float minScale = 0.2f;
         public float maxScale = 5f;
-        public float movementSpeed = 0.01f;
-        public float rotationSpeed = 0.01f;
+        public float scaleSensitivity = 1f;
+        public float rotationSpeed = 90f; // Degrees per metre of relative vertical hand movement
 
         [Header("Inspector Testing")]
         public float debugScale = 1f;
         public float debugRotation = 45f;
         public Vector3 debugPosition = Vector3.zero;
 
-        private Transform activeHand;
         private bool twoHanded;
-
-        // Single-hand starting values.
-        private Vector3 startHandPosition;
-        private Vector3 startRigPosition;
-        private float startHandYaw;
-        private Quaternion startRigRotation;
-
-        // Two-hand starting values.
-        private float startDistance;
+        private float startHorizontalDistance;
         private float startScale;
-        private Vector3 startMidpoint;
-        private Vector3 startDirection;
+        private float startHeightDifference;
+        private Vector3 startRigPosition;
         private Quaternion startTwoHandRotation;
 
         private ControllerVr left;
@@ -49,6 +40,8 @@ namespace KillTeam
 
         private ColliderStorage colliderStorage =
             new ColliderStorage();
+
+        private Vector3 offSet;
 
         // Actual AutoHand player.
         private Transform Player
@@ -130,58 +123,36 @@ namespace KillTeam
 
         private void Update()
         {
-            if (Player == null ||
-                leftHand == null ||
-                rightHand == null ||
-                left == null ||
-                right == null)
-                return;
-
-            bool leftGrip = left.PrimaryButton;
-            bool rightGrip = right.PrimaryButton;
-
-            if (!leftGrip && !rightGrip)
+            if (Player == null || leftHand == null || rightHand == null ||
+                left == null || right == null)
             {
-                activeHand = null;
-                twoHanded = false;
-
-                colliderStorage.Restore();
+                EndTwoHand();
                 return;
             }
 
-            colliderStorage.DisableAll();
-
-            if (leftGrip && rightGrip)
+            // Both GRIPS must be held. Face buttons are not used.
+            bool bothGrips = left.Grip > 0.9f && right.Grip > 0.9f;
+            if (!bothGrips)
             {
-                if (!twoHanded)
-                {
-                    BeginTwoHand();
-
-                    twoHanded = true;
-                    activeHand = null;
-                }
-
-                UpdateTwoHand();
+                EndTwoHand();
+                return;
             }
-            else
+
+            if (!twoHanded)
             {
-                if (twoHanded)
-                {
-                    twoHanded = false;
-                    activeHand = null;
-                }
-
-                Transform hand =
-                    leftGrip ? leftHand : rightHand;
-
-                if (hand != activeHand)
-                {
-                    activeHand = hand;
-                    BeginSingleHand();
-                }
-
-                UpdateSingleHand();
+                BeginTwoHand();
+                twoHanded = true;
+                colliderStorage.DisableAll();
             }
+
+            UpdateTwoHand();
+        }
+
+        private void EndTwoHand()
+        {
+            if (!twoHanded) return;
+            twoHanded = false;
+            colliderStorage.Restore();
         }
 
         // ==========================================
@@ -253,179 +224,58 @@ namespace KillTeam
 
             Player.rotation = transform.rotation;
 
-            activeHand = null;
             twoHanded = false;
 
             colliderStorage.Restore();
         }
 
         // ==========================================
-        // SINGLE HAND
-        // ==========================================
-
-        private void BeginSingleHand()
-        {
-            if (activeHand == null || Player == null)
-                return;
-
-            startHandPosition = activeHand.position;
-            startRigPosition = Player.position;
-            startHandYaw = activeHand.eulerAngles.y;
-            startRigRotation = Player.rotation;
-        }
-
-        private void UpdateSingleHand()
-        {
-            if (activeHand == null || Player == null)
-                return;
-
-            Vector3 movement =
-                activeHand.position - startHandPosition;
-
-            float yawChange = Mathf.DeltaAngle(
-                startHandYaw,
-                activeHand.eulerAngles.y);
-
-            Quaternion rotation = Quaternion.Euler(
-                0f,
-                -yawChange * rotationSpeed,
-                0f);
-
-            Vector3 position =
-                startRigPosition -
-                movement * movementSpeed;
-
-            Vector3 offset =
-                position - TableCentre;
-
-            Vector3 finalPosition =
-                TableCentre + rotation * offset;
-
-            Quaternion finalRotation =
-                rotation * startRigRotation;
-
-            SetPlayerTransform(
-                finalPosition,
-                finalRotation);
-        }
-
-        // ==========================================
-        // TWO HANDS
+        // TWO GRIPS: HORIZONTAL = SCALE, VERTICAL = ROTATION
         // ==========================================
 
         private void BeginTwoHand()
         {
-            if (Player == null)
-                return;
+            Vector3 separation = rightHand.position - leftHand.position;
+            Vector3 horizontal = Vector3.ProjectOnPlane(separation, TableUp);
 
-            startDistance = Vector3.Distance(
-                leftHand.position,
-                rightHand.position);
-
+            startHorizontalDistance = horizontal.magnitude;
+            startHeightDifference = Vector3.Dot(separation, TableUp);
             startScale = Player.lossyScale.x;
-
             startRigPosition = Player.position;
             startTwoHandRotation = Player.rotation;
 
-            startMidpoint =
-                (leftHand.position + rightHand.position) * 0.5f;
-
-            startDirection =
-                rightHand.position - leftHand.position;
+            offSet = Player.transform.position - Camera.main.transform.position;
         }
 
         private void UpdateTwoHand()
         {
-            if (Player == null)
-                return;
+            Vector3 separation = rightHand.position - leftHand.position;
+            float horizontalDistance =
+                Vector3.ProjectOnPlane(separation, TableUp).magnitude;
 
-            Vector3 midpoint =
-                (leftHand.position + rightHand.position) * 0.5f;
-
-            Vector3 direction =
-                rightHand.position - leftHand.position;
-
-            float distance = direction.magnitude;
-
-            if (startDistance < 0.001f ||
-                distance < 0.001f)
-                return;
-
-            // ======================================
-            // SCALE
-            // ======================================
-
-            float handFactor =
-                distance / startDistance;
-
+            // Hands apart = bigger; hands together = smaller.
+            float distanceChange = horizontalDistance - startHorizontalDistance;
             float newScale = Mathf.Clamp(
-                startScale / handFactor,
-                minScale,
-                maxScale);
+                startScale * (1f + distanceChange * scaleSensitivity),
+                minScale, maxScale);
 
-            float scaleFactor =
-                newScale / Mathf.Max(startScale, 0.0001f);
+            // Difference in hand heights controls yaw around the table.
+            float heightDifference = Vector3.Dot(separation, TableUp);
+            float heightChange = heightDifference - startHeightDifference;
+            float degrees = heightChange * rotationSpeed;
+            Quaternion deltaRotation = Quaternion.AngleAxis(degrees, TableUp);
 
             SetScale(newScale);
 
-            // ======================================
-            // ROTATION
-            // ======================================
-
-            Vector3 startFlat =
-                Vector3.ProjectOnPlane(
-                    startDirection,
-                    TableUp);
-
-            Vector3 currentFlat =
-                Vector3.ProjectOnPlane(
-                    direction,
-                    TableUp);
-
-            float yawChange = 0f;
-
-            if (startFlat.sqrMagnitude > 0.0001f &&
-                currentFlat.sqrMagnitude > 0.0001f)
-            {
-                yawChange = Vector3.SignedAngle(
-                    startFlat,
-                    currentFlat,
-                    TableUp);
-            }
-
-            Quaternion rotation =
-                Quaternion.AngleAxis(
-                    -yawChange * rotationSpeed,
-                    TableUp);
-
-            Quaternion finalRotation =
-                rotation * startTwoHandRotation;
-
-            // ======================================
-            // POSITION
-            // ======================================
-
-            Vector3 offset =
-                startRigPosition - TableCentre;
-
-            offset *= scaleFactor;
-            offset = rotation * offset;
-
-            Vector3 handMovement =
-                midpoint - startMidpoint;
-
-            Vector3 finalPosition =
-                TableCentre +
-                offset -
-                handMovement * movementSpeed;
-
-            SetPlayerTransform(
-                finalPosition,
-                finalRotation);
+            // Preserve player position on scaling; only rotation orbits the table.
+            Vector3 rotatedOffset = deltaRotation * (startRigPosition - TableCentre);
+            SetPlayerTransform(TableCentre + rotatedOffset,
+                deltaRotation * startTwoHandRotation);
         }
 
         private void OnDisable()
         {
+            twoHanded = false;
             colliderStorage.Restore();
         }
 

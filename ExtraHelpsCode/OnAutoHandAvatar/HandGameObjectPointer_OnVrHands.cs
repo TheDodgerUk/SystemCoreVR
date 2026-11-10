@@ -5,47 +5,12 @@ using UnityEngine.Events;
 
 namespace Autohand
 {
-
-
-////    pointer.OnLaserClick.RemoveAllListeners();
-////    pointer.OnLaserRelease.RemoveAllListeners();
-////    pointer.OnLaserHoverEnter.RemoveAllListeners();
-////    pointer.OnLaserHoverExit.RemoveAllListeners();
-
-////    pointer.OnLaserClick.AddListener(OnClick);
-////    pointer.OnLaserRelease.AddListener(OnRelease);
-////    pointer.OnLaserHoverEnter.AddListener(OnHoverEnter);
-////    pointer.OnLaserHoverExit.AddListener(OnHoverExit);
-
-////    private void OnClick(Vector3 point, GameObject target)
-////    {
-////        Debug.Log("Clicked: " + target.name);
-////    }
-
-////    private void OnRelease(Vector3 point, GameObject target)
-////    {
-////        Debug.Log("Released: " + target.name);
-////    }
-
-////    private void OnHoverEnter(Vector3 point, GameObject target)
-////    {
-////        Debug.Log("Hover Enter: " + target.name);
-////    }
-
-////    private void OnHoverExit(Vector3 point, GameObject target)
-////    {
-////        Debug.Log("Hover Exit: " + target.name);
-////    }
-
-
-
-
-
     [Serializable]
-    public class UnityGameObjectPointerEvent
-        : UnityEvent<Vector3, GameObject>
-    { }
-    // this attaches to VR hand 
+    public class UnityGameObjectPointerEvent : UnityEvent<Vector3, GameObject>
+    {
+    }
+
+    // Attach this script to the VR hand.
     [RequireComponent(typeof(LineRenderer))]
     public class HandGameObjectPointer_OnVrHands : MonoBehaviour
     {
@@ -59,6 +24,9 @@ namespace Autohand
 
         public QueryTriggerInteraction triggerInteraction =
             QueryTriggerInteraction.Collide;
+
+        [Header("Target Settings")]
+        public bool requirePointerComponent = true;
 
         [Header("Events")]
         public UnityGameObjectPointerEvent OnLaserClick =
@@ -74,20 +42,25 @@ namespace Autohand
             new UnityGameObjectPointerEvent();
 
         public GameObject currTarget { get; private set; }
+
         public RaycastHit lastHit { get; private set; }
 
         public bool IsHovering => currTarget != null;
+
         public bool IsSelecting { get; private set; }
 
         private LineRenderer lineRenderer;
+
         private GameObject selectedTarget;
         private Vector3 selectedPoint;
 
         private void Awake()
         {
             lineRenderer = GetComponent<LineRenderer>();
+
             lineRenderer.useWorldSpace = true;
             lineRenderer.positionCount = 2;
+
             ShowRay(false);
         }
 
@@ -118,25 +91,65 @@ namespace Autohand
             UpdatePointer();
         }
 
-        // -------------------------
-        // TARGET DETECTION
-        // -------------------------
+        // ----------------------------------
+        // TARGET VALIDATION
+        // ----------------------------------
+
+        private GameObject FindValidTarget(Collider collider)
+        {
+            if (collider == null)
+                return null;
+
+            GameObject obj = collider.gameObject;
+
+            if (!obj.activeInHierarchy)
+                return null;
+
+            if (!requirePointerComponent)
+                return obj;
+
+            // Find the pointer component on the object
+            // or one of its parents.
+            HandGameObjectPointer pointer =
+                collider.GetComponentInParent<HandGameObjectPointer>();
+
+            if (pointer == null || !pointer.isActiveAndEnabled)
+                return null;
+
+            return pointer.gameObject;
+        }
 
         public bool HasValidTarget()
         {
             if (!isActiveAndEnabled)
                 return false;
 
-            return Physics.Raycast(
+            Ray ray = new Ray(
                 transform.position,
-                transform.forward,
-                raycastLength,
-                selectableLayers,
-                triggerInteraction);
+                transform.forward);
+
+            if (!Physics.Raycast(
+                    ray,
+                    out RaycastHit hit,
+                    raycastLength,
+                    selectableLayers,
+                    triggerInteraction))
+            {
+                return false;
+            }
+
+            return FindValidTarget(hit.collider) != null;
         }
+
+        // ----------------------------------
+        // POINTER UPDATE
+        // ----------------------------------
 
         public void UpdatePointer()
         {
+            if (lineRenderer == null)
+                return;
+
             Ray ray = new Ray(
                 transform.position,
                 transform.forward);
@@ -148,37 +161,58 @@ namespace Autohand
                 selectableLayers,
                 triggerInteraction);
 
-            GameObject newTarget =
-                hasHit ? hit.collider.gameObject : null;
+            GameObject newTarget = hasHit
+                ? FindValidTarget(hit.collider)
+                : null;
+
+            bool validHit = newTarget != null;
 
             Vector3 endPosition = hasHit
                 ? hit.point
                 : ray.GetPoint(raycastLength);
 
+            // Hover changed
             if (newTarget != currTarget)
             {
                 if (currTarget != null)
-                    OnLaserHoverExit?.Invoke(lastHit.point, currTarget);
+                {
+                    OnLaserHoverExit?.Invoke(
+                        lastHit.point,
+                        currTarget);
+                }
 
                 currTarget = newTarget;
 
                 if (currTarget != null)
-                    OnLaserHoverEnter?.Invoke(hit.point, currTarget);
+                {
+                    OnLaserHoverEnter?.Invoke(
+                        hit.point,
+                        currTarget);
+                }
             }
 
             lastHit = hit;
 
+            // Update laser positions
+            lineRenderer.SetPosition(
+                0,
+                transform.position);
+
+            lineRenderer.SetPosition(
+                1,
+                endPosition);
+
+            // Show laser only for valid targets
             if (autoShowTarget)
-                ShowRay(hasHit);
+                ShowRay(validHit);
 
-            lineRenderer.SetPosition(0, transform.position);
-            lineRenderer.SetPosition(1, endPosition);
-
-            if (hitPointMarker != null && hasHit)
+            // Update hit marker
+            if (hitPointMarker != null && validHit)
             {
-                hitPointMarker.transform.position = hit.point;
+                hitPointMarker.transform.position =
+                    hit.point;
 
-                if (hit.normal.sqrMagnitude > 0f)
+                if (hit.normal.sqrMagnitude > 0.001f)
                 {
                     hitPointMarker.transform.rotation =
                         Quaternion.LookRotation(hit.normal);
@@ -186,24 +220,33 @@ namespace Autohand
             }
         }
 
-        // -------------------------
-        // PRESS / RELEASE
-        // -------------------------
+        // ----------------------------------
+        // PRESS
+        // ----------------------------------
 
         public virtual void Press()
         {
-            if (IsSelecting)
+            if (!isActiveAndEnabled || IsSelecting)
                 return;
 
             UpdatePointer();
 
+            if (currTarget == null)
+                return;
+
             IsSelecting = true;
+
             selectedTarget = currTarget;
             selectedPoint = lastHit.point;
 
-            if (selectedTarget != null)
-                OnLaserClick?.Invoke(selectedPoint, selectedTarget);
+            OnLaserClick?.Invoke(
+                selectedPoint,
+                selectedTarget);
         }
+
+        // ----------------------------------
+        // RELEASE
+        // ----------------------------------
 
         public virtual void Release()
         {
@@ -213,14 +256,18 @@ namespace Autohand
             IsSelecting = false;
 
             if (selectedTarget != null)
-                OnLaserRelease?.Invoke(selectedPoint, selectedTarget);
+            {
+                OnLaserRelease?.Invoke(
+                    selectedPoint,
+                    selectedTarget);
+            }
 
             selectedTarget = null;
         }
 
-        // -------------------------
+        // ----------------------------------
         // VISUALS
-        // -------------------------
+        // ----------------------------------
 
         public void ShowRay(bool show)
         {
@@ -234,9 +281,23 @@ namespace Autohand
                 hitPointMarker.SetActive(show);
         }
 
+        // ----------------------------------
+        // PUBLIC ACCESS
+        // ----------------------------------
+
         public GameObject GetTarget()
         {
             return currTarget;
+        }
+
+        public Vector3 GetHitPoint()
+        {
+            return lastHit.point;
+        }
+
+        public bool IsPointingAt(GameObject obj)
+        {
+            return currTarget == obj;
         }
     }
 }
