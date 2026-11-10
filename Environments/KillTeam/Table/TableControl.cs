@@ -22,8 +22,8 @@ namespace KillTeam
         [Header("Settings")]
         public float minScale = 0.2f;
         public float maxScale = 5f;
-        public float movementSpeed = 1f;
-        public float rotationSpeed = 1f;
+        public float movementSpeed = 0.01f;
+        public float rotationSpeed = 0.01f;
 
         [Header("Inspector Testing")]
         public float debugScale = 1f;
@@ -434,6 +434,8 @@ namespace KillTeam
             TableControl table =
                 (TableControl)target;
 
+            DrawTransformPositions(table);
+
             EditorGUILayout.Space(15);
 
             EditorGUILayout.LabelField(
@@ -519,5 +521,55 @@ namespace KillTeam
         }
     }
 
+    private void DrawTransformPositions(TableControl table)
+        {
+            EditorGUILayout.Space(10);
+
+            EditorGUILayout.LabelField(
+                "VR Transform Positions",
+                EditorStyles.boldLabel);
+
+            DrawPosition("Rig Root", table.rigRoot);
+            DrawPosition("Head", table.head);
+            DrawPosition("Left Hand", table.leftHand);
+            DrawPosition("Right Hand", table.rightHand);
+
+            // Refresh values continuously during Play Mode.
+            if (Application.isPlaying)
+                Repaint();
+        }
+
+        private void DrawPosition(string label, Transform target)
+        {
+            if (target == null)
+            {
+                EditorGUILayout.LabelField(label, "Not Assigned");
+                return;
+            }
+
+            EditorGUILayout.Space(4);
+            EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
+
+            EditorGUI.BeginDisabledGroup(true);
+
+            EditorGUILayout.Vector3Field(
+                "World Position",
+                target.position);
+
+            EditorGUILayout.Vector3Field(
+                "Local Position",
+                target.localPosition);
+
+            EditorGUILayout.Vector3Field(
+                "World Rotation",
+                target.eulerAngles);
+
+            EditorGUILayout.Vector3Field(
+                "Local Rotation",
+                target.localEulerAngles);
+
+            EditorGUI.EndDisabledGroup();
+        }
+
 #endif
-}
+    }
