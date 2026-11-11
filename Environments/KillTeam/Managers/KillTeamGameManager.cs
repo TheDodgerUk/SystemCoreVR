@@ -175,7 +175,7 @@ public class KillTeamGameManager : MonoBehaviour
         GenericStateMachine = vRPrefabMenu.AddComponent<GenericStateMachine>();
 
 
-
+        CameraControllerVR.Instance.AutoHandPlayerRef.body.isKinematic = false;
 
 
         m_currentScene = this.gameObject.scene;
