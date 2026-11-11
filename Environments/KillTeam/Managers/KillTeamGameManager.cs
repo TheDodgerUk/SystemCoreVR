@@ -192,13 +192,13 @@ public class KillTeamGameManager : MonoBehaviour
 
     private void Init()
     {
-        Debug.Log($"private void Init() KillTeam");
         InitiliseAll();
         FindByName("Floor").GetComponent<Collider>().enabled = false;
         CameraControllerVR.Instance.AutoHandPlayerRef.body.isKinematic = true;
         CameraControllerVR.Instance.AutoHandPlayerRef.body.useGravity = false;
         //CameraControllerVR.Instance.SnapTeleport(new Vector3(-1.5f, 0, 0));
         CameraControllerVR.Instance.AutoHandPlayerRef.SetPosition(new Vector3(-1.5f, 0, 0));
+        Debug.Log($"private void Init() KillTeam");
     }
 
 
