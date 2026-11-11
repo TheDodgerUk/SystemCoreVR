@@ -70,13 +70,13 @@ public class AssetHolder : MonoBehaviour
             }
             else
             {
-                if (catItem.CatalogueFilters.Contains(Table.Instance.Ignore) == true || catItem.CatalogueFilters.Count == 0)
+                if (catItem.CatalogueFilters.Contains(Table.Ignore) == true || catItem.CatalogueFilters.Count == 0)
                 {
                     // reversed logic as easy to read
                 }
                 else
                 {
-                    if (catItem.CatalogueFilters.Contains(Table.Instance.Barracade))
+                    if (catItem.CatalogueFilters.Contains(Table.Barracade))
                     {
                         catalogueEntryBaracade.Add(catItem);
                     }

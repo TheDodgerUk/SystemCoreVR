@@ -12,8 +12,8 @@ public class Table : MonoBehaviour
 
 
 
-    public string Barracade => "KillTeam/Barracade";
-    public string Ignore => "KillTeam/Ignore";
+    public static string Barracade => "KillTeam/Barracade";
+    public static string Ignore => "KillTeam/Ignore";
 
     public Dictionary<KillTeamGameManager.Player, GameObject> playerStartTable = new Dictionary<KillTeamGameManager.Player, GameObject>();
 

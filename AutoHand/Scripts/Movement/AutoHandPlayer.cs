@@ -936,6 +936,7 @@ namespace Autohand {
         }
 
         public virtual void SetPosition(Vector3 position, Quaternion rotation) {
+            var prevPos = transform.position;
             Vector3 deltaPos = position - transform.position;
             transform.position += deltaPos;
             //This code will move the tracking objects to match the body collider position when moving
@@ -959,6 +960,7 @@ namespace Autohand {
             trackingContainer.RotateAround(headCamera.transform.position, Vector3.up, deltaRot.eulerAngles.y);
             //trackingContainer.RotateAround(headCamera.transform.position, Vector3.right, deltaRot.eulerAngles.x);
             //trackingContainer.RotateAround(headCamera.transform.position, Vector3.forward, deltaRot.eulerAngles.z);
+            Debug.Log($"public virtual void SetPosition {transform.position}  prev Position {prevPos}");
         }
 
 

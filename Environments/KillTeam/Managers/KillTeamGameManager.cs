@@ -157,7 +157,8 @@ public class KillTeamGameManager : MonoBehaviour
 
         lastAppliedState = currentState;
 
-        CameraControllerVR.Instance.SnapTeleport (new Vector3(-1.5f, 0, 0));
+
+
 
 
 
@@ -175,17 +176,29 @@ public class KillTeamGameManager : MonoBehaviour
         GenericStateMachine = vRPrefabMenu.AddComponent<GenericStateMachine>();
 
 
-        CameraControllerVR.Instance.AutoHandPlayerRef.body.isKinematic = false;
-
 
         m_currentScene = this.gameObject.scene;
-
+        Init();
         Core.Environment.OnEnvironmentLoadingComplete += () =>
         {
-            InitiliseAll();
-            FindByName("Floor").GetComponent<Collider>().enabled = false;
+            Init();
         };
+        if(Core.Environment.OnEnvironmentLoadingCompleteBool == true)
+        {
+            Init();
+        }
 
+    }
+
+    private void Init()
+    {
+        Debug.Log($"private void Init() KillTeam");
+        InitiliseAll();
+        FindByName("Floor").GetComponent<Collider>().enabled = false;
+        CameraControllerVR.Instance.AutoHandPlayerRef.body.isKinematic = true;
+        CameraControllerVR.Instance.AutoHandPlayerRef.body.useGravity = false;
+        //CameraControllerVR.Instance.SnapTeleport(new Vector3(-1.5f, 0, 0));
+        CameraControllerVR.Instance.AutoHandPlayerRef.SetPosition(new Vector3(-1.5f, 0, 0));
     }
 
 
