@@ -240,6 +240,7 @@ public class KillTeamGameManager : MonoBehaviour
         {
             interaction.InitiliseState(InteractionState.Player2Interaction);
         }
+        item.AddComponent<ObjectSize>();
         switch (itemType)
         {
             case LayerType.Player:

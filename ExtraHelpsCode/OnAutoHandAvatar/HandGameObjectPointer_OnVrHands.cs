@@ -110,8 +110,8 @@ namespace Autohand
 
             // Find the pointer component on the object
             // or one of its parents.
-            HandGameObjectPointer pointer =
-                collider.GetComponentInParent<HandGameObjectPointer>();
+            HandGameObjectPointerBase pointer =
+                collider.GetComponentInParent<HandGameObjectPointerBase>();
 
             if (pointer == null || !pointer.isActiveAndEnabled)
                 return null;
