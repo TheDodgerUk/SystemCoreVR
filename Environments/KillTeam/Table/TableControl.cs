@@ -169,7 +169,9 @@ namespace KillTeam
                 minScale,
                 maxScale);
 
+            var k = CameraControllerVR.Instance.AutoHandPlayerRef.body.isKinematic;
             CameraControllerVR.Instance.SetScale(scale);
+            CameraControllerVR.Instance.AutoHandPlayerRef.body.isKinematic = k;
         }
 
         // Local position relative to table.

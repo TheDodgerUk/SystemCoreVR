@@ -198,7 +198,7 @@ public class KillTeamGameManager : MonoBehaviour
         CameraControllerVR.Instance.AutoHandPlayerRef.body.useGravity = false;
         //CameraControllerVR.Instance.SnapTeleport(new Vector3(-1.5f, 0, 0));
         CameraControllerVR.Instance.AutoHandPlayerRef.SetPosition(new Vector3(-1.5f, 0, 0));
-        Debug.Log($"private void Init() KillTeam");
+        Debug.Log($"private void Init() KillTeam, CameraControllerVR.Instance.AutoHandPlayerRef.body != null : {CameraControllerVR.Instance.AutoHandPlayerRef.body != null}");
     }
 
 
