@@ -408,10 +408,16 @@ namespace Autohand {
             //5. Checks if gravity should be turned off
             if (IsClimbing() || pushAxis.y > 0)
                 body.useGravity = false;
-
-            //6. This will keep velocity if consistent when moving while falling
-            if(body.useGravity)
-                body.velocity = new Vector3(body.velocity.x, yVel, body.velocity.z);
+            // 6. Keep velocity consistent when moving while falling
+            // Only update velocity if Rigidbody is not kinematic
+            if (body.useGravity && !body.isKinematic)
+            {
+                body.velocity = new Vector3(
+                    body.velocity.x,
+                    yVel,
+                    body.velocity.z
+                );
+            }
 
             SyncBodyHead();
 
@@ -481,7 +487,7 @@ namespace Autohand {
 
 
             //6. This will keep velocity if consistent when moving while falling
-            if (body.useGravity)
+            if (body.useGravity && !body.isKinematic)
                 body.velocity = new Vector3(body.velocity.x, yVel, body.velocity.z);
 
             transform.position = body.position;
