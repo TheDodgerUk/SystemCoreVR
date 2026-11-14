@@ -71,9 +71,9 @@
  * 6. LASER EVENTS
  *
  *    // Subscribe after VRControllerSetup has initialized:
- *    setup.LeftController.OnLaserClick += OnSelected;
- *    setup.LeftController.OnLaserHover += OnHovered;
- *    setup.LeftController.OnLaserModeChanged += OnModeChanged;
+ *    setup.LeftController.OnLaserClick.AddListener(OnSelected);
+ *    setup.LeftController.OnLaserHover.AddListener(OnHovered);
+ *    setup.LeftController.OnLaserModeChanged.AddListener(OnModeChanged);
  *
  *    // Matching method signatures:
  *    // void OnSelected(GameObject target) { }
@@ -81,9 +81,9 @@
  *    // void OnModeChanged(bool enabled, GameObject target) { }
  *
  *    // Unsubscribe when your listener is destroyed:
- *    setup.LeftController.OnLaserClick -= OnSelected;
- *    setup.LeftController.OnLaserHover -= OnHovered;
- *    setup.LeftController.OnLaserModeChanged -= OnModeChanged;
+ *    setup.LeftController.OnLaserClick.RemoveListener(OnSelected);
+ *    setup.LeftController.OnLaserHover.RemoveListener(OnHovered);
+ *    setup.LeftController.OnLaserModeChanged.RemoveListener(OnModeChanged);
  *
  *    // Or use VRControllerSetup's callback convenience method:
  *    setup.SetBothLaserModes(true, OnSelected);
@@ -102,6 +102,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.XR;
+using UnityEngine.Events;
 using Autohand;
 
 public class ControllerVr : IDisposable
@@ -131,9 +132,9 @@ public class ControllerVr : IDisposable
     // EVENTS
     // ============================================
 
-    public event Action<GameObject> OnLaserClick;
-    public event Action<GameObject> OnLaserHover;
-    public event Action<bool, GameObject> OnLaserModeChanged;
+    public readonly UnityEvent<GameObject> OnLaserClick = new UnityEvent<GameObject>();
+    public readonly UnityEvent<GameObject> OnLaserHover = new UnityEvent<GameObject>();
+    public readonly UnityEvent<bool, GameObject> OnLaserModeChanged = new UnityEvent<bool, GameObject>();
 
     // ============================================
     // BUTTON STATES
@@ -273,7 +274,7 @@ public class ControllerVr : IDisposable
                 ? pointer.currTarget
                 : null;
 
-        OnLaserModeChanged?.Invoke(enabled, target);
+        OnLaserModeChanged.Invoke(enabled, target);
     }
 
     private void UpdatePointerEnabled()
@@ -298,7 +299,7 @@ public class ControllerVr : IDisposable
         GameObject target)
     {
         if (IsLaserMode && target != null)
-            OnLaserClick?.Invoke(target);
+            OnLaserClick.Invoke(target);
     }
 
     private void HandlePointerHover(
@@ -306,12 +307,12 @@ public class ControllerVr : IDisposable
         GameObject target)
     {
         if (IsLaserMode && target != null)
-            OnLaserHover?.Invoke(target);
+            OnLaserHover.Invoke(target);
     }
 
     public void ClearLaserClickCallbacks()
     {
-        OnLaserClick = null;
+        OnLaserClick.RemoveAllListeners();
     }
 
     // ============================================
@@ -584,9 +585,9 @@ public class ControllerVr : IDisposable
 
         RestoreAutoHand();
 
-        OnLaserClick = null;
-        OnLaserHover = null;
-        OnLaserModeChanged = null;
+        OnLaserClick.RemoveAllListeners();
+        OnLaserHover.RemoveAllListeners();
+        OnLaserModeChanged.RemoveAllListeners();
 
         disposed = true;
     }

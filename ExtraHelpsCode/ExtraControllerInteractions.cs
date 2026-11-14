@@ -1,4 +1,3 @@
-
 using System;
 using UnityEngine;
 using UnityEngine.XR;
@@ -8,12 +7,11 @@ using Autohand;
 // VR CONTROLLER SETUP
 // ============================================
 
-public class VRControllerSetup : MonoBehaviour
+public class ExtraControllerInteractions : MonoBehaviour
 {
     [Serializable]
     public class HandSettings
     {
-
         public HandGameObjectPointer_OnVrHands laserGameObject;
     }
 
@@ -21,9 +19,8 @@ public class VRControllerSetup : MonoBehaviour
     // INSPECTOR
     // ============================================
 
-    [Header("Controllers")]
-    public HandSettings leftHandSettings = new HandSettings();
-    public HandSettings rightHandSettings = new HandSettings();
+    private HandSettings leftHandSettings = new HandSettings();
+    private HandSettings rightHandSettings = new HandSettings();
 
     [Header("Laser Settings")]
     public float laserDistance = 5f;
@@ -72,19 +69,36 @@ public class VRControllerSetup : MonoBehaviour
 
         if (node == XRNode.LeftHand)
         {
-            settings.laserGameObject = CameraControllerVR.Instance.AutoHandPlayerRef.handLeft.GetComponentInChildren<HandCanvasPointer>().gameObject.AddComponent<HandGameObjectPointer_OnVrHands>();
+            settings.laserGameObject =
+                CameraControllerVR.Instance
+                    .AutoHandPlayerRef
+                    .handLeft
+                    .GetComponentInChildren<HandCanvasPointer>()
+                    .gameObject
+                    .AddComponent<HandGameObjectPointer_OnVrHands>();
         }
         else
         {
-            settings.laserGameObject = CameraControllerVR.Instance.AutoHandPlayerRef.handRight.GetComponentInChildren<HandCanvasPointer>().gameObject.AddComponent<HandGameObjectPointer_OnVrHands>();
-
+            settings.laserGameObject =
+                CameraControllerVR.Instance
+                    .AutoHandPlayerRef
+                    .handRight
+                    .GetComponentInChildren<HandCanvasPointer>()
+                    .gameObject
+                    .AddComponent<HandGameObjectPointer_OnVrHands>();
         }
+
         if (settings.laserGameObject != null)
         {
             settings.laserGameObject.raycastLength = laserDistance;
             settings.laserGameObject.selectableLayers = selectableLayers;
         }
 
+        // Register AutoHand pointer with ControllerVr.
+        controller.SetAutoHand(
+            null,
+            settings.laserGameObject,
+            null);
 
         controller.AutoSwitchLaser = autoSwitchLaser;
         controller.SetLaserMode(true);
@@ -145,13 +159,22 @@ public class VRControllerSetup : MonoBehaviour
         if (controller == null)
             return;
 
+        // Remove previous callback.
         if (callback != null)
-            controller.OnLaserClick -= callback;
+        {
+            controller.OnLaserClick.RemoveListener(
+                callback.Invoke);
+        }
 
+        // Store new callback.
         callback = enabled ? onClick : null;
 
+        // Register new callback.
         if (callback != null)
-            controller.OnLaserClick += callback;
+        {
+            controller.OnLaserClick.AddListener(
+                callback.Invoke);
+        }
 
         controller.SetLaserMode(enabled);
     }
@@ -164,6 +187,9 @@ public class VRControllerSetup : MonoBehaviour
     {
         Cleanup(LeftController, leftCallback);
         Cleanup(RightController, rightCallback);
+
+        leftCallback = null;
+        rightCallback = null;
 
         BothControllers = null;
         LeftController = null;
@@ -178,7 +204,10 @@ public class VRControllerSetup : MonoBehaviour
             return;
 
         if (callback != null)
-            controller.OnLaserClick -= callback;
+        {
+            controller.OnLaserClick.RemoveListener(
+                callback.Invoke);
+        }
 
         controller.Dispose();
     }

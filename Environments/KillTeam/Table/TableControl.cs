@@ -67,6 +67,7 @@ namespace KillTeam
 
         private void Awake()
         {
+            
             if (Controller == null ||
                 Controller.AutoHandPlayerRef == null)
             {
