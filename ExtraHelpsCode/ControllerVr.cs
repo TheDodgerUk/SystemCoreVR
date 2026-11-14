@@ -6,24 +6,38 @@ using Autohand;
 
 public class ControllerVr : IDisposable
 {
+    // ============================================
+    // CONTROLLER
+    // ============================================
+
     public XRNode Node { get; private set; }
 
     private InputDevice device;
-    private Autohand.Hand hand;
+
     private HandGameObjectPointer_OnVrHands pointer;
     private Behaviour grabInput;
 
     private bool originalGrabInputEnabled;
     private bool originalPointerEnabled;
     private bool laserSelectionEnabled;
+    private bool disposed;
 
     public bool IsLaserMode { get; private set; }
+
     public bool AutoSwitchLaser { get; set; } = true;
     public float ButtonThreshold { get; set; } = 0.5f;
+
+    // ============================================
+    // EVENTS
+    // ============================================
 
     public event Action<GameObject> OnLaserClick;
     public event Action<GameObject> OnLaserHover;
     public event Action<bool, GameObject> OnLaserModeChanged;
+
+    // ============================================
+    // BUTTON STATES
+    // ============================================
 
     private bool previousPrimary;
     private bool previousSecondary;
@@ -43,6 +57,10 @@ public class ControllerVr : IDisposable
     public bool GripUp { get; private set; }
     public bool JoystickButtonUp { get; private set; }
 
+    // ============================================
+    // CONSTRUCTOR
+    // ============================================
+
     public ControllerVr(XRNode node)
     {
         if (node != XRNode.LeftHand &&
@@ -56,22 +74,21 @@ public class ControllerVr : IDisposable
         RefreshDevice();
     }
 
-    // -------------------------
+    // ============================================
     // AUTOHAND SETUP
-    // -------------------------
+    // ============================================
 
     public void SetAutoHand(
         Autohand.Hand autoHand,
         HandGameObjectPointer_OnVrHands laserPointer,
         Behaviour grabInputComponent)
     {
-        if (pointer != null)
-        {
-            pointer.OnLaserClick.RemoveListener(HandlePointerClick);
-            pointer.OnLaserHoverEnter.RemoveListener(HandlePointerHover);
-        }
+        if (disposed)
+            return;
 
-        hand = autoHand;
+        // Remove old listeners and restore old components.
+        RestoreAutoHand();
+
         pointer = laserPointer;
         grabInput = grabInputComponent;
 
@@ -83,8 +100,12 @@ public class ControllerVr : IDisposable
 
         if (pointer != null)
         {
-            pointer.OnLaserClick.AddListener(HandlePointerClick);
-            pointer.OnLaserHoverEnter.AddListener(HandlePointerHover);
+            pointer.OnLaserClick.AddListener(
+                HandlePointerClick);
+
+            pointer.OnLaserHoverEnter.AddListener(
+                HandlePointerHover);
+
             pointer.enabled = false;
         }
 
@@ -92,12 +113,15 @@ public class ControllerVr : IDisposable
         IsLaserMode = false;
     }
 
-    // -------------------------
+    // ============================================
     // LASER MODE
-    // -------------------------
+    // ============================================
 
     public void SetLaserMode(bool enabled)
     {
+        if (disposed)
+            return;
+
         laserSelectionEnabled = enabled;
 
         if (!enabled)
@@ -112,14 +136,10 @@ public class ControllerVr : IDisposable
 
         UpdatePointerEnabled();
 
-        if (pointer != null)
-            pointer.UpdatePointer();
-
-        bool useLaser =
-            !AutoSwitchLaser ||
-            (pointer != null && pointer.HasValidTarget());
-
-        ApplyLaserMode(useLaser);
+        // When auto-switching is disabled,
+        // immediately activate laser mode.
+        if (!AutoSwitchLaser)
+            ApplyLaserMode(true);
     }
 
     public void ToggleLaserMode()
@@ -134,14 +154,19 @@ public class ControllerVr : IDisposable
 
         IsLaserMode = enabled;
 
+        // Disable grabbing while using the laser.
         if (grabInput != null)
         {
             grabInput.enabled =
                 enabled ? false : originalGrabInputEnabled;
         }
 
-        if (!enabled && pointer != null && pointer.IsSelecting)
+        if (!enabled &&
+            pointer != null &&
+            pointer.IsSelecting)
+        {
             pointer.Release();
+        }
 
         GameObject target =
             enabled && pointer != null
@@ -149,12 +174,6 @@ public class ControllerVr : IDisposable
                 : null;
 
         OnLaserModeChanged?.Invoke(enabled, target);
-
-        Debug.Log(
-            $"{Node}: " +
-            (enabled
-                ? "LASER MODE"
-                : "HAND MODE"));
     }
 
     private void UpdatePointerEnabled()
@@ -168,9 +187,11 @@ public class ControllerVr : IDisposable
             ? pointer.currTarget
             : null;
 
-    // -------------------------
-    // POINTER CALLBACKS
-    // -------------------------
+    public bool LaserEnabled => laserSelectionEnabled;
+
+    // ============================================
+    // LASER CALLBACKS
+    // ============================================
 
     private void HandlePointerClick(
         Vector3 position,
@@ -184,13 +205,18 @@ public class ControllerVr : IDisposable
         Vector3 position,
         GameObject target)
     {
-        if (IsLaserMode)
+        if (IsLaserMode && target != null)
             OnLaserHover?.Invoke(target);
     }
 
-    // -------------------------
+    public void ClearLaserClickCallbacks()
+    {
+        OnLaserClick = null;
+    }
+
+    // ============================================
     // XR DEVICE
-    // -------------------------
+    // ============================================
 
     private void RefreshDevice()
     {
@@ -207,9 +233,9 @@ public class ControllerVr : IDisposable
         }
     }
 
-    // -------------------------
-    // BUTTONS
-    // -------------------------
+    // ============================================
+    // BUTTON INPUT
+    // ============================================
 
     public bool PrimaryButton =>
         GetButton(CommonUsages.primaryButton);
@@ -229,9 +255,9 @@ public class ControllerVr : IDisposable
     public bool MenuButton =>
         GetButton(CommonUsages.menuButton);
 
-    // -------------------------
+    // ============================================
     // ANALOGUE INPUT
-    // -------------------------
+    // ============================================
 
     public float Trigger =>
         GetFloat(CommonUsages.trigger);
@@ -248,9 +274,9 @@ public class ControllerVr : IDisposable
     public bool GripPressed =>
         GripButton || Grip > ButtonThreshold;
 
-    // -------------------------
+    // ============================================
     // TRACKING
-    // -------------------------
+    // ============================================
 
     public Vector3 Position =>
         GetVector3(CommonUsages.devicePosition);
@@ -261,11 +287,24 @@ public class ControllerVr : IDisposable
     public bool IsTracked =>
         GetButton(CommonUsages.isTracked);
 
-    // -------------------------
-    // FRAME UPDATE
-    // -------------------------
+    // ============================================
+    // UPDATE
+    // ============================================
 
     public void Update()
+    {
+        if (disposed)
+            return;
+
+        UpdateButtons();
+        UpdateLaser();
+    }
+
+    // ============================================
+    // BUTTON STATE UPDATE
+    // ============================================
+
+    private void UpdateButtons()
     {
         bool primary = PrimaryButton;
         bool secondary = SecondaryButton;
@@ -273,72 +312,100 @@ public class ControllerVr : IDisposable
         bool grip = GripPressed;
         bool joystick = JoystickButton;
 
-        PrimaryButtonDown = primary && !previousPrimary;
-        SecondaryButtonDown = secondary && !previousSecondary;
-        TriggerDown = trigger && !previousTrigger;
-        GripDown = grip && !previousGrip;
-        JoystickButtonDown = joystick && !previousJoystick;
+        PrimaryButtonDown =
+            primary && !previousPrimary;
 
-        PrimaryButtonUp = !primary && previousPrimary;
-        SecondaryButtonUp = !secondary && previousSecondary;
-        TriggerUp = !trigger && previousTrigger;
-        GripUp = !grip && previousGrip;
-        JoystickButtonUp = !joystick && previousJoystick;
+        SecondaryButtonDown =
+            secondary && !previousSecondary;
+
+        TriggerDown =
+            trigger && !previousTrigger;
+
+        GripDown =
+            grip && !previousGrip;
+
+        JoystickButtonDown =
+            joystick && !previousJoystick;
+
+        PrimaryButtonUp =
+            !primary && previousPrimary;
+
+        SecondaryButtonUp =
+            !secondary && previousSecondary;
+
+        TriggerUp =
+            !trigger && previousTrigger;
+
+        GripUp =
+            !grip && previousGrip;
+
+        JoystickButtonUp =
+            !joystick && previousJoystick;
 
         previousPrimary = primary;
         previousSecondary = secondary;
         previousTrigger = trigger;
         previousGrip = grip;
         previousJoystick = joystick;
-
-        // Automatic laser detection
-        if (laserSelectionEnabled && pointer != null)
-        {
-            pointer.UpdatePointer();
-
-            bool hasTarget = pointer.HasValidTarget();
-            bool shouldUseLaser =
-                !AutoSwitchLaser || hasTarget;
-
-            if (shouldUseLaser)
-            {
-                ApplyLaserMode(true);
-            }
-            else if (!trigger && !grip)
-            {
-                ApplyLaserMode(false);
-            }
-        }
-        else if (IsLaserMode && !trigger && !grip)
-        {
-            ApplyLaserMode(false);
-        }
-
-        // Laser click handling
-        if (pointer != null && IsLaserMode)
-        {
-            if (TriggerDown)
-                pointer.Press();
-
-            if (TriggerUp)
-                pointer.Release();
-        }
     }
 
-    // -------------------------
-    // INPUT HELPERS
-    // -------------------------
+    // ============================================
+    // LASER UPDATE
+    // ============================================
 
-    private bool GetButton(InputFeatureUsage<bool> usage)
+    private void UpdateLaser()
+    {
+        if (pointer == null)
+            return;
+
+        if (!laserSelectionEnabled)
+            return;
+
+        pointer.UpdatePointer();
+
+        bool shouldUseLaser =
+            !AutoSwitchLaser ||
+            pointer.HasValidTarget();
+
+        // Do not switch away while interacting.
+        if (!shouldUseLaser &&
+            (TriggerPressed ||
+             GripPressed ||
+             pointer.IsSelecting))
+        {
+            shouldUseLaser = IsLaserMode;
+        }
+
+        ApplyLaserMode(shouldUseLaser);
+
+        if (!IsLaserMode)
+            return;
+
+        // ControllerVr owns trigger-based laser input.
+        if (TriggerDown)
+            pointer.Press();
+
+        if (TriggerUp && pointer.IsSelecting)
+            pointer.Release();
+    }
+
+    // ============================================
+    // INPUT HELPERS
+    // ============================================
+
+    private bool GetButton(
+        InputFeatureUsage<bool> usage)
     {
         RefreshDevice();
 
         return device.isValid &&
                device.TryGetFeatureValue(
-                   usage, out bool value) && value;
+                   usage, out bool value) &&
+               value;
     }
 
-    private float GetFloat(InputFeatureUsage<float> usage)
+    private float GetFloat(
+        InputFeatureUsage<float> usage)
     {
         RefreshDevice();
 
@@ -381,29 +448,46 @@ public class ControllerVr : IDisposable
                    ? value : Quaternion.identity;
     }
 
-    // -------------------------
+    // ============================================
     // CLEANUP
-    // -------------------------
+    // ============================================
 
-    public void ClearLaserClickCallbacks()
-    {
-        OnLaserClick = null;
-    }
-
-    public void Dispose()
+    private void RestoreAutoHand()
     {
         if (pointer != null)
         {
-            pointer.OnLaserClick.RemoveListener(HandlePointerClick);
-            pointer.OnLaserHoverEnter.RemoveListener(HandlePointerHover);
+            if (pointer.IsSelecting)
+                pointer.Release();
+
+            pointer.OnLaserClick.RemoveListener(
+                HandlePointerClick);
+
+            pointer.OnLaserHoverEnter.RemoveListener(
+                HandlePointerHover);
+
             pointer.enabled = originalPointerEnabled;
         }
 
         if (grabInput != null)
             grabInput.enabled = originalGrabInputEnabled;
 
+        pointer = null;
+        grabInput = null;
+        laserSelectionEnabled = false;
+        IsLaserMode = false;
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+            return;
+
+        RestoreAutoHand();
+
         OnLaserClick = null;
         OnLaserHover = null;
         OnLaserModeChanged = null;
+
+        disposed = true;
     }
 }
