@@ -1,17 +1,119 @@
 
+/*
+ * ============================================================
+ * VR PALM UP DETECTOR - HOW TO USE
+ * ============================================================
+ *
+ * PURPOSE:
+ * Detects when a VR player's palm faces upwards or downwards.
+ * Works with AutoHand, Quest 2, Rift S and Unity XR.
+ *
+ * ------------------------------------------------------------
+ * 1. SETUP IN UNITY
+ * ------------------------------------------------------------
+ *
+ * Add VRPalmUpDetector to each hand.
+ *
+ * AutoHandPlayer
+ *  └── TrackingContainer
+ *       ├── LeftHand
+ *       │    └── VRPalmUpDetector
+ *       └── RightHand
+ *            └── VRPalmUpDetector
+ *
+ * Inspector:
+ *
+ * Palm              = Hand Transform (or palm Transform)
+ * Palm Up Axis      = (0, 1, 0)
+ * Palm Up Threshold = 0.7
+ * Palm Exit Threshold = 0.5
+ *
+ * IMPORTANT:
+ * If detection is backwards, change Palm Up Axis.
+ *
+ * Examples:
+ *   (0, 1, 0)  = Local Y+
+ *   (0,-1, 0)  = Local Y-
+ *   (0, 0, 1)  = Local Z+
+ *   (0, 0,-1)  = Local Z-
+ *
+ * ------------------------------------------------------------
+ * 2. USING UNITY INSPECTOR EVENTS
+ * ------------------------------------------------------------
+ *
+ * OnPalmUp:
+ *   Called ONCE when the palm turns upwards.
+ *
+ * OnPalmDown:
+ *   Called ONCE when the palm stops facing upwards.
+ *
+ * Drag a GameObject into the event and select its method.
+ *
+ * ------------------------------------------------------------
+ * 3. USING C# EVENTS
+ * ------------------------------------------------------------
+ *
+ * public VRPalmUpDetector leftPalm;
+ *
+ * private void Start()
+ * {
+ *     leftPalm.OnPalmUp.AddListener(OnPalmUp);
+ *     leftPalm.OnPalmDown.AddListener(OnPalmDown);
+ * }
+ *
+ * private void OnDestroy()
+ * {
+ *     leftPalm.OnPalmUp.RemoveListener(OnPalmUp);
+ *     leftPalm.OnPalmDown.RemoveListener(OnPalmDown);
+ * }
+ *
+ * private void OnPalmUp()
+ * {
+ *     Debug.Log("Palm facing UP");
+ * }
+ *
+ * private void OnPalmDown()
+ * {
+ *     Debug.Log("Palm facing DOWN");
+ * }
+ *
+ * ------------------------------------------------------------
+ * 4. CHECK CURRENT STATE
+ * ------------------------------------------------------------
+ *
+ * if (leftPalm.IsPalmUp)
+ * {
+ *     Debug.Log("Palm is currently facing upwards");
+ * }
+ *
+ * ------------------------------------------------------------
+ * 5. MANUAL CHECK
+ * ------------------------------------------------------------
+ *
+ * leftPalm.ForceCheck();
+ *
+ * Or press "Check Palm" in the Inspector.
+ *
+ * ------------------------------------------------------------
+ * 6. DEBUGGING
+ * ------------------------------------------------------------
+ *
+ * Show Debug Ray = true
+ *
+ * Green = Palm facing up
+ * Red   = Palm not facing up
+ *
+ * The Inspector also displays the current palm state.
+ *
+ * ============================================================
+ */
+
 using UnityEngine;
 using UnityEngine.Events;
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-
-////AutoHandPlayer
-//// └── TrackingContainer
-////      ├── LeftHand
-////      │    └── VRPalmUpDetector
-////      └── RightHand
-////           └── VRPalmUpDetector
 
 public class VRPalmUpDetector : MonoBehaviour
 {
@@ -36,9 +138,11 @@ public class VRPalmUpDetector : MonoBehaviour
     public UnityEvent OnPalmDown = new UnityEvent();
 
     private bool isPalmUpLast = false;
+
     [Header("Debug")]
     [SerializeField] private bool isPalmUp;
     [SerializeField] private float palmDot;
+
     public bool showDebugRay = true;
 
     public bool IsPalmUp => isPalmUp;
@@ -72,7 +176,6 @@ public class VRPalmUpDetector : MonoBehaviour
         if (!isPalmUp && palmDot >= palmUpThreshold)
         {
             isPalmUp = true;
-
             OnPalmUp.Invoke();
         }
 
@@ -80,7 +183,6 @@ public class VRPalmUpDetector : MonoBehaviour
         else if (isPalmUp && palmDot <= palmExitThreshold)
         {
             isPalmUp = false;
-
             OnPalmDown.Invoke();
         }
 
@@ -92,7 +194,7 @@ public class VRPalmUpDetector : MonoBehaviour
                 isPalmUp ? Color.green : Color.red);
         }
 
-        if(isPalmUpLast != isPalmUp)
+        if (isPalmUpLast != isPalmUp)
         {
             Debug.Log($"isPalmUp {isPalmUp}");
             isPalmUpLast = isPalmUp;
@@ -105,6 +207,7 @@ public class VRPalmUpDetector : MonoBehaviour
     }
 
 #if UNITY_EDITOR
+
     [CustomEditor(typeof(VRPalmUpDetector))]
     private class VRPalmUpDetectorEditor : Editor
     {
@@ -130,5 +233,6 @@ public class VRPalmUpDetector : MonoBehaviour
             }
         }
     }
+
 #endif
 }

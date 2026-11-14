@@ -144,6 +144,8 @@ public class KillTeamGameManager : MonoBehaviour
     public Scene currentScene => m_currentScene;
 
 
+    public VRPalmUpDetector VRPalmUpDetectorLeft { get; private set; }
+    public VRPalmUpDetector VRPalmUpDetectorRight { get; private set; }
 
     private void Awake()
     {
@@ -162,8 +164,8 @@ public class KillTeamGameManager : MonoBehaviour
 
 
 
-        CameraControllerVR.Instance.HandLeftRef.AddComponent<VRPalmUpDetector>();
-        CameraControllerVR.Instance.HandRightRef.AddComponent<VRPalmUpDetector>();
+        VRPalmUpDetectorLeft = CameraControllerVR.Instance.HandLeftRef.AddComponent<VRPalmUpDetector>();
+        VRPalmUpDetectorRight = CameraControllerVR.Instance.HandRightRef.AddComponent<VRPalmUpDetector>();
 
         var assetHolder = new GameObject("assetHolder");
         assetHolder.transform.SetParent(transform, false);
