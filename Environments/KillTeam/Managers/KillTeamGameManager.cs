@@ -13,6 +13,7 @@ using static KillTeamGameManager;
 using static ObjectInteraction;
 using static UnityEngine.UI.ContentSizeFitter;
 using Autohand;
+using System.Runtime.InteropServices;
 
 
 public class KillTeamGameManager : MonoBehaviour
@@ -147,6 +148,8 @@ public class KillTeamGameManager : MonoBehaviour
     public VRPalmUpDetector VRPalmUpDetectorLeft { get; private set; }
     public VRPalmUpDetector VRPalmUpDetectorRight { get; private set; }
 
+    public List<VRPalmUpDetector> VRPalmUpDetectorBoth { get; private set; }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -161,11 +164,31 @@ public class KillTeamGameManager : MonoBehaviour
 
 
 
-
-
-
         VRPalmUpDetectorLeft = CameraControllerVR.Instance.HandLeftRef.AddComponent<VRPalmUpDetector>();
         VRPalmUpDetectorRight = CameraControllerVR.Instance.HandRightRef.AddComponent<VRPalmUpDetector>();
+        VRPalmUpDetectorBoth = new List<VRPalmUpDetector>
+        {
+            VRPalmUpDetectorLeft,
+            VRPalmUpDetectorRight
+        };
+
+
+        ////// Check if either palm is up
+        ////if (VRPalmUpDetectorBoth.Any(p => p.IsPalmUp))
+        ////{
+        ////    Debug.Log("At least one palm up");
+        ////}
+
+        ////// Check if both palms are up
+        ////if (VRPalmUpDetectorBoth.All(p => p.IsPalmUp))
+        ////{
+        ////    Debug.Log("Both palms up");
+        ////}
+
+
+
+
+
 
         var assetHolder = new GameObject("assetHolder");
         assetHolder.transform.SetParent(transform, false);
