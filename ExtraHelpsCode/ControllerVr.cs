@@ -1,3 +1,103 @@
+/*
+ * ============================================================
+ * ControllerVr.cs - HOW TO USE
+ * ============================================================
+ *
+ * ControllerVr represents ONE XR controller (left or right).
+ * Normally VRControllerSetup creates and updates both controllers.
+ *
+ * 1. ACCESS CONTROLLERS THROUGH VRControllerSetup
+ *
+ *    public VRControllerSetup setup;
+ *
+ *    ControllerVr left  = setup.LeftController;
+ *    ControllerVr right = setup.RightController;
+ *
+ *    // VRControllerSetup also exposes a ControllerVrGroup:
+ *    setup.BothControllers.SetLaserMode(true);
+ *
+ * 2. MANUAL SETUP (ONLY IF NOT USING VRControllerSetup)
+ *
+ *    ControllerVr controller = new ControllerVr(XRNode.LeftHand);
+ *    controller.SetAutoHand(hand, laserPointer, grabInput);
+ *    controller.AutoSwitchLaser = true;
+ *    controller.SetLaserMode(true);
+ *
+ *    // Call once per frame from your MonoBehaviour.Update():
+ *    controller.Update();
+ *
+ *    // Call during OnDestroy():
+ *    controller.Dispose();
+ *
+ * 3. LASER MODE
+ *
+ *    setup.LeftController.SetLaserMode(true);   // Allow laser selection
+ *    setup.RightController.SetLaserMode(false); // Disable laser selection
+ *    setup.LeftController.ToggleLaserMode();
+ *
+ *    // With AutoSwitchLaser=true, laser selection activates
+ *    // only when the pointer has a valid target.
+ *    // When false, enabling laser mode activates it immediately.
+ *
+ *    bool active = setup.LeftController.IsLaserMode;
+ *    GameObject target = setup.LeftController.LaserTarget;
+ *
+ * 4. BUTTON INPUT (CHECK IN Update() AFTER CONTROLLER UPDATE)
+ *
+ *    if (setup.LeftController.GripDown) Debug.Log("Grip pressed");
+ *    if (setup.LeftController.GripPressed) Debug.Log("Grip held");
+ *    if (setup.LeftController.GripUp) Debug.Log("Grip released");
+ *    if (setup.RightController.TriggerDown) Debug.Log("Trigger pressed");
+ *    if (setup.LeftController.PrimaryButtonDown) Debug.Log("X/A pressed");
+ *    if (setup.LeftController.SecondaryButtonDown) Debug.Log("Y/B pressed");
+ *
+ *    // Down/Up are updated once per controller.Update() call.
+ *    // Unity script execution order matters if another Update()
+ *    // reads these values before VRControllerSetup.Update().
+ *
+ * 5. ANALOGUE INPUT AND TRACKING
+ *
+ *    float grip = setup.LeftController.Grip;       // 0..1
+ *    float trigger = setup.LeftController.Trigger; // 0..1
+ *    Vector2 stick = setup.LeftController.Joystick;
+ *    bool connected = setup.LeftController.IsConnected;
+ *    bool tracked = setup.LeftController.IsTracked;
+ *    Vector3 position = setup.LeftController.Position;
+ *    Quaternion rotation = setup.LeftController.Rotation;
+ *
+ *    // Position/Rotation are XR device tracking values,
+ *    // not necessarily world-space hand Transform values.
+ *
+ * 6. LASER EVENTS
+ *
+ *    // Subscribe after VRControllerSetup has initialized:
+ *    setup.LeftController.OnLaserClick += OnSelected;
+ *    setup.LeftController.OnLaserHover += OnHovered;
+ *    setup.LeftController.OnLaserModeChanged += OnModeChanged;
+ *
+ *    // Matching method signatures:
+ *    // void OnSelected(GameObject target) { }
+ *    // void OnHovered(GameObject target) { }
+ *    // void OnModeChanged(bool enabled, GameObject target) { }
+ *
+ *    // Unsubscribe when your listener is destroyed:
+ *    setup.LeftController.OnLaserClick -= OnSelected;
+ *    setup.LeftController.OnLaserHover -= OnHovered;
+ *    setup.LeftController.OnLaserModeChanged -= OnModeChanged;
+ *
+ *    // Or use VRControllerSetup's callback convenience method:
+ *    setup.SetBothLaserModes(true, OnSelected);
+ *
+ * 7. IMPORTANT
+ *
+ *    - ControllerVr is a normal C# class, NOT a MonoBehaviour.
+ *    - Do not call controller.Update() twice per frame.
+ *    - Ensure no other component also calls pointer.Press()/Release()
+ *      for the same trigger, or clicks may be duplicated.
+ *    - VRControllerSetup owns controller disposal when used.
+ *
+ * ============================================================
+ */
 
 using System;
 using UnityEngine;
