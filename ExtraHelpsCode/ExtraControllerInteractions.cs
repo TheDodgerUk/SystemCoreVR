@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.XR;
 using Autohand;
+using UnityEngine.Events;
 
 // ============================================
 // VR CONTROLLER SETUP
@@ -39,8 +40,8 @@ public class ExtraControllerInteractions : MonoBehaviour
     // CALLBACKS
     // ============================================
 
-    private Action<GameObject> leftCallback;
-    private Action<GameObject> rightCallback;
+    private UnityAction<Vector3, GameObject> leftCallback;
+    private UnityAction<Vector3, GameObject> rightCallback;
 
     // ============================================
     // INITIALISATION
@@ -67,26 +68,37 @@ public class ExtraControllerInteractions : MonoBehaviour
     {
         ControllerVr controller = new ControllerVr(node);
 
-        if (node == XRNode.LeftHand)
+        var cameraController = CameraControllerVR.Instance;
+        if (cameraController == null || cameraController.AutoHandPlayerRef == null)
         {
-            settings.laserGameObject =
-                CameraControllerVR.Instance
-                    .AutoHandPlayerRef
-                    .handLeft
-                    .GetComponentInChildren<HandCanvasPointer>()
-                    .gameObject
-                    .AddComponent<HandGameObjectPointer_OnVrHands>();
+            Debug.LogError("ExtraControllerInteractions: CameraControllerVR or AutoHandPlayerRef is missing.");
+            return controller;
         }
-        else
+
+        var hand = node == XRNode.LeftHand
+            ? cameraController.AutoHandPlayerRef.handLeft
+            : cameraController.AutoHandPlayerRef.handRight;
+
+        if (hand == null)
         {
-            settings.laserGameObject =
-                CameraControllerVR.Instance
-                    .AutoHandPlayerRef
-                    .handRight
-                    .GetComponentInChildren<HandCanvasPointer>()
-                    .gameObject
-                    .AddComponent<HandGameObjectPointer_OnVrHands>();
+            Debug.LogError($"ExtraControllerInteractions: {node} AutoHand hand is missing.");
+            return controller;
         }
+
+        var canvasPointer = hand.GetComponentInChildren<HandCanvasPointer>(true);
+        if (canvasPointer == null)
+        {
+            Debug.LogError($"ExtraControllerInteractions: No HandCanvasPointer found on {node}.");
+            return controller;
+        }
+
+        // Reuse a pointer if one already exists on this object.
+        settings.laserGameObject =
+            canvasPointer.GetComponent<HandGameObjectPointer_OnVrHands>();
+
+        if (settings.laserGameObject == null)
+            settings.laserGameObject =
+                canvasPointer.gameObject.AddComponent<HandGameObjectPointer_OnVrHands>();
 
         if (settings.laserGameObject != null)
         {
@@ -154,26 +166,22 @@ public class ExtraControllerInteractions : MonoBehaviour
         ControllerVr controller,
         bool enabled,
         Action<GameObject> onClick,
-        ref Action<GameObject> callback)
+        ref UnityAction<Vector3, GameObject> callback)
     {
         if (controller == null)
             return;
 
-        // Remove previous callback.
+        // Remove the exact delegate previously registered.
         if (callback != null)
-        {
-            controller.OnLaserClick.RemoveListener(
-                callback.Invoke);
-        }
+            controller.OnLaserClick.RemoveListener(callback);
 
-        // Store new callback.
-        callback = enabled ? onClick : null;
+        callback = null;
 
-        // Register new callback.
-        if (callback != null)
+        // Adapt the existing one-argument API to the two-argument event.
+        if (enabled && onClick != null)
         {
-            controller.OnLaserClick.AddListener(
-                callback.Invoke);
+            callback = (point, target) => onClick(target);
+            controller.OnLaserClick.AddListener(callback);
         }
 
         controller.SetLaserMode(enabled);
@@ -198,15 +206,14 @@ public class ExtraControllerInteractions : MonoBehaviour
 
     private void Cleanup(
         ControllerVr controller,
-        Action<GameObject> callback)
+        UnityAction<Vector3, GameObject> callback)
     {
         if (controller == null)
             return;
 
         if (callback != null)
         {
-            controller.OnLaserClick.RemoveListener(
-                callback.Invoke);
+            controller.OnLaserClick.RemoveListener(callback);
         }
 
         controller.Dispose();
@@ -356,4 +363,4 @@ public class ControllerVrGroup
     public bool BothConnected =>
         (left?.IsConnected ?? false) &&
         (right?.IsConnected ?? false);
-}
+} 

@@ -71,12 +71,12 @@
  * 6. LASER EVENTS
  *
  *    // Subscribe after VRControllerSetup has initialized:
- *    setup.LeftController.OnLaserClick.AddListener(OnSelected);
+ *    setup.LeftController.OnLaserClick.AddListener(OnSelected); // (Vector3, GameObject)
  *    setup.LeftController.OnLaserHover.AddListener(OnHovered);
  *    setup.LeftController.OnLaserModeChanged.AddListener(OnModeChanged);
  *
  *    // Matching method signatures:
- *    // void OnSelected(GameObject target) { }
+ *    // void OnSelected(Vector3 point, GameObject target) { }
  *    // void OnHovered(GameObject target) { }
  *    // void OnModeChanged(bool enabled, GameObject target) { }
  *
@@ -132,7 +132,11 @@ public class ControllerVr : IDisposable
     // EVENTS
     // ============================================
 
-    public readonly UnityEvent<GameObject> OnLaserClick = new UnityEvent<GameObject>();
+    public readonly UnityEvent<Vector3, GameObject> OnLaserClick = new UnityEvent<Vector3, GameObject>();
+    public readonly UnityEvent<Vector3, GameObject> OnLaserRelease = new UnityEvent<Vector3, GameObject>();
+    public readonly UnityEvent<Vector3, GameObject> OnLaserHoverEnter = new UnityEvent<Vector3, GameObject>();
+    public readonly UnityEvent<Vector3, GameObject> OnLaserHoverExit = new UnityEvent<Vector3, GameObject>();
+    // Legacy convenience event, retained for existing listeners.
     public readonly UnityEvent<GameObject> OnLaserHover = new UnityEvent<GameObject>();
     public readonly UnityEvent<bool, GameObject> OnLaserModeChanged = new UnityEvent<bool, GameObject>();
 
@@ -204,8 +208,9 @@ public class ControllerVr : IDisposable
             pointer.OnLaserClick.AddListener(
                 HandlePointerClick);
 
-            pointer.OnLaserHoverEnter.AddListener(
-                HandlePointerHover);
+            pointer.OnLaserRelease.AddListener(HandlePointerRelease);
+            pointer.OnLaserHoverEnter.AddListener(HandlePointerHoverEnter);
+            pointer.OnLaserHoverExit.AddListener(HandlePointerHoverExit);
 
             pointer.enabled = false;
         }
@@ -294,20 +299,28 @@ public class ControllerVr : IDisposable
     // LASER CALLBACKS
     // ============================================
 
-    private void HandlePointerClick(
-        Vector3 position,
-        GameObject target)
+    private void HandlePointerClick(Vector3 position, GameObject target)
     {
         if (IsLaserMode && target != null)
-            OnLaserClick.Invoke(target);
+            OnLaserClick.Invoke(position, target);
     }
 
-    private void HandlePointerHover(
-        Vector3 position,
-        GameObject target)
+    private void HandlePointerRelease(Vector3 position, GameObject target)
     {
-        if (IsLaserMode && target != null)
-            OnLaserHover.Invoke(target);
+        // Releases may happen while laser mode is being disabled.
+        OnLaserRelease.Invoke(position, target);
+    }
+
+    private void HandlePointerHoverEnter(Vector3 position, GameObject target)
+    {
+        if (!laserSelectionEnabled) return;
+        OnLaserHoverEnter.Invoke(position, target);
+        if (target != null) OnLaserHover.Invoke(target);
+    }
+
+    private void HandlePointerHoverExit(Vector3 position, GameObject target)
+    {
+        OnLaserHoverExit.Invoke(position, target);
     }
 
     public void ClearLaserClickCallbacks()
@@ -563,8 +576,9 @@ public class ControllerVr : IDisposable
             pointer.OnLaserClick.RemoveListener(
                 HandlePointerClick);
 
-            pointer.OnLaserHoverEnter.RemoveListener(
-                HandlePointerHover);
+            pointer.OnLaserRelease.RemoveListener(HandlePointerRelease);
+            pointer.OnLaserHoverEnter.RemoveListener(HandlePointerHoverEnter);
+            pointer.OnLaserHoverExit.RemoveListener(HandlePointerHoverExit);
 
             pointer.enabled = originalPointerEnabled;
         }
@@ -586,6 +600,9 @@ public class ControllerVr : IDisposable
         RestoreAutoHand();
 
         OnLaserClick.RemoveAllListeners();
+        OnLaserRelease.RemoveAllListeners();
+        OnLaserHoverEnter.RemoveAllListeners();
+        OnLaserHoverExit.RemoveAllListeners();
         OnLaserHover.RemoveAllListeners();
         OnLaserModeChanged.RemoveAllListeners();
 
