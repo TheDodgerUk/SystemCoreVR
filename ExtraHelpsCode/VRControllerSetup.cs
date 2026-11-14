@@ -23,7 +23,9 @@ public class VRControllerSetup : MonoBehaviour
     [Header("Mode Settings")]
     public bool autoSwitchLaser = true;
 
+    [SerializeField]
     public ControllerVr LeftController { get; private set; }
+    [SerializeField]
     public ControllerVr RightController { get; private set; }
 
     private Action<GameObject> leftClickCallback;

@@ -9,11 +9,9 @@ namespace KillTeam
 {
     public class TableControl : MonoBehaviour
     {
-        [Header("VR Rig")]
+        [Header("VR References")]
         public Transform rigRoot;
         public Transform head;
-
-        [Header("Controller Anchors")]
         public Transform leftHand;
         public Transform rightHand;
 
@@ -21,160 +19,156 @@ namespace KillTeam
         public float minScale = 0.2f;
         public float maxScale = 5f;
         public float scaleSensitivity = 1f;
-        public float rotationSpeed = 90f; // Degrees per metre of relative vertical hand movement
+        public float rotationSpeed = 90f;
 
-        [Header("Inspector Testing")]
+        [Header("Quick Testing")]
         public float debugScale = 1f;
         public float debugRotation = 45f;
-        public Vector3 debugPosition = Vector3.zero;
+        public Vector3 debugPosition;
 
-        private bool twoHanded;
-        private float startHorizontalDistance;
-        private float startScale;
-        private float startHeightDifference;
-        private Vector3 startRigPosition;
-        private Quaternion startTwoHandRotation;
+        [Header("Hand Simulation")]
+        [Range(0.5f, 5f)] public float editorHorizontal;
+        [Range(-5f, 5f)] public float editorVertical;
+
+        [SerializeField, HideInInspector]
+        private bool editorBothHeld;
 
         private ControllerVr left;
         private ControllerVr right;
 
-        private ColliderStorage colliderStorage =
+        private readonly ColliderStorage colliders =
             new ColliderStorage();
 
-        private Vector3 offSet;
+        private bool manipulating;
+        private bool simulated;
 
-        // Actual AutoHand player.
-        private Transform Player
-        {
-            get
-            {
-                CameraControllerVR controller =
-                    CameraControllerVR.Instance;
+        private float startScale;
+        private float startHorizontal;
+        private float startVertical;
 
-                if (controller == null ||
-                    controller.AutoHandPlayerRef == null)
-                    return null;
+        private Vector3 startPosition;
+        private Quaternion startRotation;
 
-                return controller.AutoHandPlayerRef.transform;
-            }
-        }
+        public bool EditorBothHeld => editorBothHeld;
 
-        private Vector3 TableCentre => transform.position;
-        private Vector3 TableUp => transform.up;
+        private CameraControllerVR Controller =>
+            CameraControllerVR.Instance;
+
+        private Transform Player =>
+            rigRoot != null
+                ? rigRoot
+                : Controller != null &&
+                  Controller.AutoHandPlayerRef != null
+                    ? Controller.AutoHandPlayerRef.transform
+                    : null;
+
+        private Vector3 Centre => transform.position;
+        private Vector3 Up => transform.up;
 
         private void Awake()
         {
-            CameraControllerVR controller =
-                CameraControllerVR.Instance;
-
-            if (controller == null)
+            if (Controller == null ||
+                Controller.AutoHandPlayerRef == null)
             {
                 Debug.LogError(
-                    "TableControl: CameraControllerVR not found!");
-
+                    "TableControl: VR controller not found.");
                 enabled = false;
                 return;
             }
 
-            if (controller.HandLeftRef != null)
-                leftHand = controller.HandLeftRef.transform;
+            rigRoot = Controller.AutoHandPlayerRef.transform;
 
-            if (controller.HandRightRef != null)
-                rightHand = controller.HandRightRef.transform;
+            if (Controller.HandLeftRef != null)
+                leftHand = Controller.HandLeftRef.transform;
+
+            if (Controller.HandRightRef != null)
+                rightHand = Controller.HandRightRef.transform;
 
             if (head == null && Camera.main != null)
                 head = Camera.main.transform;
 
-            if (controller.vRControllerSetup == null)
-            {
-                Debug.LogError(
-                    "TableControl: VR controller setup not found!");
-
-                enabled = false;
-                return;
-            }
-
-            left = controller.vRControllerSetup.LeftController;
-            right = controller.vRControllerSetup.RightController;
-
-            rigRoot = Player;
-
-            controller.vRControllerSetup.SetLeftLaserMode(true);
-            controller.vRControllerSetup.SetRightLaserMode(true);
-
-            colliderStorage.Store(gameObject);
+            colliders.Store(gameObject);
 
             Transform table = transform.Find("Table");
 
             if (table != null)
             {
-                foreach (Collider item in
+                foreach (Collider collider in
                     table.GetComponentsInChildren<Collider>())
                 {
-                    item.enabled = false;
+                    collider.enabled = false;
                 }
             }
-            else
-            {
-                Debug.LogWarning(
-                    "TableControl: Child object 'Table' not found.");
-            }
+        }
+
+        // Supply your existing controller wrappers.
+        public void SetControllers(
+            ControllerVr leftController,
+            ControllerVr rightController)
+        {
+            left = leftController;
+            right = rightController;
         }
 
         private void Update()
         {
-            if (Player == null || leftHand == null || rightHand == null ||
-                left == null || right == null)
+            if (editorBothHeld)
             {
-                EndTwoHand();
+                UpdateEditorHands();
                 return;
             }
 
-            // Both GRIPS must be held. Face buttons are not used.
-            bool bothGrips = left.Grip > 0.9f && right.Grip > 0.9f;
+            if (Player == null ||
+                leftHand == null ||
+                rightHand == null ||
+                left == null ||
+                right == null)
+            {
+                EndManipulation();
+                return;
+            }
+
+            bool bothGrips =
+                left.Grip > 0.9f &&
+                right.Grip > 0.9f;
+
             if (!bothGrips)
             {
-                EndTwoHand();
+                EndManipulation();
                 return;
             }
 
-            if (!twoHanded)
-            {
-                BeginTwoHand();
-                twoHanded = true;
-                colliderStorage.DisableAll();
-            }
+            Vector3 separation =
+                rightHand.position - leftHand.position;
 
-            UpdateTwoHand();
+            float horizontal =
+                Vector3.ProjectOnPlane(
+                    separation, Up).magnitude;
+
+            float vertical =
+                Vector3.Dot(separation, Up);
+
+            if (!manipulating)
+                BeginManipulation(horizontal, vertical, false);
+
+            ApplyManipulation(horizontal, vertical);
         }
 
-        private void EndTwoHand()
-        {
-            if (!twoHanded) return;
-            twoHanded = false;
-            colliderStorage.Restore();
-        }
-
-        // ==========================================
-        // PLAYER CONTROL
-        // ==========================================
+        // -----------------------------------------
+        // PLAYER TRANSFORMS
+        // -----------------------------------------
 
         public void SetScale(float scale)
         {
-            if (Player == null)
+            if (Player == null || Controller == null)
                 return;
 
             scale = Mathf.Clamp(
-                scale,
-                minScale,
-                maxScale);
+                scale, minScale, maxScale);
 
-            var k = CameraControllerVR.Instance.AutoHandPlayerRef.body.isKinematic;
-            CameraControllerVR.Instance.SetScale(scale);
-            CameraControllerVR.Instance.AutoHandPlayerRef.body.isKinematic = k;
+            Controller.SetScale(scale);
         }
 
-        // Local position relative to table.
         public void SetPosition(Vector3 localPosition)
         {
             if (Player == null)
@@ -184,36 +178,12 @@ namespace KillTeam
                 transform.TransformPoint(localPosition);
         }
 
-        private void SetWorldPosition(Vector3 worldPosition)
-        {
-            if (Player == null)
-                return;
-
-            Player.position = worldPosition;
-        }
-
-        // Rotate player around table centre.
         public void SetRotation(float degrees)
         {
             if (Player == null)
                 return;
 
-            Player.RotateAround(
-                TableCentre,
-                TableUp,
-                degrees);
-        }
-
-        private void SetPlayerTransform(
-            Vector3 worldPosition,
-            Quaternion worldRotation)
-        {
-            if (Player == null)
-                return;
-
-            Player.SetPositionAndRotation(
-                worldPosition,
-                worldRotation);
+            Player.RotateAround(Centre, Up, degrees);
         }
 
         public void ResetRig()
@@ -221,69 +191,127 @@ namespace KillTeam
             if (Player == null)
                 return;
 
+            ReleaseBoth();
+
             SetScale(1f);
             SetPosition(Vector3.zero);
 
             Player.rotation = transform.rotation;
-
-            twoHanded = false;
-
-            colliderStorage.Restore();
         }
 
-        // ==========================================
-        // TWO GRIPS: HORIZONTAL = SCALE, VERTICAL = ROTATION
-        // ==========================================
+        // -----------------------------------------
+        // SHARED TWO-HAND MANIPULATION
+        // -----------------------------------------
 
-        private void BeginTwoHand()
+        private void BeginManipulation(
+            float horizontal,
+            float vertical,
+            bool isSimulation)
         {
-            Vector3 separation = rightHand.position - leftHand.position;
-            Vector3 horizontal = Vector3.ProjectOnPlane(separation, TableUp);
+            if (Player == null)
+                return;
 
-            startHorizontalDistance = horizontal.magnitude;
-            startHeightDifference = Vector3.Dot(separation, TableUp);
+            EndManipulation();
+
+            manipulating = true;
+            simulated = isSimulation;
+
+            startHorizontal = horizontal;
+            startVertical = vertical;
+
             startScale = Player.lossyScale.x;
-            startRigPosition = Player.position;
-            startTwoHandRotation = Player.rotation;
+            startPosition = Player.position;
+            startRotation = Player.rotation;
 
-            offSet = Player.transform.position - Camera.main.transform.position;
+            colliders.DisableAll();
         }
 
-        private void UpdateTwoHand()
+        private void ApplyManipulation(
+            float horizontal,
+            float vertical)
         {
-            Vector3 separation = rightHand.position - leftHand.position;
-            float horizontalDistance =
-                Vector3.ProjectOnPlane(separation, TableUp).magnitude;
+            if (!manipulating || Player == null)
+                return;
 
-            // Hands apart = bigger; hands together = smaller.
-            float distanceChange = horizontalDistance - startHorizontalDistance;
-            float newScale = Mathf.Clamp(
-                startScale * (1f + distanceChange * scaleSensitivity),
-                minScale, maxScale);
+            float horizontalChange =
+                horizontal - startHorizontal;
 
-            // Difference in hand heights controls yaw around the table.
-            float heightDifference = Vector3.Dot(separation, TableUp);
-            float heightChange = heightDifference - startHeightDifference;
-            float degrees = heightChange * rotationSpeed;
-            Quaternion deltaRotation = Quaternion.AngleAxis(degrees, TableUp);
+            float verticalChange =
+                vertical - startVertical;
 
-            SetScale(newScale);
+            float scale = startScale *
+                (1f + horizontalChange * scaleSensitivity);
 
-            // Preserve player position on scaling; only rotation orbits the table.
-            Vector3 rotatedOffset = deltaRotation * (startRigPosition - TableCentre);
-            SetPlayerTransform(TableCentre + rotatedOffset,
-                deltaRotation * startTwoHandRotation);
+            float angle =
+                verticalChange * rotationSpeed;
+
+            Quaternion rotation =
+                Quaternion.AngleAxis(angle, Up);
+
+            SetScale(scale);
+
+            Vector3 position =
+                Centre + rotation * (startPosition - Centre);
+
+            Player.SetPositionAndRotation(
+                position,
+                rotation * startRotation);
+        }
+
+        private void EndManipulation()
+        {
+            if (!manipulating)
+                return;
+
+            manipulating = false;
+            simulated = false;
+
+            colliders.Restore();
+        }
+
+        // -----------------------------------------
+        // EDITOR HAND SIMULATION
+        // -----------------------------------------
+
+        public void BothHold()
+        {
+            if (Player == null || editorBothHeld)
+                return;
+
+            editorBothHeld = true;
+
+            BeginManipulation(
+                editorHorizontal,
+                editorVertical,
+                true);
+        }
+
+        public void ReleaseBoth()
+        {
+            editorBothHeld = false;
+            EndManipulation();
+        }
+
+        public void UpdateEditorHands()
+        {
+            if (!editorBothHeld || !simulated)
+                return;
+
+            ApplyManipulation(
+                editorHorizontal,
+                editorVertical);
         }
 
         private void OnDisable()
         {
-            twoHanded = false;
-            colliderStorage.Restore();
+            ReleaseBoth();
+            colliders.Restore();
         }
 
         private void OnDestroy()
         {
-            colliderStorage.Restore();
+            ReleaseBoth();
+            colliders.Restore();
         }
     }
 
@@ -292,188 +320,130 @@ namespace KillTeam
     [CustomEditor(typeof(TableControl))]
     public class TableControlEditor : Editor
     {
-        private bool showTransformPositions = true;
+        private bool showTransforms = true;
 
         public override void OnInspectorGUI()
         {
-            serializedObject.Update();
-
             DrawDefaultInspector();
 
-            serializedObject.ApplyModifiedProperties();
+            TableControl table = (TableControl)target;
 
-            TableControl table =
-                (TableControl)target;
+            DrawSimulation(table);
+            DrawTesting(table);
+            DrawTransforms(table);
+            if (Application.isPlaying)
+                Repaint();
+        }
 
-            // ======================================
-            // LIVE TRANSFORM POSITIONS
-            // ======================================
+        private void DrawTransforms(TableControl table)
+        {
+            EditorGUILayout.Space(10);
 
-            EditorGUILayout.Space(15);
+            showTransforms = EditorGUILayout.Foldout(
+                showTransforms,
+                "VR Transform Positions",
+                true);
 
-            showTransformPositions =
-                EditorGUILayout.Foldout(
-                    showTransformPositions,
-                    "VR Transform Positions",
-                    true);
+            if (!showTransforms)
+                return;
 
-            if (showTransformPositions)
+            DrawTransform("Rig Root", table.rigRoot);
+            DrawTransform("Head", table.head);
+            DrawTransform("Left Hand", table.leftHand);
+            DrawTransform("Right Hand", table.rightHand);
+        }
+
+        private void DrawTransform(
+            string label,
+            Transform target)
+        {
+            if (target == null)
+                return;
+
+            EditorGUILayout.LabelField(
+                label, EditorStyles.boldLabel);
+
+            using (new EditorGUI.DisabledScope(true))
             {
-                EditorGUI.indentLevel++;
+                EditorGUILayout.ObjectField(
+                    target, typeof(Transform), true);
 
-                DrawTransformPositions(table);
+                EditorGUILayout.Vector3Field(
+                    "World Position", target.position);
 
-                EditorGUI.indentLevel--;
+                EditorGUILayout.Vector3Field(
+                    "Local Position", target.localPosition);
+
+                EditorGUILayout.Vector3Field(
+                    "Rotation", target.eulerAngles);
+            }
+        }
+
+        private void DrawSimulation(TableControl table)
+        {
+            EditorGUILayout.Space(10);
+
+            EditorGUILayout.LabelField(
+                "Hand Simulation",
+                EditorStyles.boldLabel);
+
+            EditorGUI.BeginChangeCheck();
+
+            float horizontal = EditorGUILayout.Slider(
+                "Horizontal",
+                table.editorHorizontal, 0.1f, 5f);
+
+            float vertical = EditorGUILayout.Slider(
+                "Vertical",
+                table.editorVertical, -5f, 5f);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(
+                    table, "Simulate VR Hands");
+
+                table.editorHorizontal = horizontal;
+                table.editorVertical = vertical;
+
+                table.UpdateEditorHands();
+
+                EditorUtility.SetDirty(table);
             }
 
-            // ======================================
-            // QUICK TESTING
-            // ======================================
+            EditorGUILayout.BeginHorizontal();
 
-            EditorGUILayout.Space(15);
+            if (GUILayout.Button("BothHold"))
+                table.BothHold();
+
+            if (GUILayout.Button("ReleaseBoth"))
+                table.ReleaseBoth();
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.LabelField(
+                "Both Held",
+                table.EditorBothHeld ? "TRUE" : "FALSE");
+        }
+
+        private void DrawTesting(TableControl table)
+        {
+            EditorGUILayout.Space(10);
 
             EditorGUILayout.LabelField(
                 "Quick Testing",
                 EditorStyles.boldLabel);
 
-            CameraControllerVR controller =
-                CameraControllerVR.Instance;
-
-            bool canControl =
-                controller != null &&
-                controller.AutoHandPlayerRef != null;
-
-            EditorGUI.BeginDisabledGroup(!canControl);
-
-            if (GUILayout.Button(
-                "Apply Scale",
-                GUILayout.Height(30)))
-            {
-                Transform player =
-                    controller.AutoHandPlayerRef.transform;
-
-                Undo.RecordObject(
-                    player,
-                    "Apply Player Scale");
-
+            if (GUILayout.Button("Apply Scale"))
                 table.SetScale(table.debugScale);
-            }
 
-            if (GUILayout.Button(
-                "Apply Rotation",
-                GUILayout.Height(30)))
-            {
-                Transform player =
-                    controller.AutoHandPlayerRef.transform;
-
-                Undo.RecordObject(
-                    player,
-                    "Apply Player Rotation");
-
+            if (GUILayout.Button("Apply Rotation"))
                 table.SetRotation(table.debugRotation);
-            }
 
-            if (GUILayout.Button(
-                "Apply Position",
-                GUILayout.Height(30)))
-            {
-                Transform player =
-                    controller.AutoHandPlayerRef.transform;
-
-                Undo.RecordObject(
-                    player,
-                    "Apply Player Position");
-
+            if (GUILayout.Button("Apply Position"))
                 table.SetPosition(table.debugPosition);
-            }
 
-            EditorGUILayout.Space(10);
-
-            if (GUILayout.Button(
-                "RESET RIG",
-                GUILayout.Height(40)))
-            {
-                Transform player =
-                    controller.AutoHandPlayerRef.transform;
-
-                Undo.RecordObject(
-                    player,
-                    "Reset Player Rig");
-
+            if (GUILayout.Button("RESET RIG"))
                 table.ResetRig();
-            }
-
-            EditorGUI.EndDisabledGroup();
-
-            if (!canControl)
-            {
-                EditorGUILayout.HelpBox(
-                    "Enter Play Mode to test player controls.",
-                    MessageType.Info);
-            }
-
-            // Refresh inspector while playing.
-            if (Application.isPlaying)
-                Repaint();
-        }
-
-        // ==========================================
-        // TRANSFORM DISPLAY
-        // ==========================================
-
-        private void DrawTransformPositions(
-            TableControl table)
-        {
-            DrawPosition("Rig Root", table.rigRoot);
-            DrawPosition("Head", table.head);
-            DrawPosition("Left Hand", table.leftHand);
-            DrawPosition("Right Hand", table.rightHand);
-        }
-
-        private void DrawPosition(
-            string label,
-            Transform targetTransform)
-        {
-            EditorGUILayout.Space(5);
-
-            EditorGUILayout.LabelField(
-                label,
-                EditorStyles.boldLabel);
-
-            if (targetTransform == null)
-            {
-                EditorGUILayout.HelpBox(
-                    label + " is not assigned.",
-                    MessageType.Warning);
-
-                return;
-            }
-
-            EditorGUI.BeginDisabledGroup(true);
-
-            EditorGUILayout.ObjectField(
-                "Transform",
-                targetTransform,
-                typeof(Transform),
-                true);
-
-            EditorGUILayout.Vector3Field(
-                "World Position",
-                targetTransform.position);
-
-            EditorGUILayout.Vector3Field(
-                "Local Position",
-                targetTransform.localPosition);
-
-            EditorGUILayout.Vector3Field(
-                "World Rotation",
-                targetTransform.eulerAngles);
-
-            EditorGUILayout.Vector3Field(
-                "Local Rotation",
-                targetTransform.localEulerAngles);
-
-            EditorGUI.EndDisabledGroup();
         }
     }
 

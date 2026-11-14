@@ -27,7 +27,6 @@ namespace Demeo
         {
             Core.Environment.OnEnvironmentLoadingComplete -= InternalInitialise;
             Debug.LogError("DemeoRoot");
-            CameraControllerVR.Instance.TeleportAvatar(this.gameObject.scene, new Vector3(0.0f, 1, -1f), null);
 
             InputManagerVR.Instance.AnySubscription.Grab.Begin += OnControllerBegin;
             InputManagerVR.Instance.AnySubscription.Grab.End += OnControllerEnd;

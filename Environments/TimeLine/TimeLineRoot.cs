@@ -48,7 +48,6 @@ namespace TimeLine
         private void OnEnvironmentLoadingComplete()
         {
             Core.Environment.OnEnvironmentLoadingComplete -= OnEnvironmentLoadingComplete;
-            CameraControllerVR.Instance.TeleportAvatar(this.gameObject.scene, new Vector3(0.37f, 1.48f, 0.818f), null);
 
             //UnityEngine.SceneManagement.SceneManager.SetActiveScene(this.gameObject.scene);
 
