@@ -191,7 +191,7 @@ public class AssetHolder : MonoBehaviour
 
     public int TotalPlayerCount()
     {
-        var teamTypes = KillTeamGameManager.Instance.AssetHolder.TeamSelection;
+        var teamTypes = KillTeamGameManager.Instance.AssetHolderRef.TeamSelection;
         // collects it all 
         int count = 0;
         foreach (KillTeamGameManager.Player player in Enum.GetValues(typeof(KillTeamGameManager.Player)))

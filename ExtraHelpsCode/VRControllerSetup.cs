@@ -23,8 +23,8 @@ public class VRControllerSetup : MonoBehaviour
     // ============================================
 
     [Header("Controllers")]
-    public HandSettings left = new HandSettings();
-    public HandSettings right = new HandSettings();
+    public HandSettings leftHandSettings = new HandSettings();
+    public HandSettings rightHandSettings = new HandSettings();
 
     [Header("Laser Settings")]
     public float laserDistance = 5f;
@@ -54,11 +54,11 @@ public class VRControllerSetup : MonoBehaviour
     {
         LeftController = CreateController(
             XRNode.LeftHand,
-            left);
+            leftHandSettings);
 
         RightController = CreateController(
             XRNode.RightHand,
-            right);
+            rightHandSettings);
 
         BothControllers = new ControllerVrGroup(
             LeftController,

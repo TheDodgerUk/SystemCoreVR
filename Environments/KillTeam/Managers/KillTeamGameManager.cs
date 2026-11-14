@@ -111,9 +111,9 @@ public class KillTeamGameManager : MonoBehaviour
     [SerializeField]
     private List<PlayerData> players = new List<PlayerData>();
 
-    public AssetHolder AssetHolder { get; private set; }
+    public AssetHolder AssetHolderRef { get; private set; }
 
-    public GenericStateMachine GenericStateMachine { get; private set; }
+    public GenericStateMachine GenericStateMachineRef { get; private set; }
 
 
 
@@ -131,7 +131,7 @@ public class KillTeamGameManager : MonoBehaviour
     private GameState lastAppliedState;
 
     public GameMode CurrentGameMode => gameMode;
-    public GameState CurrentState => currentState;
+    public GameState CurrentGameState => currentState;
 
     public IReadOnlyList<PlayerData> Players => players;
 
@@ -169,13 +169,13 @@ public class KillTeamGameManager : MonoBehaviour
 
         var assetHolder = new GameObject("assetHolder");
         assetHolder.transform.SetParent(transform, false);
-        AssetHolder = assetHolder.transform.AddComponent<AssetHolder>();
+        AssetHolderRef = assetHolder.transform.AddComponent<AssetHolder>();
 
 
 
         var vRPrefabMenu = new GameObject("GenericStateMachine");
         vRPrefabMenu.transform.SetParent(transform, false);
-        GenericStateMachine = vRPrefabMenu.AddComponent<GenericStateMachine>();
+        GenericStateMachineRef = vRPrefabMenu.AddComponent<GenericStateMachine>();
 
 
 
@@ -226,11 +226,11 @@ public class KillTeamGameManager : MonoBehaviour
 
     private void InitiliseAll()
     {
-        GenericStateMachine.transform.SetParent(null);
-        GenericStateMachine.transform.localScale = Vector3.one;
-        AssetHolder.transform.SetParent(null);
-        AssetHolder.transform.localScale = Vector3.one;
-        AssetHolder.Initilise();
+        GenericStateMachineRef.transform.SetParent(null);
+        GenericStateMachineRef.transform.localScale = Vector3.one;
+        AssetHolderRef.transform.SetParent(null);
+        AssetHolderRef.transform.localScale = Vector3.one;
+        AssetHolderRef.Initilise();
     }
 
 

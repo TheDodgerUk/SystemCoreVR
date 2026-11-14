@@ -24,7 +24,7 @@ public class TerrainPlacementValidator : MonoBehaviour
         verticalLine = GetComponent<TerrainVerticalLineRenderer>();
 
         KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
-        KillTeamGameManager_OnStateChanged(KillTeamGameManager.Instance.CurrentState);
+        KillTeamGameManager_OnStateChanged(KillTeamGameManager.Instance.CurrentGameState);
     }
 
     public KillTeamGameManager.LayerType GetPlacementLayer()

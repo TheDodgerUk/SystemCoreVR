@@ -33,8 +33,8 @@ public class MiniaturePlacementValidator : MonoBehaviour
         miniatureStarPositionVerticalLine = gameObject.AddComponent<MiniatureStarPositionVerticalLine>();
 
         KillTeamGameManager.Instance.OnStateChanged += KillTeamGameManager_OnStateChanged;
-        KillTeamGameManager_OnStateChanged(KillTeamGameManager.Instance.CurrentState);
-        Debug.Log($"MiniaturePlacementValidator {this.gameObject.name}  state {KillTeamGameManager.Instance.CurrentState} ");
+        KillTeamGameManager_OnStateChanged(KillTeamGameManager.Instance.CurrentGameState);
+        Debug.Log($"MiniaturePlacementValidator {this.gameObject.name}  state {KillTeamGameManager.Instance.CurrentGameState} ");
     }
     private void OnDestroy()
     {
