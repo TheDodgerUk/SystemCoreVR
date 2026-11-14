@@ -13,9 +13,8 @@ public class VRControllerSetup : MonoBehaviour
     [Serializable]
     public class HandSettings
     {
-        public Autohand.Hand hand;
+
         public HandGameObjectPointer_OnVrHands laserGameObject;
-        public Behaviour grabInput;
     }
 
     // ============================================
@@ -71,16 +70,21 @@ public class VRControllerSetup : MonoBehaviour
     {
         ControllerVr controller = new ControllerVr(node);
 
+        if (node == XRNode.LeftHand)
+        {
+            settings.laserGameObject = CameraControllerVR.Instance.AutoHandPlayerRef.handLeft.GetComponentInChildren<HandCanvasPointer>().gameObject.AddComponent<HandGameObjectPointer_OnVrHands>();
+        }
+        else
+        {
+            settings.laserGameObject = CameraControllerVR.Instance.AutoHandPlayerRef.handRight.GetComponentInChildren<HandCanvasPointer>().gameObject.AddComponent<HandGameObjectPointer_OnVrHands>();
+
+        }
         if (settings.laserGameObject != null)
         {
             settings.laserGameObject.raycastLength = laserDistance;
             settings.laserGameObject.selectableLayers = selectableLayers;
         }
 
-        controller.SetAutoHand(
-            settings.hand,
-            settings.laserGameObject,
-            settings.grabInput);
 
         controller.AutoSwitchLaser = autoSwitchLaser;
         controller.SetLaserMode(true);

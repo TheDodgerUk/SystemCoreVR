@@ -266,7 +266,7 @@ public class BattleStateMachine : MonoBehaviour
             gameObject = obj,
             playerIndex = player,
             stats = stats,
-            weapons = CopyWeapons(metadata.weapons),
+            weapons = CopyWeapons(metadata.m_Weapons),
             incapacitated = stats.currentWounds <= 0
         };
 
