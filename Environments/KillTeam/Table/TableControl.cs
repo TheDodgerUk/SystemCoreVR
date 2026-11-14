@@ -92,14 +92,14 @@ namespace KillTeam
 
             Transform table = transform.Find("Table");
 
-            if (table != null)
-            {
-                foreach (Collider collider in
-                    table.GetComponentsInChildren<Collider>())
-                {
-                    collider.enabled = false;
-                }
-            }
+            ////if (table != null)
+            ////{
+            ////    foreach (Collider collider in
+            ////        table.GetComponentsInChildren<Collider>())
+            ////    {
+            ////        collider.enabled = false;
+            ////    }
+            ////}
         }
 
         // Supply your existing controller wrappers.

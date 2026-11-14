@@ -93,12 +93,10 @@ public class ExtraControllerInteractions : MonoBehaviour
         }
 
         // Reuse a pointer if one already exists on this object.
-        settings.laserGameObject =
-            canvasPointer.GetComponent<HandGameObjectPointer_OnVrHands>();
+        settings.laserGameObject = canvasPointer.GetComponent<HandGameObjectPointer_OnVrHands>();
 
         if (settings.laserGameObject == null)
-            settings.laserGameObject =
-                canvasPointer.gameObject.AddComponent<HandGameObjectPointer_OnVrHands>();
+            settings.laserGameObject = canvasPointer.gameObject.AddComponent<HandGameObjectPointer_OnVrHands>();
 
         if (settings.laserGameObject != null)
         {

@@ -137,7 +137,7 @@ public class ControllerVr : IDisposable
     public readonly UnityEvent<Vector3, GameObject> OnLaserHoverEnter = new UnityEvent<Vector3, GameObject>();
     public readonly UnityEvent<Vector3, GameObject> OnLaserHoverExit = new UnityEvent<Vector3, GameObject>();
     // Legacy convenience event, retained for existing listeners.
-    public readonly UnityEvent<GameObject> OnLaserHover = new UnityEvent<GameObject>();
+    public readonly UnityEvent<Vector3, GameObject> OnLaserHover = new UnityEvent<Vector3, GameObject>();
     public readonly UnityEvent<bool, GameObject> OnLaserModeChanged = new UnityEvent<bool, GameObject>();
 
     // ============================================
@@ -315,7 +315,7 @@ public class ControllerVr : IDisposable
     {
         if (!laserSelectionEnabled) return;
         OnLaserHoverEnter.Invoke(position, target);
-        if (target != null) OnLaserHover.Invoke(target);
+        if (target != null) OnLaserHover.Invoke(position, target);
     }
 
     private void HandlePointerHoverExit(Vector3 position, GameObject target)
