@@ -39,6 +39,8 @@ namespace Autohand {
         public Hand handRight;
         public Hand handLeft;
 
+        public List<Hand> hands = new List<Hand>();
+
 
         [AutoToggleHeader("Movement")]
         public bool useMovement = true;
@@ -203,6 +205,8 @@ namespace Autohand {
             StartCoroutine(CheckForTrackingStart());
 
             handPlayerMask = AutoHandExtensions.GetPhysicsLayerMask(gameObject.layer);
+            hands.Add(handLeft);
+            hands.Add(handRight);
         }
 
         protected virtual void OnEnable() {

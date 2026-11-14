@@ -78,11 +78,11 @@ namespace KillTeam
 
             rigRoot = Controller.AutoHandPlayerRef.transform;
 
-            if (Controller.HandLeftRef != null)
-                leftHand = Controller.HandLeftRef.transform;
+            if (Controller.AutoHandPlayerRef.handLeft != null)
+                leftHand = Controller.AutoHandPlayerRef.handLeft.transform;
 
-            if (Controller.HandRightRef != null)
-                rightHand = Controller.HandRightRef.transform;
+            if (Controller.AutoHandPlayerRef.handRight != null)
+                rightHand = Controller.AutoHandPlayerRef.handRight.transform;
 
             if (head == null && Camera.main != null)
                 head = Camera.main.transform;

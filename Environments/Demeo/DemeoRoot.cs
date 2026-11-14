@@ -47,11 +47,11 @@ namespace Demeo
             {
                 if(interaction.Main.Hand == Handedness.Left)
                 {
-                    m_StartPositions.Add(interaction.Main.Hand, CameraControllerVR.Instance.HandLeftRef.transform.localPosition);
+                    m_StartPositions.Add(interaction.Main.Hand, CameraControllerVR.Instance.AutoHandPlayerRef.handLeft.transform.localPosition);
                 }
                 else
                 {
-                    m_StartPositions.Add(interaction.Main.Hand, CameraControllerVR.Instance.HandRightRef.transform.localPosition);
+                    m_StartPositions.Add(interaction.Main.Hand, CameraControllerVR.Instance.AutoHandPlayerRef.handRight.transform.localPosition);
 
                 }
             }   
@@ -90,12 +90,12 @@ namespace Demeo
             if (m_StartPositions.ContainsKey(Handedness.Left) == true)
             {
                 oldPosition = m_StartPositions[Handedness.Left];
-                hand = CameraControllerVR.Instance.HandLeftRef;
+                hand = CameraControllerVR.Instance.AutoHandPlayerRef.handLeft;
             }
             else
             {
                 oldPosition = m_StartPositions[Handedness.Right];
-                hand = CameraControllerVR.Instance.HandRightRef;
+                hand = CameraControllerVR.Instance.AutoHandPlayerRef.handRight;
             }
 
             Vector3 newPosition = oldPosition - hand.transform.localPosition;
@@ -109,8 +109,8 @@ namespace Demeo
             float rightOld = m_StartPositions[Handedness.Right].y;
             float oldDistance = Mathf.Abs(rightOld - leftOld);
 
-            float leftNew = CameraControllerVR.Instance.HandLeftRef.transform.localPosition.x;
-            float rightNew = CameraControllerVR.Instance.HandRightRef.transform.localPosition.x;
+            float leftNew = CameraControllerVR.Instance.AutoHandPlayerRef.handLeft.transform.localPosition.x;
+            float rightNew = CameraControllerVR.Instance.AutoHandPlayerRef.handRight.transform.localPosition.x;
             float newDistance = Mathf.Abs(rightNew - leftNew);
 
             float dif = (oldDistance - newDistance) + m_CurrentScale;

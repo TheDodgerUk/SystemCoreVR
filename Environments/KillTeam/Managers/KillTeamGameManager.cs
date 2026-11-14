@@ -164,8 +164,8 @@ public class KillTeamGameManager : MonoBehaviour
 
 
 
-        VRPalmUpDetectorLeft = CameraControllerVR.Instance.HandLeftRef.AddComponent<VRPalmUpDetector>();
-        VRPalmUpDetectorRight = CameraControllerVR.Instance.HandRightRef.AddComponent<VRPalmUpDetector>();
+        VRPalmUpDetectorLeft = CameraControllerVR.Instance.AutoHandPlayerRef.handLeft.AddComponent<VRPalmUpDetector>();
+        VRPalmUpDetectorRight = CameraControllerVR.Instance.AutoHandPlayerRef.handRight.AddComponent<VRPalmUpDetector>();
         VRPalmUpDetectorBoth = new List<VRPalmUpDetector>
         {
             VRPalmUpDetectorLeft,
