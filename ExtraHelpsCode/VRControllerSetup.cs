@@ -14,7 +14,7 @@ public class VRControllerSetup : MonoBehaviour
     public class HandSettings
     {
         public Autohand.Hand hand;
-        public HandGameObjectPointer_OnVrHands laser;
+        public HandGameObjectPointer_OnVrHands laserGameObject;
         public Behaviour grabInput;
     }
 
@@ -71,15 +71,15 @@ public class VRControllerSetup : MonoBehaviour
     {
         ControllerVr controller = new ControllerVr(node);
 
-        if (settings.laser != null)
+        if (settings.laserGameObject != null)
         {
-            settings.laser.raycastLength = laserDistance;
-            settings.laser.selectableLayers = selectableLayers;
+            settings.laserGameObject.raycastLength = laserDistance;
+            settings.laserGameObject.selectableLayers = selectableLayers;
         }
 
         controller.SetAutoHand(
             settings.hand,
-            settings.laser,
+            settings.laserGameObject,
             settings.grabInput);
 
         controller.AutoSwitchLaser = autoSwitchLaser;

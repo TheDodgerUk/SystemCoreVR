@@ -48,7 +48,7 @@ public class GenericStateMachine : MonoBehaviour
             //this.AddComponent<XRTrackingDebug>();
 
 
-            var pointer = CameraControllerVR.Instance.vRControllerSetup.left.laser;
+            var pointer = CameraControllerVR.Instance.vRControllerSetup.left.laserGameObject;
             {
                 pointer.OnLaserClick.AddListener(OnClick);
                 pointer.OnLaserRelease.AddListener(OnRelease);
@@ -56,7 +56,7 @@ public class GenericStateMachine : MonoBehaviour
                 pointer.OnLaserHoverExit.AddListener(OnHoverExit);
             }
 
-            var pointer2 = CameraControllerVR.Instance.vRControllerSetup.right.laser;
+            var pointer2 = CameraControllerVR.Instance.vRControllerSetup.right.laserGameObject;
             {
                 pointer2.OnLaserClick.AddListener(OnClick);
                 pointer2.OnLaserRelease.AddListener(OnRelease);
