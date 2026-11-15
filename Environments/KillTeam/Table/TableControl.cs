@@ -5,6 +5,10 @@ namespace KillTeam
 {
     public class TableControl : MonoBehaviour
     {
+        [Header("VR Debug")]
+        public float debug_scale = 1.0f;
+        public float debug_rotation = 45f;
+
         [Header("VR References")]
         public Transform rigRoot;
         public Transform head;
@@ -32,28 +36,26 @@ namespace KillTeam
         private Vector3 startPosition;
         private Quaternion startRotation;
 
-        private CameraControllerVR Controller =>
-            CameraControllerVR.Instance;
+        private CameraControllerVR Controller => CameraControllerVR.Instance;
 
-        private Transform Player =>
-            rigRoot != null
-                ? rigRoot
-                : Controller != null &&
-                  Controller.AutoHandPlayerRef != null
-                    ? Controller.AutoHandPlayerRef.transform
-                    : null;
+        private Transform AutoHandTransform => Controller.AutoHandPlayerRef.transform;
+
 
         private Vector3 Centre => transform.position;
         private Vector3 Up => transform.up;
 
+        // -----------------------------------------
+        // INITIALISATION
+        // -----------------------------------------
+
         private void Awake()
         {
-
             if (Controller == null ||
                 Controller.AutoHandPlayerRef == null)
             {
                 Debug.LogError(
                     "TableControl: VR controller not found.");
+
                 enabled = false;
                 return;
             }
@@ -61,34 +63,37 @@ namespace KillTeam
             rigRoot = Controller.AutoHandPlayerRef.transform;
 
             if (Controller.AutoHandPlayerRef.handLeft != null)
-                leftHand = Controller.AutoHandPlayerRef.handLeft.transform;
+            {
+                leftHand =
+                    Controller.AutoHandPlayerRef.handLeft.transform;
+            }
 
             if (Controller.AutoHandPlayerRef.handRight != null)
-                rightHand = Controller.AutoHandPlayerRef.handRight.transform;
+            {
+                rightHand =
+                    Controller.AutoHandPlayerRef.handRight.transform;
+            }
 
             if (head == null && Camera.main != null)
                 head = Camera.main.transform;
 
             colliders.Store(gameObject);
 
-            Transform table = transform.Find("Table");
+            var interactions =
+                Controller.ExtraControllerInteractionsRef;
 
-
-            var l = CameraControllerVR.Instance.ExtraControllerInteractionsRef.LeftController;
-            var r = CameraControllerVR.Instance.ExtraControllerInteractionsRef.RightController;
-            SetControllers(l, r);
-
-            ////if (table != null)
-            ////{
-            ////    foreach (Collider collider in
-            ////        table.GetComponentsInChildren<Collider>())
-            ////    {
-            ////        collider.enabled = false;
-            ////    }
-            ////}
+            if (interactions != null)
+            {
+                SetControllers(
+                    interactions.LeftController,
+                    interactions.RightController);
+            }
         }
 
-        // Supply your existing controller wrappers.
+        // -----------------------------------------
+        // CONTROLLER SETUP
+        // -----------------------------------------
+
         public void SetControllers(
             ControllerVr leftController,
             ControllerVr rightController)
@@ -97,31 +102,52 @@ namespace KillTeam
             right = rightController;
         }
 
+        // -----------------------------------------
+        // UPDATE
+        // -----------------------------------------
+
         private void Update()
         {
-            if (Player == null || leftHand == null || rightHand == null ||
-                left == null || right == null)
+            if (AutoHandTransform == null ||
+                leftHand == null ||
+                rightHand == null ||
+                left == null ||
+                right == null)
             {
                 EndManipulation();
-                Debug.LogError("Found werid error");
                 return;
             }
 
-            bool bothGrips = left.Grip > 0.9f && right.Grip > 0.9f;
+            bool bothGrips =
+                left.Grip > 0.9f &&
+                right.Grip > 0.9f;
+
             if (!bothGrips)
             {
                 EndManipulation();
                 return;
             }
 
-            Vector3 separation = rightHand.position - leftHand.position;
-            float horizontal = Vector3.ProjectOnPlane(separation, Up).magnitude;
-            float vertical = Vector3.Dot(separation, Up);
+            Vector3 separation =
+                rightHand.position - leftHand.position;
+
+            float horizontal =
+                Vector3.ProjectOnPlane(
+                    separation, Up).magnitude;
+
+            float vertical =
+                Vector3.Dot(separation, Up);
 
             if (!manipulating)
-                BeginManipulation(horizontal, vertical);
+            {
+                BeginManipulation(
+                    horizontal,
+                    vertical);
+            }
 
-            ApplyManipulation(horizontal, vertical);
+            ApplyManipulation(
+                horizontal,
+                vertical);
         }
 
         // -----------------------------------------
@@ -130,54 +156,62 @@ namespace KillTeam
 
         public void SetScale(float scale)
         {
-            if (Player == null || Controller == null)
+            if (AutoHandTransform == null || Controller == null)
                 return;
 
             scale = Mathf.Clamp(
-                scale, minScale, maxScale);
+                scale,
+                minScale,
+                maxScale);
 
             Controller.SetScale(scale);
         }
 
-        public void SetPosition(Vector3 localPosition)
-        {
-            if (Player == null)
-                return;
-
-            Player.position =
-                transform.TransformPoint(localPosition);
-        }
-
         public void SetRotation(float degrees)
         {
-            if (Player == null)
+            if (AutoHandTransform == null)
                 return;
 
-            Player.RotateAround(Centre, Up, degrees);
-        }
+            CameraControllerVR.Instance.AutoHandPlayerRef.body.isKinematic = true;
+            Quaternion rotation =
+                Quaternion.AngleAxis(degrees, Up);
 
-        public void ResetRig()
-        {
-            if (Player == null)
-                return;
+            Vector3 position =
+                Centre +
+                rotation * (AutoHandTransform.position - Centre);
 
-            EndManipulation();
+            AutoHandTransform.SetPositionAndRotation(
+                position,
+                rotation * AutoHandTransform.rotation);
 
-            SetScale(1f);
-            SetPosition(Vector3.zero);
-
-            Player.rotation = transform.rotation;
+            CameraControllerVR.Instance.AutoHandPlayerRef.body.isKinematic = false;
         }
 
         // -----------------------------------------
-        // SHARED TWO-HAND MANIPULATION
+        // DEBUG METHODS
+        // -----------------------------------------
+
+        [ContextMenu("Debug Set Scale")]
+        public void DebugSetScale()
+        {
+            SetScale(debug_scale);
+        }
+
+        [ContextMenu("Debug Set Rotation")]
+        public void DebugSetRotation()
+        {
+            SetRotation(debug_rotation);
+        }
+
+        // -----------------------------------------
+        // TWO-HAND MANIPULATION
         // -----------------------------------------
 
         private void BeginManipulation(
             float horizontal,
             float vertical)
         {
-            if (Player == null)
+            if (AutoHandTransform == null)
                 return;
 
             EndManipulation();
@@ -187,9 +221,9 @@ namespace KillTeam
             startHorizontal = horizontal;
             startVertical = vertical;
 
-            startScale = Player.lossyScale.x;
-            startPosition = Player.position;
-            startRotation = Player.rotation;
+            startScale = AutoHandTransform.lossyScale.x;
+            startPosition = AutoHandTransform.position;
+            startRotation = AutoHandTransform.rotation;
 
             colliders.DisableAll();
         }
@@ -198,7 +232,7 @@ namespace KillTeam
             float horizontal,
             float vertical)
         {
-            if (!manipulating || Player == null)
+            if (!manipulating || AutoHandTransform == null)
                 return;
 
             float horizontalChange =
@@ -207,24 +241,29 @@ namespace KillTeam
             float verticalChange =
                 vertical - startVertical;
 
-            float scale = startScale *
+            float scale =
+                startScale *
                 (1f + horizontalChange * scaleSensitivity);
 
             float angle =
                 verticalChange * rotationSpeed;
 
-            Quaternion rotation =
-                Quaternion.AngleAxis(angle, Up);
-
+            // Apply scaling using the shared method.
             SetScale(scale);
 
-            Vector3 position =
-                Centre + rotation * (startPosition - Centre);
+            // Restore the starting transform so rotation
+            // does not accumulate every frame.
+            AutoHandTransform.SetPositionAndRotation(
+                startPosition,
+                startRotation);
 
-            Player.SetPositionAndRotation(
-                position,
-                rotation * startRotation);
+            // Apply rotation using the shared method.
+            SetRotation(angle);
         }
+
+        // -----------------------------------------
+        // MANIPULATION CLEANUP
+        // -----------------------------------------
 
         private void EndManipulation()
         {
@@ -248,4 +287,36 @@ namespace KillTeam
             colliders.Restore();
         }
     }
+
+#if UNITY_EDITOR
+
+    [UnityEditor.CustomEditor(typeof(TableControl))]
+    public class TableControlEditor : UnityEditor.Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            DrawDefaultInspector();
+
+            TableControl table =
+                (TableControl)target;
+
+            UnityEditor.EditorGUILayout.Space(10);
+
+            UnityEditor.EditorGUILayout.LabelField(
+                "VR Debug Controls",
+                UnityEditor.EditorStyles.boldLabel);
+
+            if (GUILayout.Button("Debug Set Scale"))
+            {
+                table.DebugSetScale();
+            }
+
+            if (GUILayout.Button("Debug Set Rotation"))
+            {
+                table.DebugSetRotation();
+            }
+        }
+    }
+
+#endif
 }
