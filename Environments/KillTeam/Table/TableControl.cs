@@ -1,10 +1,6 @@
 
 using UnityEngine;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 namespace KillTeam
 {
     public class TableControl : MonoBehaviour
@@ -21,18 +17,6 @@ namespace KillTeam
         public float scaleSensitivity = 1f;
         public float rotationSpeed = 90f;
 
-        [Header("Quick Testing")]
-        public float debugScale = 1f;
-        public float debugRotation = 45f;
-        public Vector3 debugPosition;
-
-        [Header("Hand Simulation")]
-        [Range(0.5f, 5f)] public float editorHorizontal;
-        [Range(-5f, 5f)] public float editorVertical;
-
-        [SerializeField, HideInInspector]
-        private bool editorBothHeld;
-
         private ControllerVr left;
         private ControllerVr right;
 
@@ -40,7 +24,6 @@ namespace KillTeam
             new ColliderStorage();
 
         private bool manipulating;
-        private bool simulated;
 
         private float startScale;
         private float startHorizontal;
@@ -48,8 +31,6 @@ namespace KillTeam
 
         private Vector3 startPosition;
         private Quaternion startRotation;
-
-        public bool EditorBothHeld => editorBothHeld;
 
         private CameraControllerVR Controller =>
             CameraControllerVR.Instance;
@@ -67,7 +48,7 @@ namespace KillTeam
 
         private void Awake()
         {
-            
+
             if (Controller == null ||
                 Controller.AutoHandPlayerRef == null)
             {
@@ -92,6 +73,11 @@ namespace KillTeam
 
             Transform table = transform.Find("Table");
 
+
+            var l = CameraControllerVR.Instance.ExtraControllerInteractionsRef.LeftController;
+            var r = CameraControllerVR.Instance.ExtraControllerInteractionsRef.RightController;
+            SetControllers(l, r);
+
             ////if (table != null)
             ////{
             ////    foreach (Collider collider in
@@ -113,44 +99,27 @@ namespace KillTeam
 
         private void Update()
         {
-            if (editorBothHeld)
-            {
-                UpdateEditorHands();
-                return;
-            }
-
-            if (Player == null ||
-                leftHand == null ||
-                rightHand == null ||
-                left == null ||
-                right == null)
+            if (Player == null || leftHand == null || rightHand == null ||
+                left == null || right == null)
             {
                 EndManipulation();
+                Debug.LogError("Found werid error");
                 return;
             }
 
-            bool bothGrips =
-                left.Grip > 0.9f &&
-                right.Grip > 0.9f;
-
+            bool bothGrips = left.Grip > 0.9f && right.Grip > 0.9f;
             if (!bothGrips)
             {
                 EndManipulation();
                 return;
             }
 
-            Vector3 separation =
-                rightHand.position - leftHand.position;
-
-            float horizontal =
-                Vector3.ProjectOnPlane(
-                    separation, Up).magnitude;
-
-            float vertical =
-                Vector3.Dot(separation, Up);
+            Vector3 separation = rightHand.position - leftHand.position;
+            float horizontal = Vector3.ProjectOnPlane(separation, Up).magnitude;
+            float vertical = Vector3.Dot(separation, Up);
 
             if (!manipulating)
-                BeginManipulation(horizontal, vertical, false);
+                BeginManipulation(horizontal, vertical);
 
             ApplyManipulation(horizontal, vertical);
         }
@@ -192,7 +161,7 @@ namespace KillTeam
             if (Player == null)
                 return;
 
-            ReleaseBoth();
+            EndManipulation();
 
             SetScale(1f);
             SetPosition(Vector3.zero);
@@ -206,8 +175,7 @@ namespace KillTeam
 
         private void BeginManipulation(
             float horizontal,
-            float vertical,
-            bool isSimulation)
+            float vertical)
         {
             if (Player == null)
                 return;
@@ -215,7 +183,6 @@ namespace KillTeam
             EndManipulation();
 
             manipulating = true;
-            simulated = isSimulation;
 
             startHorizontal = horizontal;
             startVertical = vertical;
@@ -265,188 +232,20 @@ namespace KillTeam
                 return;
 
             manipulating = false;
-            simulated = false;
 
             colliders.Restore();
         }
 
-        // -----------------------------------------
-        // EDITOR HAND SIMULATION
-        // -----------------------------------------
-
-        public void BothHold()
-        {
-            if (Player == null || editorBothHeld)
-                return;
-
-            editorBothHeld = true;
-
-            BeginManipulation(
-                editorHorizontal,
-                editorVertical,
-                true);
-        }
-
-        public void ReleaseBoth()
-        {
-            editorBothHeld = false;
-            EndManipulation();
-        }
-
-        public void UpdateEditorHands()
-        {
-            if (!editorBothHeld || !simulated)
-                return;
-
-            ApplyManipulation(
-                editorHorizontal,
-                editorVertical);
-        }
-
         private void OnDisable()
         {
-            ReleaseBoth();
+            EndManipulation();
             colliders.Restore();
         }
 
         private void OnDestroy()
         {
-            ReleaseBoth();
+            EndManipulation();
             colliders.Restore();
         }
     }
-
-#if UNITY_EDITOR
-
-    [CustomEditor(typeof(TableControl))]
-    public class TableControlEditor : Editor
-    {
-        private bool showTransforms = true;
-
-        public override void OnInspectorGUI()
-        {
-            DrawDefaultInspector();
-
-            TableControl table = (TableControl)target;
-
-            DrawSimulation(table);
-            DrawTesting(table);
-            DrawTransforms(table);
-            if (Application.isPlaying)
-                Repaint();
-        }
-
-        private void DrawTransforms(TableControl table)
-        {
-            EditorGUILayout.Space(10);
-
-            showTransforms = EditorGUILayout.Foldout(
-                showTransforms,
-                "VR Transform Positions",
-                true);
-
-            if (!showTransforms)
-                return;
-
-            DrawTransform("Rig Root", table.rigRoot);
-            DrawTransform("Head", table.head);
-            DrawTransform("Left Hand", table.leftHand);
-            DrawTransform("Right Hand", table.rightHand);
-        }
-
-        private void DrawTransform(
-            string label,
-            Transform target)
-        {
-            if (target == null)
-                return;
-
-            EditorGUILayout.LabelField(
-                label, EditorStyles.boldLabel);
-
-            using (new EditorGUI.DisabledScope(true))
-            {
-                EditorGUILayout.ObjectField(
-                    target, typeof(Transform), true);
-
-                EditorGUILayout.Vector3Field(
-                    "World Position", target.position);
-
-                EditorGUILayout.Vector3Field(
-                    "Local Position", target.localPosition);
-
-                EditorGUILayout.Vector3Field(
-                    "Rotation", target.eulerAngles);
-            }
-        }
-
-        private void DrawSimulation(TableControl table)
-        {
-            EditorGUILayout.Space(10);
-
-            EditorGUILayout.LabelField(
-                "Hand Simulation",
-                EditorStyles.boldLabel);
-
-            EditorGUI.BeginChangeCheck();
-
-            float horizontal = EditorGUILayout.Slider(
-                "Horizontal",
-                table.editorHorizontal, 0.1f, 5f);
-
-            float vertical = EditorGUILayout.Slider(
-                "Vertical",
-                table.editorVertical, -5f, 5f);
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                Undo.RecordObject(
-                    table, "Simulate VR Hands");
-
-                table.editorHorizontal = horizontal;
-                table.editorVertical = vertical;
-
-                table.UpdateEditorHands();
-
-                EditorUtility.SetDirty(table);
-            }
-
-            EditorGUILayout.BeginHorizontal();
-
-            if (GUILayout.Button("BothHold"))
-                table.BothHold();
-
-            if (GUILayout.Button("ReleaseBoth"))
-                table.ReleaseBoth();
-
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.LabelField(
-                "Both Held",
-                table.EditorBothHeld ? "TRUE" : "FALSE");
-        }
-
-        private void DrawTesting(TableControl table)
-        {
-            EditorGUILayout.Space(10);
-
-            EditorGUILayout.LabelField(
-                "Quick Testing",
-                EditorStyles.boldLabel);
-
-            if (GUILayout.Button("Apply Scale"))
-                table.SetScale(table.debugScale);
-
-            if (GUILayout.Button("Apply Rotation"))
-                table.SetRotation(table.debugRotation);
-
-            if (GUILayout.Button("Apply Position"))
-                table.SetPosition(table.debugPosition);
-
-            if (GUILayout.Button("RESET RIG"))
-                table.ResetRig();
-        }
-    }
-
-#endif
 }

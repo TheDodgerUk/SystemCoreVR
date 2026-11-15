@@ -5,6 +5,10 @@ using UnityEngine.Events;
 
 namespace Autohand
 {
+
+    //  HandGameObjectPointerBase
+    //  Check folder
+
     [Serializable]
     public class UnityGameObjectPointerEvent : UnityEvent<Vector3, GameObject>
     {
@@ -58,8 +62,8 @@ namespace Autohand
         {
             lineRenderer = GetComponent<LineRenderer>();
 
-            lineRenderer.useWorldSpace = true;
-            lineRenderer.positionCount = 2;
+            ////lineRenderer.useWorldSpace = true;
+            ////lineRenderer.positionCount = 2;
 
             ShowRay(false);
         }
