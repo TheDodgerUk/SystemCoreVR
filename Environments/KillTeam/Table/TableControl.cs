@@ -40,9 +40,8 @@ namespace KillTeam
 
         private Transform AutoHandTransform => Controller.AutoHandPlayerRef.transform;
 
-
-        private Vector3 Centre => transform.position;
         private Vector3 Up => transform.up;
+
 
         // -----------------------------------------
         // INITIALISATION
@@ -169,22 +168,28 @@ namespace KillTeam
 
         public void SetRotation(float degrees)
         {
-            if (AutoHandTransform == null)
+            var player = CameraControllerVR.Instance.AutoHandPlayerRef;
+
+            if (player == null)
                 return;
 
-            CameraControllerVR.Instance.AutoHandPlayerRef.body.isKinematic = true;
+            Transform rig = player.trackingContainer;
+
+            if (rig == null)
+                return;
+
             Quaternion rotation =
-                Quaternion.AngleAxis(degrees, Up);
+                Quaternion.AngleAxis(degrees, Vector3.up);
 
+            // Orbit player around world origin.
             Vector3 position =
-                Centre +
-                rotation * (AutoHandTransform.position - Centre);
+                rotation * player.transform.position;
 
-            AutoHandTransform.SetPositionAndRotation(
-                position,
-                rotation * AutoHandTransform.rotation);
+            // Move the player using AutoHand.
+            player.SetPosition(position, player.transform.rotation);
 
-            CameraControllerVR.Instance.AutoHandPlayerRef.body.isKinematic = false;
+            // Rotate the VR tracking space.
+            rig.rotation = rotation * rig.rotation;
         }
 
         // -----------------------------------------
