@@ -43,6 +43,8 @@ public class AssetHolder : MonoBehaviour
 
     public void Initilise()
     {
+
+        this.AddComponent<GameObjectChildrenPolyCounter>();
         int index = 0;
         int totalCount = 0;
         foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)

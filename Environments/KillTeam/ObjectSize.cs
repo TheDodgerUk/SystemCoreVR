@@ -314,7 +314,11 @@ public class ObjectSize : MonoBehaviour
 #if UNITY_EDITOR
     public void SaveEverything()
     {
-        if (!FindChildren())
+        if (Application.isPlaying == true)
+        {
+            return;
+        }
+            if (!FindChildren())
             return;
 
         Physics.SyncTransforms();

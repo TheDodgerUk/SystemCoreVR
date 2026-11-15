@@ -1,6 +1,5 @@
 
 using UnityEngine;
-using VLB_Samples;
 
 namespace KillTeam
 {
@@ -20,7 +19,7 @@ namespace KillTeam
         public float minScale = 0.2f;
         public float maxScale = 5f;
         public float scaleSensitivity = 1f;
-        public float rotationSpeed = 90f;
+        public float rotationSpeed = -190f;
 
         private ControllerVr left;
         private ControllerVr right;
@@ -33,16 +32,18 @@ namespace KillTeam
         private float startScale;
         private float startHorizontal;
         private float startVertical;
+        private float lastAngle;
 
-        private Vector3 startPosition;
-        private Quaternion startRotation;
+        private CameraControllerVR Controller =>
+            CameraControllerVR.Instance;
 
-        private CameraControllerVR Controller => CameraControllerVR.Instance;
-
-        private Transform AutoHandTransform => Controller.AutoHandPlayerRef.transform;
+        private Transform AutoHandTransform =>
+            Controller != null &&
+            Controller.AutoHandPlayerRef != null
+                ? Controller.AutoHandPlayerRef.transform
+                : null;
 
         private Vector3 Up => transform.up;
-
 
         // -----------------------------------------
         // INITIALISATION
@@ -60,19 +61,15 @@ namespace KillTeam
                 return;
             }
 
-            rigRoot = Controller.AutoHandPlayerRef.transform;
+            var player = Controller.AutoHandPlayerRef;
 
-            if (Controller.AutoHandPlayerRef.handLeft != null)
-            {
-                leftHand =
-                    Controller.AutoHandPlayerRef.handLeft.transform;
-            }
+            rigRoot = player.transform;
 
-            if (Controller.AutoHandPlayerRef.handRight != null)
-            {
-                rightHand =
-                    Controller.AutoHandPlayerRef.handRight.transform;
-            }
+            if (player.handLeft != null)
+                leftHand = player.handLeft.transform;
+
+            if (player.handRight != null)
+                rightHand = player.handRight.transform;
 
             if (head == null && Camera.main != null)
                 head = Camera.main.transform;
@@ -156,38 +153,55 @@ namespace KillTeam
 
         public void SetScale(float scale)
         {
-            Transform rig = CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer;
+            if (Controller == null ||
+                Controller.AutoHandPlayerRef == null)
+                return;
+
+            Transform rig =
+                Controller.AutoHandPlayerRef.trackingContainer;
+
+            if (rig == null)
+                return;
 
             scale = Mathf.Clamp(
                 scale,
                 minScale,
                 maxScale);
+
             rig.localScale = Vector3.one * scale;
         }
 
         public void SetRotation(float degrees)
         {
-            var player = CameraControllerVR.Instance.AutoHandPlayerRef;
-
-            if (player == null)
+            if (Controller == null ||
+                Controller.AutoHandPlayerRef == null)
                 return;
+
+            var player = Controller.AutoHandPlayerRef;
 
             Transform rig = player.trackingContainer;
 
             if (rig == null)
                 return;
 
+            if (Mathf.Abs(degrees) < 0.0001f)
+                return;
+
             Quaternion rotation =
-                Quaternion.AngleAxis(degrees, Vector3.up);
+                Quaternion.AngleAxis(
+                    degrees,
+                    Vector3.up);
 
             // Orbit player around world origin.
             Vector3 position =
                 rotation * player.transform.position;
 
-            // Move the player using AutoHand.
-            player.SetPosition(position, player.transform.rotation);
+            // Move player through AutoHand.
+            player.SetPosition(
+                position,
+                player.transform.rotation);
 
-            // Rotate the VR tracking space.
+            // Rotate tracking space incrementally.
             rig.rotation = rotation * rig.rotation;
         }
 
@@ -225,9 +239,16 @@ namespace KillTeam
             startHorizontal = horizontal;
             startVertical = vertical;
 
-            startScale = AutoHandTransform.lossyScale.x;
-            startPosition = AutoHandTransform.position;
-            startRotation = AutoHandTransform.rotation;
+            Transform rig =
+                Controller.AutoHandPlayerRef.trackingContainer;
+
+            startScale = rig != null
+                ? rig.localScale.x
+                : 1f;
+
+            // Reset only the gesture's accumulated angle.
+            // Do not reset the actual player rotation.
+            lastAngle = 0f;
 
             colliders.DisableAll();
         }
@@ -236,7 +257,8 @@ namespace KillTeam
             float horizontal,
             float vertical)
         {
-            if (!manipulating || AutoHandTransform == null)
+            if (!manipulating ||
+                AutoHandTransform == null)
                 return;
 
             float horizontalChange =
@@ -245,24 +267,28 @@ namespace KillTeam
             float verticalChange =
                 vertical - startVertical;
 
+            // Scale relative to the start of this gesture.
             float scale =
-                startScale *
-                (1f + horizontalChange * scaleSensitivity);
+                startScale +
+                (horizontalChange * scaleSensitivity);
 
+            SetScale(scale);
+
+            // Total angle requested by this gesture.
             float angle =
                 verticalChange * rotationSpeed;
 
-            // Apply scaling using the shared method.
-            SetScale(scale);
+            // Apply only the change since the last frame.
+            float deltaAngle =
+                angle - lastAngle;
 
-            // Restore the starting transform so rotation
-            // does not accumulate every frame.
-            AutoHandTransform.SetPositionAndRotation(
-                startPosition,
-                startRotation);
+            if (Mathf.Abs(deltaAngle) > 0.001f)
+            {
+                SetRotation(deltaAngle);
+            }
 
-            // Apply rotation using the shared method.
-            SetRotation(angle);
+            // Store the last applied angle.
+            lastAngle = angle;
         }
 
         // -----------------------------------------
@@ -275,6 +301,8 @@ namespace KillTeam
                 return;
 
             manipulating = false;
+
+            lastAngle = 0f;
 
             colliders.Restore();
         }

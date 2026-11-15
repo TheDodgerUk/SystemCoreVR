@@ -277,7 +277,7 @@ public class KillTeamGameManager : MonoBehaviour
         {
             interaction.InitiliseState(InteractionState.Player2Interaction);
         }
-        item.AddComponent<ObjectSize>();
+       // item.AddComponent<ObjectSize>();
         switch (itemType)
         {
             case LayerType.Player:
@@ -288,6 +288,7 @@ public class KillTeamGameManager : MonoBehaviour
                 var display = item.AddComponent<KillTeamMetaDataDisplay>();
                 var data = entry.GetMetaData<ContentKillTeamMetaData>();
                 display.Initialise(data, playerNumber);
+                item.gameObject.AddComponent<HandGameObjectVerticalPickupPointer>();
                 break;
             case LayerType.Terrain:
                 item.gameObject.ForceComponent<ObjectInteraction>();
