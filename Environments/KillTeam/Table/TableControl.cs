@@ -1,5 +1,6 @@
 
 using UnityEngine;
+using VLB_Samples;
 
 namespace KillTeam
 {
@@ -155,15 +156,13 @@ namespace KillTeam
 
         public void SetScale(float scale)
         {
-            if (AutoHandTransform == null || Controller == null)
-                return;
+            Transform rig = CameraControllerVR.Instance.AutoHandPlayerRef.trackingContainer;
 
             scale = Mathf.Clamp(
                 scale,
                 minScale,
                 maxScale);
-
-            Controller.SetScale(scale);
+            rig.localScale = Vector3.one * scale;
         }
 
         public void SetRotation(float degrees)
