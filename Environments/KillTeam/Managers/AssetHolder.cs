@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Numerics;
 using UnityEngine;
 using static GameManagerDesertStrike;
+using static Photon.Pun.UtilityScripts.PunTeams;
 
 public class AssetHolder : MonoBehaviour
 {
@@ -45,12 +46,19 @@ public class AssetHolder : MonoBehaviour
     {
 
         this.AddComponent<GameObjectChildrenPolyCounter>();
+        CollectMetaData();
+
+        TeamIcons();
+    }
+
+    private void CollectMetaData()
+    {
         int index = 0;
         int totalCount = 0;
         foreach (CatalogueEntry catItem in Core.Catalogue.GetCatalogue)
         {
             var dataCard = catItem.GetMetaData<ContentKillTeamAPMetaData>();
-            if(dataCard != null)
+            if (dataCard != null)
             {
                 index++;
                 DataPlayingCards.AddToList(dataCard, catItem);
@@ -88,35 +96,36 @@ public class AssetHolder : MonoBehaviour
                     }
                 }
             }
-                totalCount++;          
+            totalCount++;
         }
+    }
 
-
-        Core.AssetBundlesRef.MaterialAssetBundleRef.GetItem(Core.Mono, "Wall_Brick_Generic_Mat_Scale4", (textmature) =>
+    private void TeamIcons()
+    {
+        // collect teeam icons 
+        string log = "Team Icons NOT found \n";
+        int count = Enum.GetValues(typeof(ContentKillTeamMetaData.TeamType)).Length;
+        TaskAction task = new TaskAction(count, () =>
         {
-            wallMaterail = textmature;
-            if (wallMaterail == null)
-            {
-                Debug.LogError("Wall material not found");
-            }
-        });
+            Debug.Log(log);
 
+        });
         foreach (var team in ContentKillTeamMetaData.TeamType.GetValues(typeof(ContentKillTeamMetaData.TeamType)))
         {
             Core.AssetBundlesRef.Texture2DAssetBundleRef.GetItem(Core.Mono, team.ToString(), (texture) =>
             {
-                
+
                 if (texture == null)
                 {
-                    Debug.Log($"Team icon not found for {team}");
+                    log += $"{team} \n";
                 }
                 else
                 {
                     teamIcons.Add(texture);
                 }
+                task.Increment();
             });
         }
-
     }
 
     public void SpawnTerrain(Action callback)

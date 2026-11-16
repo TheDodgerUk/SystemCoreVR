@@ -174,23 +174,23 @@ public class KillTeamGameManager : MonoBehaviour
 
 
         ////// Check if either palm is up
-        ////if (VRPalmUpDetectorBoth.Any(p => p.IsPalmUp))
-        ////{
-        ////    Debug.Log("At least one palm up");
-        ////}
+        if (VRPalmUpDetectorBoth.Any(p => p.IsPalmUp))
+        {
+            Debug.Log("At least one palm up");
+        }
 
-        ////// Check if both palms are up
-        ////if (VRPalmUpDetectorBoth.All(p => p.IsPalmUp))
-        ////{
-        ////    Debug.Log("Both palms up");
-        ////}
-
-
+        // Check if both palms are up
+        if (VRPalmUpDetectorBoth.All(p => p.IsPalmUp))
+        {
+            Debug.Log("Both palms up");
+        }
 
 
 
 
-        var assetHolder = new GameObject("assetHolder");
+
+
+        var assetHolder = new GameObject("AssetHolder");
         assetHolder.transform.SetParent(transform, false);
         AssetHolderRef = assetHolder.transform.AddComponent<AssetHolder>();
 
